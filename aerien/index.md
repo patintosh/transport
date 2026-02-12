@@ -1,4 +1,4 @@
-# Transport aérien – DSP, OSP & continuité territoriale
+# Transport aérien – DSP, OSP et continuité territoriale
 
 Cette section regroupe les textes consacrés :
 - aux obligations de service public aérien (OSP),
