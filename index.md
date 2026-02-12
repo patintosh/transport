@@ -1,7 +1,7 @@
-# Mélanges W
+****Transports - articles publiés sur Linkedin ****
 ### (FR / EN)
 
-Bienvenue sur le site **Mélanges W**, une bibliothèque numérique regroupant analyses, articles, essais et notes autour des transports, de l’économie insulaire, de la continuité territoriale, de l’énergie, et de l’évaluation des politiques publiques.
+Bienvenue sur mon site. Il s'agit d'une bibliothèque numérique regroupant analyses, articles, et notes autour des transports, de l’économie Corse, de la continuité territoriale, de l’énergie, et de l’évaluation des politiques publiques.
 
 Ce site rassemble plus de vingt ans de textes, classés par thème, et disponibles en lecture et téléchargement (PDF).
 
@@ -32,11 +32,12 @@ Ce site rassemble plus de vingt ans de textes, classés par thème, et disponibl
 
 ## 🇬🇧 English version
 
-Welcome to **Mélanges W**, a digital library gathering analyses, essays and commentaries on maritime services, air transport, energy economics, territorial continuity, and major transport policies in France and Europe.
+Transport – Articles Published on LinkedIn
+(FR / EN)
+Welcome to my website. This is a digital library gathering analyses, articles, and notes on transport, the Corsican economy, territorial continuity, energy, and the evaluation of public policies.
+The site brings together more than twenty years of writings, organized by theme and available for reading and download (PDF).
 
-All documents are available for online reading or PDF download.
-
-### Sections (English summaries):
+### Sections :
 
 - **Maritime Services & Territorial Continuity**  
   → [Maritime Section](./maritime/)
