@@ -1,5 +1,6 @@
 
-# Prix des carburants en Corse – analyses et études 
+# Prix des carburants en Corse   
+
 
 Cette section est dédiée :
 - à la compréhension des écarts de prix Corse/Continent,
