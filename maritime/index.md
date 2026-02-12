@@ -1,4 +1,4 @@
-# Desserte maritime   &   continuité territoriale 
+# Desserte maritime   et   continuité territoriale 
 
 Cette section rassemble l’ensemble des articles, notes et analyses portant sur :
 - la continuité territoriale Corse–Continent,
