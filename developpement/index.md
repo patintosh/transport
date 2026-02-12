@@ -1,6 +1,6 @@
-
-# Développement économique de la Corse : 
-# modèles, tourisme, économie présentielle  
+  
+# Développement économique de la Corse   
+# modèles, tourisme, économie présentielle   
 
 
 Cette section traite :
