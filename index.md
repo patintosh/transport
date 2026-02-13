@@ -33,9 +33,9 @@ Ce site rassemble plus de vingt ans (parfois beaucoup plus) de textes, classés 
 ## Archives – Ancien site    
 
 Retrouvez ici les articles et documents issus de mon ancien site (ex site free):      
-
+   
 👉 [Accéder aux archives](ancien-site/index.md)
-
+    
 ---
     
 ## 🇬🇧 English version
@@ -66,11 +66,12 @@ The site brings together more than twenty years of writings, organized by theme 
 - **Public Policy Evaluation / Transport Economics**  
   → [Evaluation Section](./evaluation/)
 
-## Archives – Former Website   
+## Archives – Former Website     
 
-Here you can find the articles and documents preserved from my previous website (formerly hosted on Free).
+Here you can find the articles and documents preserved from my previous website (formerly hosted on Free).  
 [Accéder aux archives](ancien-site/index.md)
-   
+
+     
 ---
 
 ### 📚 PDF Library
