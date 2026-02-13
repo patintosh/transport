@@ -56,3 +56,8 @@ exclude:
 # Force le formatage standard
 highlighter: rouge
   
+nav:
+  - Accueil: index.md
+  - Bibliothèque PDF: pdf/
+  - Archives: archives/
+  - Recherche: search/search.html
