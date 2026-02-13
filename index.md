@@ -4,8 +4,8 @@
 ### (FR / EN)
 
 Bienvenue sur mon site. Il s'agit d'une bibliothèque numérique regroupant analyses, articles, et notes autour des transports, de l’économie Corse, de la continuité territoriale, de l’énergie, et de l’évaluation des politiques publiques.
-
-Ce site rassemble plus de vingt ans (parfois beaucoup plus) de textes, classés par thème, et disponibles en lecture et téléchargement (PDF).
+  
+Ce site rassemble plus de vingt ans (parfois beaucoup plus) de textes, classés par thème, et disponibles en lecture et téléchargement (PDF).  
 
 ---
 
