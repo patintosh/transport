@@ -1,4 +1,4 @@
-markdown: kramdown
+markdown: kramdown  
 theme: jekyll-theme-slate 
 plugins:
   - jekyll-feed
@@ -12,6 +12,7 @@ header_pages:
   - lyon-turin/index.md
   - evaluation/index.md
   ---
-title: Transport et Mélanges W
+title: Transport et Mélanges W  
 layout: default
 ---
+  
