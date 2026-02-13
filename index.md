@@ -1,13 +1,13 @@
             
-
+ 
       
 ** Transports - articles publiés sur Linkedin et ailleurs ... **    
 ### (FR / EN)
-      
+       
 Bienvenue sur mon site. Il s'agit d'une bibliothèque numérique regroupant analyses, articles, et notes autour des transports, de l’économie Corse, de la continuité territoriale, de l’énergie, et de l’évaluation des politiques publiques.
-     
+        
 Ce site rassemble plus de vingt ans (parfois beaucoup plus) de textes, classés par thème, et disponibles en lecture et téléchargement (PDF).  
-  
+    
 ---
 
 ## 🇫🇷 Accès aux sections
@@ -74,13 +74,14 @@ Here you can find the articles, blogs (blogger) and documents preserved from my 
 
      
 ---
-
-### 📚 PDF Library
+  
+### 📚 PDF Library  
 
 Tous les PDF seront accessibles dans le dossier :  
 👉 [`/pdf`](./pdf/)  
 (les fichiers apparaîtront automatiquement lorsque tu les déposeras)
 
 ---
-
-© Patrice Salini — Bibliothèque numérique “Mélanges W”
+  
+© Patrice Salini — Bibliothèque numérique #   
+    
