@@ -2,3 +2,16 @@ markdown: kramdown
 theme: jekyll-theme-slate 
 plugins:
   - jekyll-feed
+header_pages:
+  - index.md
+  - maritime/index.md
+  - aerien/index.md
+  - energie/index.md
+  - carburants/index.md
+  - developpement/index.md
+  - lyon-turin/index.md
+  - evaluation/index.md
+  ---
+title: Transport et Mélanges W
+layout: default
+---
