@@ -1,7 +1,20 @@
-markdown: kramdown  
-theme: jekyll-theme-slate 
-plugins:
-  - jekyll-feed
+# -------------------------------
+# Informations générales du site   
+# -------------------------------
+   
+title: "Transport et Mélanges W"
+description: "Analyses, articles et documents PDF autour des transports, de l’énergie et des politiques publiques."
+   
+# -------------------------------
+# Thème GitHub Pages
+# -------------------------------
+
+theme: jekyll-theme-cayman
+
+# -------------------------------
+# Navigation principale (menu)
+# -------------------------------
+
 header_pages:
   - index.md
   - maritime/index.md
@@ -11,8 +24,34 @@ header_pages:
   - developpement/index.md
   - lyon-turin/index.md
   - evaluation/index.md
-  ---
-title: Transport et Mélanges W  
-layout: default
----
+  - pdf/index.md
+
+# -------------------------------
+# Paramètres de rendu Markdown
+# -------------------------------
+
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+
+# -------------------------------
+# Plugins GitHub Pages
+# -------------------------------
+
+plugins:
+  - jekyll-feed
+
+# -------------------------------
+# Options Jekyll pour compatibilité
+# -------------------------------
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
+
+# Force le formatage standard
+highlighter: rouge
   
