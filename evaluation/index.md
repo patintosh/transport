@@ -1,6 +1,6 @@
-   
-# Évaluation des politiques publiques et grands projets  
-  
+        
+# Évaluation des politiques publiques et grands projets     
+        
 Cette section couvre :
 - les méthodes d’évaluation (LOTI, RCB, analyse coûts‑avantages),
 - les débats autour de la transparence et du processus décisionnel,
