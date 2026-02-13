@@ -9,6 +9,11 @@ Bienvenue sur mon site. Il s'agit d'une bibliothèque numérique regroupant anal
 Ce site rassemble plus de vingt ans (parfois beaucoup plus) de textes, classés par thème, et disponibles en lecture et téléchargement (PDF).  
     
 ---
+## Recherche 
+<form action="/search/search.html" method="get">
+  <input type="text" name="q" placeholder="Rechercher…">
+  <button type="submit">OK</button>
+</form>
 
 ## 🇫🇷 Accès aux sections
 
