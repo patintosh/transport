@@ -32,8 +32,8 @@ Ce site rassemble plus de vingt ans (parfois beaucoup plus) de textes, classés 
 
 ## Archives – Ancien site    
 
-Retrouvez ici les articles et documents issus de mon ancien site (ex site free):      
-   
+Retrouvez ici les articles, blogs (blogger) et documents issus de mon ancien site (ex site free):        
+    
 👉 [Accéder aux archives](ancien-site/index.md)
     
 ---
@@ -68,7 +68,7 @@ The site brings together more than twenty years of writings, organized by theme 
 
 ## Archives – Former Website     
 
-Here you can find the articles and documents preserved from my previous website (formerly hosted on Free).  
+Here you can find the articles, blogs (blogger) and documents preserved from my previous website (formerly hosted on Free).  
 [Accéder aux archives](ancien-site/index.md)
 
      
