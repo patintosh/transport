@@ -1,47 +1,47 @@
 [
   {
     "title": "Accueil",
-    "url": "/transport/",
+    "url": "/transport/index.html",
     "content": "Bibliothèque numérique Transport : maritime, aérien, énergie, développement, évaluation, archives, documents PDF."
   },
   {
     "title": "Maritime",
-    "url": "/transport/maritime/",
+    "url": "/transport/maritime/index.html",
     "content": "Transport maritime, continuité territoriale, délégations de service public, analyse économique et réglementaire."
   },
   {
     "title": "Aérien",
-    "url": "/transport/aerien/",
+    "url": "/transport/aerien/index.html",
     "content": "Transport aérien, obligations de service public, liaisons Corse-continent, DSP aériennes."
   },
   {
     "title": "Énergie",
-    "url": "/transport/energie/",
+    "url": "/transport/energie/index.html",
     "content": "Énergie en Corse, carburants, fiscalité, infrastructures, approvisionnement, enjeux de transition."
   },
   {
     "title": "Carburants",
-    "url": "/transport/carburants/",
+    "url": "/transport/carburants/index.html",
     "content": "Carburants en Corse, prix, marges, logistique, fiscalité, structure de marché."
   },
   {
     "title": "Développement",
-    "url": "/transport/developpement/",
+    "url": "/transport/developpement/index.html",
     "content": "Développement économique de la Corse, analyses sectorielles, infrastructures, politiques publiques."
   },
   {
     "title": "Évaluation",
-    "url": "/transport/evaluation/",
+    "url": "/transport/evaluation/index.html",
     "content": "Évaluation des politiques publiques, grands projets, méthodes d'analyse, rapports et synthèses."
   },
   {
     "title": "Lyon-Turin",
-    "url": "/transport/lyon-turin/",
+    "url": "/transport/lyon-turin/index.html",
     "content": "Projet Lyon-Turin, ferroviaire, tunnels, coûts, enjeux européens et territoriaux."
   },
   {
     "title": "Archives",
-    "url": "/transport/archives/",
+    "url": "/transport/archives/index.html",
     "content": "Archives du site Transport, documents historiques, anciennes analyses, fonds documentaires."
   },
   {
