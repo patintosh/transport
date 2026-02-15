@@ -1,6 +1,7 @@
+      
 # Transports — Analyses, articles et documents  
 ### (FR)
-
+     
 Bienvenue sur ma bibliothèque numérique.  
 Elle rassemble plus de vingt ans d’analyses, d’articles et de notes autour :
 
@@ -12,8 +13,8 @@ Elle rassemble plus de vingt ans d’analyses, d’articles et de notes autour :
 
 Tous les documents sont disponibles en lecture et téléchargement (PDF).
 
----
-
+---     
+    
 ## 🔍 Recherche dans la bibliothèque
 
 👉 [Accéder à la recherche](search/search.html)
