@@ -54,4 +54,9 @@ document.getElementById("searchButton").onclick = function() {
     const q = document.getElementById("searchBox").value;
     runSearch(q);
 };
-document.get
+
+document.getElementById("searchBox").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+        document.getElementById("searchButton").click();
+    }
+});
