@@ -4,9 +4,8 @@
       
 Bienvenue sur **Transport**, une bibliothèque numérique rassemblant analyses, articles, notes et documents autour :
     
-- des transports maritimes et aériens,  
-- de l’économie corse,  
-- de la continuité territoriale,  
+- des transports  
+- de l’économie corse, de ses transports et de la continuité territoriale,  
 - de l’énergie et des carburants,  
 - de l’évaluation des politiques publiques,  
 - et des grands projets d’infrastructures.
