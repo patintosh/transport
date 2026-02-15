@@ -1,6 +1,6 @@
-   
+     
 # Bibliothèque numérique — Transports, énergie, économie corse
-
+     
 Bienvenue sur ma bibliothèque numérique.  
 Elle rassemble plus de vingt ans d’analyses, d’articles, de notes et de documents autour :
 
@@ -9,11 +9,11 @@ Elle rassemble plus de vingt ans d’analyses, d’articles, de notes et de docu
 - de la continuité territoriale  
 - de l’énergie et des carburants  
 - de l’évaluation des politiques publiques  
-
+    
 Tous les documents sont disponibles en lecture et téléchargement (PDF).
-
+   
 ---
-
+   
 ## 🔍 Recherche dans la bibliothèque
 
 La recherche permet d’explorer l’ensemble des documents du site (PDF, notes, articles, archives).  
