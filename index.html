@@ -2,34 +2,59 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Transport – Recherche documentaire</title>
+<title>Patrice Salini Base documentaire d'articles et de notes Transport</title>
+
 <style>
     body {
+        margin: 0;
         font-family: Arial, sans-serif;
-        margin: 40px;
-        background: #fafafa;
+        background: #f5f5f5;
         color: #333;
     }
-    h1 {
+
+    /* Bandeau haut */
+    header {
+        background: #003366;
+        color: white;
+        padding: 25px 40px;
+    }
+    header h1 {
+        margin: 0;
         font-size: 32px;
-        margin-bottom: 10px;
+        font-weight: 600;
     }
-    p.intro {
-        font-size: 18px;
-        max-width: 700px;
-        line-height: 1.5;
-        margin-bottom: 30px;
+    header p {
+        margin: 8px 0 0;
+        font-size: 16px;
+        opacity: 0.9;
     }
+
+    /* Bloc central */
+    .container {
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+
+    .search-block {
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+
     #searchBox {
-        width: 60%;
-        padding: 12px;
+        width: 70%;
+        padding: 14px;
         font-size: 18px;
         border: 1px solid #aaa;
         border-radius: 4px;
         outline: none;
     }
+
     #searchButton {
-        padding: 12px 20px;
+        padding: 14px 22px;
         font-size: 18px;
         margin-left: 8px;
         border: none;
@@ -41,44 +66,88 @@
     #searchButton:hover {
         background-color: #005fa3;
     }
-    .categories {
+
+    /* Présentation */
+    .intro {
         margin-top: 40px;
+        font-size: 18px;
+        line-height: 1.6;
+    }
+
+    /* Accès thématiques */
+    .categories {
+        margin-top: 50px;
+    }
+    .categories h2 {
+        font-size: 22px;
+        margin-bottom: 15px;
     }
     .categories a {
         display: inline-block;
         margin-right: 20px;
         margin-bottom: 10px;
-        font-size: 16px;
+        font-size: 17px;
         color: #0078d4;
         text-decoration: none;
     }
     .categories a:hover {
         text-decoration: underline;
     }
+
+    /* Pied de page */
+    footer {
+        margin-top: 60px;
+        padding: 20px;
+        text-align: center;
+        font-size: 14px;
+        color: #666;
+    }
 </style>
 </head>
+
 <body>
 
-<h1>Base documentaire Transport</h1>
+<header>
+    <h1>Base documentaire Transport</h1>
+    <p>Documents techniques, archives, analyses et ressources thématiques</p>
+</header>
 
-<p class="intro">
-Cette base rassemble des centaines de documents techniques, rapports, notes, archives et analyses 
-sur les transports ferroviaires, routiers, maritimes, aériens, énergétiques et logistiques.  
-Utilisez la recherche ci‑dessous pour accéder directement aux fichiers (PDF, TIFF, HTML).
-</p>
+<div class="container">
 
-<input id="searchBox" type="text" placeholder="Rechercher un document…">
-<button id="searchButton">Rechercher</button>
+    <div class="search-block">
+        <input id="searchBox" type="text" placeholder="Rechercher un document…">
+        <button id="searchButton">Rechercher</button>
+    </div>
 
-<div class="categories">
-    <h2>Accès thématique</h2>
-    <a href="maritime/">Maritime</a>
-    <a href="aerien/">Aérien</a>
-    <a href="energie/">Énergie</a>
-    <a href="carburants/">Carburants</a>
-    <a href="archives/">Archives</a>
-    <a href="lyon-turin/">Lyon–Turin</a>
+    <div class="intro">
+        <!-- 🔵 TU PEUX MODIFIER CE TEXTE LIBREMENT -->
+        <p>
+            Cette base rassemble des documents techniques, rapports, notes, archives et analyses 
+            couvrant les transports ferroviaires, routiers, maritimes, aériens, énergétiques et logistiques.
+            Elle est conçue pour offrir un accès direct aux fichiers (PDF, TIFF, HTML) grâce à un moteur
+            de recherche interne.
+        </p>
+        <p>
+            Tu peux enrichir cette section avec une présentation plus détaillée, un contexte, une méthodologie,
+            ou une explication de la logique documentaire. Tout est modifiable.
+        </p>
+    </div>
+
+    <div class="categories">
+        <h2>Accès thématique</h2>
+        <a href="maritime/">Maritime</a>
+        <a href="aerien/">Aérien</a>
+        <a href="energie/">Énergie</a>
+        <a href="carburants/">Carburants</a>
+        <a href="archives/">Archives</a>
+        <a href="lyon-turin/">Lyon–Turin</a>
+    </div>
+
 </div>
+
+<footer>
+    Site personnel – Base documentaire technique. Mise à jour régulière.
+</footer>
 
 <script>
 document.getElementById("searchButton").onclick = function() {
