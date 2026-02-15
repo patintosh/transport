@@ -57,6 +57,7 @@ exclude:
 highlighter: rouge
   
 nav:
+# refresh
   - Accueil: index.md
   - Bibliothèque PDF: pdf/
   - Archives: archives/
