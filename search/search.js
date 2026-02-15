@@ -55,4 +55,3 @@ function runSearch() {
 
   document.getElementById("results").innerHTML = html;
 }
-
