@@ -1,7 +1,7 @@
             
  
       
-** Transports - articles publiés sur Linkedin et ailleurs ... **    
+** Transports - articles publiés sur Linkedin et ailleurs ... **     
 ### (FR / EN)
        
 Bienvenue sur mon site. Il s'agit d'une bibliothèque numérique regroupant analyses, articles, et notes autour des transports, de l’économie Corse, de la continuité territoriale, de l’énergie, et de l’évaluation des politiques publiques.
