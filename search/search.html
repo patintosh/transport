@@ -1,30 +1,43 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Recherche</title>
-
-  <script src="lunr.min.js"></script>
-  <script src="search.js"></script>
-
-  <style>
-    body { font-family: sans-serif; max-width: 700px; margin: 40px auto; }
-    input { width: 100%; padding: 10px; font-size: 1.2em; }
-    #results { margin-top: 20px; }
-    .item { margin-bottom: 20px; }
-    .item a { font-size: 1.2em; font-weight: bold; text-decoration: none; }
-    .item p { margin: 5px 0; color: #444; }
-  </style>
+<meta charset="UTF-8">
+<title>Résultats de recherche</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 40px;
+        background: #fafafa;
+    }
+    h1 {
+        font-size: 28px;
+        margin-bottom: 20px;
+    }
+    .result {
+        background: white;
+        padding: 12px;
+        margin-bottom: 10px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+    }
+    .result-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: #0078d4;
+        margin-bottom: 4px;
+    }
+    .result-year {
+        color: #666;
+        font-size: 13px;
+    }
+</style>
 </head>
-
 <body>
 
-<h1>Recherche</h1>
-
-<input id="search-box" type="text" placeholder="Tapez votre recherche…" oninput="runSearch()">
-
+<h1>Résultats</h1>
 <div id="results"></div>
+
+<script src="search.js"></script>
 
 </body>
 </html>
