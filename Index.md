@@ -1,9 +1,16 @@
-***Transport***
-### (FR / EN)
+# Transport  
+### Bibliothèque numérique de Patrice Salini (FR / EN)
 
-Bienvenue sur le site **Transport**, une bibliothèque numérique regroupant analyses, articles et notes autour des transports, de l’économie corse, de la continuité territoriale, de l’énergie, et de l’évaluation des politiques publiques.
+Bienvenue sur **Transport**, une bibliothèque numérique rassemblant analyses, articles, notes et documents autour :
 
-Ce site rassemble plus de vingt ans de textes, classés par thème, et disponibles en lecture et téléchargement (PDF).
+- des transports maritimes et aériens,  
+- de l’économie corse,  
+- de la continuité territoriale,  
+- de l’énergie et des carburants,  
+- de l’évaluation des politiques publiques,  
+- et des grands projets d’infrastructures.
+
+Ce site regroupe plus de vingt ans de travaux, classés par thèmes, accessibles en lecture directe ou en téléchargement (PDF).
 
 ---
 
@@ -30,41 +37,42 @@ Ce site rassemble plus de vingt ans de textes, classés par thème, et disponibl
 
 ---
 
-## 🇬🇧 English version
+## 📚 Archives du site (2003–2010)
 
-Welcome to **Mélanges W**, a digital library gathering analyses, essays and commentaries on maritime services, air transport, energy economics, territorial continuity, and major transport policies in France and Europe.
+Les archives complètes de l’ancien site sont disponibles ici :  
+→ [Archives](./archives/)
+
+---
+
+## 📄 Bibliothèque PDF
+
+Les documents PDF sont classés par année :  
+→ [Accès aux PDF](./pdf/)
+
+Chaque dossier annuel contient automatiquement les fichiers que vous y déposez.
+
+---
+
+## 🔍 Recherche
+
+Vous pouvez effectuer une recherche textuelle dans l’ensemble du site :  
+→ [Recherche](./search/search.html)
+
+---
+
+## 🇬🇧 English Summary
+
+Welcome to **Transport**, a digital library gathering analyses and commentaries on:
+
+- maritime services and territorial continuity,  
+- air transport and PSO/DSP mechanisms,  
+- energy and fuel markets in Corsica,  
+- economic development,  
+- major infrastructure projects,  
+- and public policy evaluation.
 
 All documents are available for online reading or PDF download.
 
-### Sections (English summaries):
-
-- **Maritime Services & Territorial Continuity**  
-  → [Maritime Section](./maritime/)
-
-- **Air Transport, Public Service Obligations (PSO)**  
-  → [Air Transport Section](./aerien/)
-
-- **Energy / Fuel Markets in Corsica**  
-  → [Energy Section](./energie/)  
-  → [Fuel Section](./carburants/)
-
-- **Corsican Economic Development**  
-  → [Development Section](./developpement/)
-
-- **Lyon–Turin Rail Project & Major Infrastructure**  
-  → [Lyon–Turin Section](./lyon-turin/)
-
-- **Public Policy Evaluation / Transport Economics**  
-  → [Evaluation Section](./evaluation/)
-
 ---
 
-### 📚 PDF Library
-
-Tous les PDF seront accessibles dans le dossier :  
-👉 [`/pdf`](./pdf/)  
-(les fichiers apparaîtront automatiquement lorsque tu les déposeras)
-
----
-
-© Patrice Salini — Bibliothèque numérique “Transport”
+© Patrice Salini — Bibliothèque numérique « Transport »
