@@ -1,39 +1,50 @@
-      
 let idx = null;
-let documents = null;
+let documents = {};
 
 async function loadIndex() {
   const response = await fetch('index.json');
-  documents = await response.json();
+  const data = await response.json();
+
+  documents = data;
 
   idx = lunr(function () {
-    this.ref('url');
+    this.ref('id');
     this.field('title');
     this.field('content');
 
-   
-    documents.forEach(doc => this.add(doc));
+    data.forEach((doc, i) => {
+      doc.id = i;
+      this.add(doc);
+    });
   });
 }
 
 async function runSearch() {
   if (!idx) await loadIndex();
 
-  const query = document.getElementById('search-box').value;
+  const query = document.getElementById('search-box').value.trim();
+  const resultsDiv = document.getElementById('results');
+  resultsDiv.innerHTML = '';
+
+  if (query.length < 2) return;
+
   const results = idx.search(query);
 
-  const container = document.getElementById('results');
-  container.innerHTML = '';
-
   if (results.length === 0) {
-    container.innerHTML = '<p>Aucun résultat.</p>';
+    resultsDiv.innerHTML = "<p>Aucun résultat.</p>";
     return;
   }
 
-  results.forEach(result => {
-    const doc = documents.find(d => d.url === result.ref);
-    const div = document.createElement('div');
-    div.innerHTML = `<p><a href="${doc.url}">${doc.title}</a></p>`;
-    container.appendChild(div);
+  results.forEach(r => {
+    const doc = documents[r.ref];
+    const item = document.createElement('div');
+    item.className = 'item';
+
+    item.innerHTML = `
+      <a href="${doc.url}">${doc.title}</a>
+      <p>${doc.content.substring(0, 160)}...</p>
+    `;
+
+    resultsDiv.appendChild(item);
   });
 }
