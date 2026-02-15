@@ -1,19 +1,25 @@
-       
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
   <title>Recherche</title>
+
   <script src="lunr.min.js"></script>
   <script src="search.js"></script>
+
   <style>
     body { font-family: sans-serif; max-width: 700px; margin: 40px auto; }
     input { width: 100%; padding: 10px; font-size: 1.2em; }
     #results { margin-top: 20px; }
+    .item { margin-bottom: 20px; }
+    .item a { font-size: 1.2em; font-weight: bold; text-decoration: none; }
+    .item p { margin: 5px 0; color: #444; }
   </style>
 </head>
+
 <body>
-     
+
 <h1>Recherche</h1>
 
 <input id="search-box" type="text" placeholder="Tapez votre recherche…" oninput="runSearch()">
