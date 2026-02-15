@@ -10,10 +10,8 @@ Ce site rassemble plus de vingt ans (parfois beaucoup plus) de textes, classés 
     
 ---
 ## Recherche 
-<form action="/search/search.html" method="get">
-  <input type="text" name="q" placeholder="Rechercher…">
-  <button type="submit">OK</button>
-</form>
+[🔍 Rechercher dans la bibliothèque](search/search.html)
+
 
 ## 🇫🇷 Accès aux sections
 
