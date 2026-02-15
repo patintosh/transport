@@ -1,18 +1,16 @@
 let idx = null;
-let documents = {};
+let documents = [];
 
 async function loadIndex() {
   const response = await fetch('index.json');
-  const data = await response.json();
-
-  documents = data;
+  documents = await response.json();
 
   idx = lunr(function () {
     this.ref('id');
     this.field('title');
     this.field('content');
 
-    data.forEach((doc, i) => {
+    documents.forEach((doc, i) => {
       doc.id = i;
       this.add(doc);
     });
