@@ -1,54 +1,52 @@
 [
   {
     "title": "Accueil",
-    "url": "/transport/index.html",
-    "content": "Bibliothèque numérique Transport : maritime, aérien, énergie, développement, évaluation, archives."
+    "url": "/transport/",
+    "content": "Bibliothèque numérique Transport : maritime, aérien, énergie, développement, évaluation, archives, documents PDF."
   },
   {
     "title": "Maritime",
-    "url": "/transport/maritime/index.html",
-    "content": "Transport maritime, continuité territoriale, DSP, analyse économique et réglementaire."
+    "url": "/transport/maritime/",
+    "content": "Transport maritime, continuité territoriale, délégations de service public, analyse économique et réglementaire."
   },
   {
     "title": "Aérien",
-    "url": "/transport/aerien/index.html",
-    "content": "Transport aérien, obligations de service public, DSP, liaisons Corse-continent."
+    "url": "/transport/aerien/",
+    "content": "Transport aérien, obligations de service public, liaisons Corse-continent, DSP aériennes."
   },
   {
     "title": "Énergie",
-    "url": "/transport/energie/index.html",
-    "content": "Énergie en Corse, carburants, fiscalité, infrastructures, approvisionnement."
+    "url": "/transport/energie/",
+    "content": "Énergie en Corse, carburants, fiscalité, infrastructures, approvisionnement, enjeux de transition."
   },
   {
     "title": "Carburants",
-    "url": "/transport/carburants/index.html",
-    "content": "Carburants en Corse, prix, marges, logistique, fiscalité."
+    "url": "/transport/carburants/",
+    "content": "Carburants en Corse, prix, marges, logistique, fiscalité, structure de marché."
   },
   {
     "title": "Développement",
-    "url": "/transport/developpement/index.html",
-    "content": "Développement économique de la Corse, analyses sectorielles, infrastructures."
+    "url": "/transport/developpement/",
+    "content": "Développement économique de la Corse, analyses sectorielles, infrastructures, politiques publiques."
   },
   {
     "title": "Évaluation",
-    "url": "/transport/evaluation/index.html",
-    "content": "Évaluation des politiques publiques, grands projets, méthodes d'analyse."
+    "url": "/transport/evaluation/",
+    "content": "Évaluation des politiques publiques, grands projets, méthodes d'analyse, rapports et synthèses."
   },
   {
     "title": "Lyon-Turin",
-    "url": "/transport/lyon-turin/index.html",
-    "content": "Projet Lyon-Turin, ferroviaire, tunnels, coûts, enjeux européens."
+    "url": "/transport/lyon-turin/",
+    "content": "Projet Lyon-Turin, ferroviaire, tunnels, coûts, enjeux européens et territoriaux."
   },
   {
-    "title": "Archives (HTML)",
-    "url": "/transport/archives/index.html",
-    "content": "Archives du site Transport, documents historiques, analyses anciennes."
+    "title": "Archives",
+    "url": "/transport/archives/",
+    "content": "Archives du site Transport, documents historiques, anciennes analyses, fonds documentaires."
   },
-
-  /* PDF INDEXATION */
   {
     "title": "PDF : PPT délais paiement",
     "url": "/transport/PPTdeÌ™lais paiement(F).pdf",
-    "content": "Document PDF : délais de paiement, analyse économique."
+    "content": "Document PDF sur les délais de paiement, analyse économique et juridique."
   }
 ]
