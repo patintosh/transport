@@ -1,48 +1,57 @@
 let idx = null;
 let documents = [];
 
-async function loadIndex() {
-  const response = await fetch('index.json');
-  documents = await response.json();
+// Charger l'index JSON
+fetch("index.json")
+  .then(response => response.json())
+  .then(data => {
+    documents = data;
 
-  idx = lunr(function () {
-    this.ref('id');
-    this.field('title');
-    this.field('content');
+    idx = lunr(function () {
+      this.ref("url");
+      this.field("title");
+      this.field("content");
 
-    documents.forEach((doc, i) => {
-      doc.id = i;
-      this.add(doc);
+      documents.forEach(doc => this.add(doc));
     });
+  })
+  .catch(err => {
+    console.error("Erreur chargement index.json :", err);
   });
-}
 
-async function runSearch() {
-  if (!idx) await loadIndex();
+// Fonction appelée à chaque frappe dans la barre de recherche
+function runSearch() {
+  const query = document.getElementById("search-box").value.trim();
 
-  const query = document.getElementById('search-box').value.trim();
-  const resultsDiv = document.getElementById('results');
-  resultsDiv.innerHTML = '';
-
-  if (query.length < 2) return;
-
-  const results = idx.search(query);
-
-  if (results.length === 0) {
-    resultsDiv.innerHTML = "<p>Aucun résultat.</p>";
+  if (!idx || query.length < 2) {
+    document.getElementById("results").innerHTML = "";
     return;
   }
 
-  results.forEach(r => {
-    const doc = documents[r.ref];
-    const item = document.createElement('div');
-    item.className = 'item';
+  let results;
+  try {
+    results = idx.search(query);
+  } catch (e) {
+    console.error("Erreur Lunr :", e);
+    return;
+  }
 
-    item.innerHTML = `
-      <a href="${doc.url}">${doc.title}</a>
-      <p>${doc.content.substring(0, 160)}...</p>
+  const html = results.map(result => {
+    const doc = documents.find(d => d.url === result.ref);
+
+    if (!doc) return "";
+
+    // Surlignage simple
+    const highlight = (text) =>
+      text.replace(new RegExp(query, "gi"), match => `<mark>${match}</mark>`);
+
+    return `
+      <div class="item">
+        <a href="/transport/${doc.url}" target="_blank">${highlight(doc.title)}</a>
+        <p>${highlight(doc.content)}</p>
+      </div>
     `;
+  }).join("");
 
-    resultsDiv.appendChild(item);
-  });
+  document.getElementById("results").innerHTML = html;
 }
