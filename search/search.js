@@ -1,10 +1,10 @@
-function normalize(str) {
-    return str
+function normalize(str) { 
+    return str 
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
         .toLowerCase();
 }
-
+   
 const params = new URLSearchParams(window.location.search);
 const query = params.get("q") || "";
 const qNorm = normalize(query);
