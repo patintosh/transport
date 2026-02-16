@@ -1,4 +1,3 @@
-        
 # -------------------------------
 # Informations générales du site   
 # -------------------------------
@@ -57,9 +56,7 @@ exclude:
 highlighter: rouge
   
 nav:
-# refresh
   - Accueil: index.md
   - Bibliothèque PDF: pdf/
   - Archives: archives/
-  - Recherche: search/search.html
-
+  - Recherche: searchA.html
