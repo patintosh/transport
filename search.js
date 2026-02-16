@@ -1,62 +1,76 @@
-function normalize(str) {
-    return str
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase();
+// Chargement du fichier index.json
+async function loadIndex() {
+  try {
+    const response = await fetch('index.json');
+    if (!response.ok) {
+      throw new Error(`Erreur HTTP : ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Erreur lors du chargement de l'index :", error);
+    return [];
+  }
 }
 
-function runSearch(query) {
-    const qNorm = normalize(query || "");
-    const container = document.getElementById("results");
-    container.innerHTML = "";
-
-    if (!qNorm) {
-        container.innerHTML = "<p>Entrez un mot ou une expression ci-dessus.</p>";
-        return;
-    }
-
-    fetch("search/index.json")
-        .then(r => r.json())
-        .then(data => {
-            let count = 0;
-
-            data.forEach(doc => {
-                const textNorm = normalize(doc.content || "");
-                const titleNorm = normalize(doc.title || "");
-
-                if (textNorm.includes(qNorm) || titleNorm.includes(qNorm)) {
-                    count++;
-                    container.innerHTML += `
-                        <div class="result">
-                            <div class="result-title">
-                                <a href="${doc.url}" target="_blank">${doc.title}</a>
-                            </div>
-                            <div class="result-year">
-                                ${doc.year ? "Année : " + doc.year : ""}
-                            </div>
-                        </div>
-                    `;
-                }
-            });
-
-            if (count === 0) {
-                container.innerHTML = "<p>Aucun document ne contient cette expression.</p>";
-            }
-        });
+// Fonction de normalisation (accents, majuscules, etc.)
+function normalize(text) {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
 }
 
-const params = new URLSearchParams(window.location.search);
-const initialQuery = params.get("q") || "";
-document.getElementById("searchBox").value = initialQuery;
-runSearch(initialQuery);
+// Fonction de recherche
+function searchIndex(query, index) {
+  const q = normalize(query);
 
-document.getElementById("searchButton").onclick = function() {
-    const q = document.getElementById("searchBox").value;
-    runSearch(q);
-};
+  return index.filter(entry => {
+    const title = normalize(entry.title || "");
+    const content = normalize(entry.content || "");
+    const year = normalize(entry.year || "");
+    return (
+      title.includes(q) ||
+      content.includes(q) ||
+      year.includes(q)
+    );
+  });
+}
 
-document.getElementById("searchBox").addEventListener("keypress", function(e) {
-    if (e.key === "Enter") {
-        document.getElementById("searchButton").click();
-    }
+// Affichage des résultats
+function displayResults(results) {
+  const container = document.getElementById("results");
+  container.innerHTML = "";
+
+  if (results.length === 0) {
+    container.innerHTML = "<p>Aucun résultat trouvé.</p>";
+    return;
+  }
+
+  results.forEach(item => {
+    const div = document.createElement("div");
+    div.className = "result-item";
+
+    div.innerHTML = `
+      <h3>${item.title}</h3>
+      <p><strong>Année :</strong> ${item.year || "—"}</p>
+      <a href="${item.url}" target="_blank">📄 Ouvrir le document</a>
+    `;
+
+    container.appendChild(div);
+  });
+}
+
+// Initialisation
+document.addEventListener("DOMContentLoaded", async () => {
+  const index = await loadIndex();
+
+  const input = document.getElementById("searchInput");
+  const form = document.getElementById("searchForm");
+
+  form.addEventListener("submit", event => {
+    event.preventDefault();
+    const query = input.value.trim();
+    const results = searchIndex(query, index);
+    displayResults(results);
+  });
 });
