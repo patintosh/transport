@@ -48,11 +48,11 @@ function displayResults(results) {
 
   results.forEach(item => {
     const div = document.createElement("div");
-    div.className = "result-item";
+    div.className = "result";
 
     div.innerHTML = `
-      <h3>${item.title}</h3>
-      <p><strong>Année :</strong> ${item.year || "—"}</p>
+      <div class="result-title">${item.title}</div>
+      <div class="result-year">${item.year || "—"}</div>
       <a href="${item.url}" target="_blank">📄 Ouvrir le document</a>
     `;
 
@@ -64,13 +64,20 @@ function displayResults(results) {
 document.addEventListener("DOMContentLoaded", async () => {
   const index = await loadIndex();
 
-  const input = document.getElementById("searchInput");
-  const form = document.getElementById("searchForm");
+  const input = document.getElementById("searchBox");
+  const button = document.getElementById("searchButton");
 
-  form.addEventListener("submit", event => {
-    event.preventDefault();
+  button.addEventListener("click", () => {
     const query = input.value.trim();
     const results = searchIndex(query, index);
     displayResults(results);
+  });
+
+  input.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+      const query = input.value.trim();
+      const results = searchIndex(query, index);
+      displayResults(results);
+    }
   });
 });
