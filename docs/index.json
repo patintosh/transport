@@ -2114,7 +2114,7 @@
     "url": "pdf/document_synthese_flux.pdf",
     "content": ""
   },
-    {
+  {
     "title": "Document – Analyse des performances",
     "year": "",
     "url": "pdf/document_analyse_performances.pdf",
@@ -2150,6 +2150,14 @@
     "url": "pdf/presentation_donnees_sectorielles.pdf",
     "content": ""
   },
+  {
+    "title": "Présentation – Synthèse générale",
+    "year": "",
+    "url": "pdf/presentation_synthese_generale.pdf",
+    "content": ""
+  }
+]
+
     {
     "title": "Document – Analyse des performances",
     "year": "",
@@ -2193,4 +2201,5 @@
     "content": ""
   }
 ]
+
 
