@@ -1821,6 +1821,7 @@
     "content": ""
   },
   {
+  {
     "title": "Rapport – Transition numérique des chaînes logistiques",
     "year": "",
     "url": "archives/rapport_transition_numerique_chaines_logistiques.pdf",
@@ -1855,7 +1856,7 @@
     "year": "",
     "url": "archives/etude_analyse_trafics_maritimes_mondiaux.pdf",
     "content": ""
-  }
+  },
   {
     "title": "Document générique 1",
     "year": "",
@@ -1915,7 +1916,7 @@
     "year": "",
     "url": "pdf/synthese_thematique.pdf",
     "content": ""
-  }
+  },
   {
     "title": "Guide méthodologique – Analyse des coûts",
     "year": "",
@@ -1975,7 +1976,7 @@
     "year": "",
     "url": "pdf/document_synthese_annuelle.pdf",
     "content": ""
-  }
+  },
   {
     "title": "Fiche pratique – Données portuaires",
     "year": "",
@@ -2035,128 +2036,11 @@
     "year": "",
     "url": "pdf/rapport_analyse_strategique.pdf",
     "content": ""
-  }
+  },
   {
     "title": "Fiche – Présentation des données logistiques",
-    "year": "",
-    "url": "pdf/fiche_presentation_donnees_logistiques.pdf",
-    "content": ""
-  },
-  {
-    "title": "Fiche – Méthodes d’analyse portuaire",
-    "year": "",
-    "url": "pdf/fiche_methodes_analyse_portuaire.pdf",
-    "content": ""
-  },
-  {
-    "title": "Document – Synthèse des indicateurs",
-    "year": "",
-    "url": "pdf/document_synthese_indicateurs.pdf",
-    "content": ""
-  },
-  {
-    "title": "Document – Analyse des tendances",
-    "year": "",
-    "url": "pdf/document_analyse_tendances.pdf",
-    "content": ""
-  },
-  {
-    "title": "Note – Données économiques",
-    "year": "",
-    "url": "pdf/note_donnees_economiques.pdf",
-    "content": ""
-  },
-  {
-    "title": "Note – Méthodes statistiques",
-    "year": "",
-    "url": "pdf/note_methodes_statistiques.pdf",
-    "content": ""
-  },
-  {
-    "title": "Rapport – Synthèse logistique",
-    "year": "",
-    "url": "pdf/rapport_synthese_logistique.pdf",
-    "content": ""
-  },
-  {
-    "title": "Rapport – Analyse opérationnelle",
-    "year": "",
-    "url": "pdf/rapport_analyse_operationnelle.pdf",
-    "content": ""
-  },
-  {
-    "title": "Présentation – Données multimodales",
-    "year": "",
-    "url": "pdf/presentation_donnees_multimodales.pdf",
-    "content": ""
-  },
-  {
-    "title": "Présentation – Indicateurs clés",
-    "year": "",
-    "url": "pdf/presentation_indicateurs_cles.pdf",
-    "content": ""
-  }
-  {
-    "title": "Fiche – Analyse des coûts logistiques",
-    "year": "",
-    "url": "pdf/fiche_analyse_couts_logistiques.pdf",
-    "content": ""
-  },
-  {
-    "title": "Fiche – Données économiques portuaires",
-    "year": "",
-    "url": "pdf/fiche_donnees_economiques_portuaires.pdf",
-    "content": ""
-  },
-  {
-    "title": "Document – Synthèse des flux",
-    "year": "",
-    "url": "pdf/document_synthese_flux.pdf",
-    "content": ""
-  },
-  {
-    "title": "Document – Analyse des performances",
-    "year": "",
-    "url": "pdf/document_analyse_performances.pdf",
-    "content": ""
-  },
-  {
-    "title": "Note – Méthodes d’évaluation",
-    "year": "",
-    "url": "pdf/note_methodes_evaluation.pdf",
-    "content": ""
-  },
-  {
-    "title": "Note – Tendances logistiques",
-    "year": "",
-    "url": "pdf/note_tendances_logistiques.pdf",
-    "content": ""
-  },
-  {
-    "title": "Rapport – Synthèse annuelle logistique",
-    "year": "",
-    "url": "pdf/rapport_synthese_annuelle_logistique.pdf",
-    "content": ""
-  },
-  {
-    "title": "Rapport – Analyse des indicateurs",
-    "year": "",
-    "url": "pdf/rapport_analyse_indicateurs.pdf",
-    "content": ""
-  },
-  {
-    "title": "Présentation – Données sectorielles",
-    "year": "",
-    "url": "pdf/presentation_donnees_sectorielles.pdf",
-    "content": ""
-  },
-  {
-    "title": "Présentation – Synthèse générale",
-    "year": "",
-    "url": "pdf/presentation_synthese_generale.pdf",
-    "content": ""
-  }
-]
+   
+
 
     {
     "title": "Document – Analyse des performances",
@@ -2201,5 +2085,6 @@
     "content": ""
   }
 ]
+
 
 
