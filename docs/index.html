@@ -3,38 +3,49 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Transport — Recherche</title>
+  <title>Bibliothèque numérique de Patrice Salini</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header>
-    <h1>Transport</h1>
-    <p class="lead">Recherche dans les articles et pages</p>
+  <header class="site-header">
+    <div class="wrap">
+      <h1 class="site-title">Bibliothèque numérique de Patrice Salini</h1>
+      <p class="site-subtitle">articles, documents, études publiques sur les transports et la socioéconomie</p>
+      <p class="site-link">
+        <a href="https://pensertransports.simdif.com" target="_blank" rel="noopener noreferrer">Penser Transport — site partagé avec Christian Reynaud</a>
+      </p>
+    </div>
   </header>
 
-  <main>
-    <section id="search-section" aria-labelledby="search-title">
-      <h2 id="search-title">Recherche</h2>
+  <main class="wrap">
+    <section id="search-section" aria-labelledby="search-title" class="search-section">
+      <h2 id="search-title" class="visually-hidden">Recherche</h2>
 
-      <form id="search-form" role="search" onsubmit="return false;">
-        <label for="q" class="visually-hidden">Rechercher</label>
-        <input id="q" name="q" type="search" placeholder="Tapez un mot-clé, ex: veolia" autocomplete="off" />
-        <button id="search-btn" type="button">Rechercher</button>
+      <form id="search-form" class="search-form" role="search" onsubmit="return false;">
+        <label for="q" class="label">Rechercher</label>
+        <div class="search-row">
+          <input id="q" name="q" type="search" placeholder="Tapez un mot‑clé, ex : veolia" autocomplete="off" />
+          <button id="search-btn" type="button" class="btn-primary">Rechercher</button>
+        </div>
+        <p class="hint">Appuyez sur Entrée pour lancer la recherche</p>
       </form>
 
-      <div id="results-info" aria-live="polite"></div>
-      <ul id="results" aria-live="polite"></ul>
+      <div id="results-info" class="results-info" aria-live="polite"></div>
 
-      <nav id="pager" aria-label="Pagination" hidden>
-        <button id="prev">Précédent</button>
-        <span id="page-info"></span>
-        <button id="next">Suivant</button>
+      <ul id="results" class="results-grid" aria-live="polite"></ul>
+
+      <nav id="pager" class="pager" aria-label="Pagination" hidden>
+        <button id="prev" class="btn-ghost">Précédent</button>
+        <span id="page-info" class="page-info"></span>
+        <button id="next" class="btn-ghost">Suivant</button>
       </nav>
     </section>
   </main>
 
-  <footer>
-    <small>© Transport</small>
+  <footer class="site-footer">
+    <div class="wrap">
+      <small>© Patrice Salini - reproduction libre</small>
+    </div>
   </footer>
 
   <script src="search.js" defer></script>
