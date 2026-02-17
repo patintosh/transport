@@ -37,32 +37,27 @@ function safeResolveUrl(path){
 
 async function loadIndex(){
   try{
-    // charger le bon fichier
-   const resp = await fetch(new URL('/transport/index.json', location.origin).href);
+    // charger le fichier publié
+    const resp = await fetch('/transport/index.json');
     if(!resp.ok) throw new Error('HTTP ' + resp.status);
 
-    // DEBUG: afficher headers utiles
-    console.log('loadIndex: content-type=', resp.headers.get('content-type'));
-    console.log('loadIndex: content-length=', resp.headers.get('content-length'));
-
     const text = await resp.text();
+    const idx = JSON.parse(text);
 
-    // DEBUG: montrer début/fin et longueur pour repérer BOM/HTML/troncature
-    console.log('loadIndex: text length=', text.length);
-    console.log('loadIndex: start=', JSON.stringify(text.slice(0,120)));
-    console.log('loadIndex: end=', JSON.stringify(text.slice(-120)));
+    idx.forEach(item => {
+      try { item._resolvedUrl = safeResolveUrl(item.path || ''); }
+      catch(e){ item._resolvedUrl = null; }
+    });
+    window._searchIndex = idx;
+    console.log('index loaded, items:', idx.length);
+    return idx;
+  }catch(err){
+    console.error('Erreur lors du chargement de l index :', err && err.message ? err.message : err);
+    window._searchIndex = [];
+    return [];
+  }
+}
 
-    // Essayer de parser et, en cas d'erreur, loguer un extrait utile
-    let idx;
-    try {
-      idx = JSON.parse(text);
-    } catch(parseErr) {
-      console.error('loadIndex: JSON.parse failed:', parseErr && parseErr.message ? parseErr.message : parseErr);
-      // afficher un extrait plus large autour de la fin pour "Expected ']'"
-      console.error('loadIndex: problematic tail (500 chars):', text.slice(-500));
-      window._searchIndex = [];
-      return [];
-    }
 
     idx.forEach(item => {
       try { item._resolvedUrl = safeResolveUrl(item.path || ''); }
