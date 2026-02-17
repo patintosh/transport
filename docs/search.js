@@ -33,9 +33,12 @@ function safeResolveUrl(path){
 // -----------------------------
 // Chargement sécurisé de l'index
 // -----------------------------
+
+
 async function loadIndex(){
   try{
-    const resp = await fetch('index.json');
+    // charger le bon fichier
+    const resp = await fetch('transport/index.json');
     if(!resp.ok) throw new Error('HTTP ' + resp.status);
 
     // DEBUG: afficher headers utiles
@@ -62,7 +65,7 @@ async function loadIndex(){
     }
 
     idx.forEach(item => {
-      try { item._resolvedUrl = safeResolveUrl(item.url || ''); }
+      try { item._resolvedUrl = safeResolveUrl(item.path || ''); }
       catch(e){ item._resolvedUrl = null; }
     });
     window._searchIndex = idx;
@@ -74,6 +77,7 @@ async function loadIndex(){
     return [];
   }
 }
+
 
 
 // -----------------------------
