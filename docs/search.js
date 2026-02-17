@@ -53,13 +53,59 @@
     }
   }
 
-  function renderResults() {
-    el.results.innerHTML = '';
-    if (!results || results.length === 0) {
-      el.info.textContent = 'Aucun résultat';
-      el.pager.hidden = true;
-      return;
+// Retourne le "dernier" item selon priorité PDF puis date puis position
+function findLatest(preferPdf = true) {
+  if (!index || index.length === 0) return null;
+
+  // 1) si on préfère les PDF, filtrer d'abord
+  if (preferPdf) {
+    const pdfs = index.filter(it => (it.type || '').toLowerCase() === 'pdf');
+    if (pdfs.length > 0) {
+      // si dates présentes, trier par date sinon prendre le dernier
+      const withDate = pdfs.filter(it => it.date || it.published || it.created);
+      if (withDate.length) {
+        return withDate.slice().sort((a,b) => new Date(b.date||b.published||b.created) - new Date(a.date||a.published||a.created))[0];
+      }
+      return pdfs[pdfs.length - 1];
     }
+  }
+
+  // 2) sinon, chercher parmi tous les items par date
+  const withDate = index.filter(it => it.date || it.published || it.created);
+  if (withDate.length) {
+    return withDate.slice().sort((a,b) => new Date(b.date||b.published||b.created) - new Date(a.date||a.published||a.created))[0];
+  }
+
+  // 3) fallback : dernier élément du tableau
+  return index[index.length - 1];
+}
+
+// Affiche le dernier article dans le DOM (appeler après loadIndex())
+function renderLatestArticle(preferPdf = true) {
+  const container = document.getElementById('latest-article');
+  if (!container) return;
+  const latest = findLatest(preferPdf);
+  if (!latest) { container.innerHTML = ''; return; }
+
+  const url = latest._resolvedUrl || latest.path || '#';
+  const title = latest.title || latest.path || 'Sans titre';
+  const dateVal = latest.date || latest.published || latest.created;
+  const dateHtml = dateVal ? `<time class="meta">${new Date(dateVal).toLocaleDateString()}</time>` : '';
+
+  container.innerHTML = `
+    <div class="latest-card">
+      <div class="latest-left">
+        <strong class="latest-label">Dernier article</strong>
+        <a class="latest-title" href="${url}" target="_blank" rel="noopener noreferrer">${escapeHtml(title)}</a>
+        <div class="latest-meta">${dateHtml}</div>
+      </div>
+      <div class="latest-action">
+        <a class="btn-primary" href="${url}" target="_blank" rel="noopener noreferrer">Lire</a>
+      </div>
+    </div>
+  `;
+}
+
 
     const start = (page - 1) * PAGE_SIZE;
     const pageItems = results.slice(start, start + PAGE_SIZE);
