@@ -1,9 +1,9 @@
-// search.js — chargement index.json et recherche simple
+// search.js — chargement index.json et recherche simple (adapté au nouveau HTML/CSS)
 (function () {
   'use strict';
 
   const INDEX_URL = '/transport/index.json';
-  const PAGE_SIZE = 10;
+  const PAGE_SIZE = 12;
 
   const el = {
     q: document.getElementById('q'),
@@ -39,7 +39,7 @@
 
   function renderResults() {
     el.results.innerHTML = '';
-    if (filtered.length === 0) {
+    if (!filtered || filtered.length === 0) {
       el.info.textContent = 'Aucun résultat';
       el.pager.hidden = true;
       return;
@@ -51,7 +51,15 @@
       const a = document.createElement('a');
       a.href = item._resolvedUrl || item.path || '#';
       a.textContent = item.title || item.path || 'Sans titre';
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
       li.appendChild(a);
+
+      const meta = document.createElement('span');
+      meta.className = 'meta';
+      meta.textContent = item.type ? item.type : '';
+      li.appendChild(meta);
+
       el.results.appendChild(li);
     });
     el.info.textContent = `Affichage ${start + 1}–${Math.min(start + PAGE_SIZE, filtered.length)} sur ${filtered.length}`;
