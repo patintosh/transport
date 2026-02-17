@@ -1,4 +1,4 @@
-// search.js — chargement index.json et recherche simple (adapté au nouveau HTML/CSS)
+// search.js — recherche floue avec Fuse.js
 (function () {
   'use strict';
 
@@ -17,7 +17,8 @@
   };
 
   let index = [];
-  let filtered = [];
+  let fuse = null;
+  let results = []; // tableau d'objets {item, score}
   let page = 1;
 
   function safeResolveUrl(path) {
@@ -31,6 +32,21 @@
       index = await r.json();
       index.forEach(i => i._resolvedUrl = safeResolveUrl(i.path || ''));
       console.log('index loaded, items:', index.length);
+
+      // Construire Fuse
+      const options = {
+        includeScore: true,
+        shouldSort: true,
+        threshold: 0.35,          // sensibilité : 0.0 = exact, 1.0 = très permissif
+        distance: 100,           // distance pour correspondance partielle
+        minMatchCharLength: 2,
+        keys: [
+          { name: 'title', weight: 0.7 },
+          { name: 'path', weight: 0.2 },
+          { name: 'type', weight: 0.1 }
+        ]
+      };
+      fuse = new Fuse(index, options);
     } catch (e) {
       console.error('Erreur chargement index:', e && e.message ? e.message : e);
       index = [];
@@ -39,14 +55,19 @@
 
   function renderResults() {
     el.results.innerHTML = '';
-    if (!filtered || filtered.length === 0) {
+    if (!results || results.length === 0) {
       el.info.textContent = 'Aucun résultat';
       el.pager.hidden = true;
       return;
     }
+
     const start = (page - 1) * PAGE_SIZE;
-    const pageItems = filtered.slice(start, start + PAGE_SIZE);
-    pageItems.forEach(item => {
+    const pageItems = results.slice(start, start + PAGE_SIZE);
+
+    pageItems.forEach(r => {
+      const item = r.item || r; // compatibilité si on a des objets bruts
+      const score = (typeof r.score === 'number') ? (r.score) : null;
+
       const li = document.createElement('li');
       const a = document.createElement('a');
       a.href = item._resolvedUrl || item.path || '#';
@@ -57,26 +78,33 @@
 
       const meta = document.createElement('span');
       meta.className = 'meta';
-      meta.textContent = item.type ? item.type : '';
+      const parts = [];
+      if (item.type) parts.push(item.type);
+      if (score !== null) parts.push('pertinence: ' + (Math.max(0, 1 - score)).toFixed(2));
+      meta.textContent = parts.join(' • ');
       li.appendChild(meta);
 
       el.results.appendChild(li);
     });
-    el.info.textContent = `Affichage ${start + 1}–${Math.min(start + PAGE_SIZE, filtered.length)} sur ${filtered.length}`;
-    el.pageInfo.textContent = `Page ${page} / ${Math.ceil(filtered.length / PAGE_SIZE)}`;
-    el.pager.hidden = filtered.length <= PAGE_SIZE;
+
+    el.info.textContent = `Affichage ${start + 1}–${Math.min(start + PAGE_SIZE, results.length)} sur ${results.length}`;
+    el.pageInfo.textContent = `Page ${page} / ${Math.ceil(results.length / PAGE_SIZE)}`;
+    el.pager.hidden = results.length <= PAGE_SIZE;
   }
 
   function doSearch(term) {
-    const t = (term || '').trim().toLowerCase();
+    const t = (term || '').trim();
     if (!t) {
-      filtered = index.slice();
+      // pas de terme : afficher tout (tri alphabétique sur title)
+      results = index.slice().sort((a,b) => {
+        const A = (a.title||'').toLowerCase();
+        const B = (b.title||'').toLowerCase();
+        return A < B ? -1 : (A > B ? 1 : 0);
+      }).map(it => ({ item: it, score: 0 }));
     } else {
-      filtered = index.filter(it => {
-        return (it.title && it.title.toLowerCase().includes(t))
-          || (it.path && it.path.toLowerCase().includes(t))
-          || (it.type && it.type.toLowerCase().includes(t));
-      });
+      // recherche floue via Fuse
+      const fuseRes = fuse.search(t);
+      results = fuseRes.map(r => ({ item: r.item, score: r.score }));
     }
     page = 1;
     renderResults();
@@ -88,11 +116,12 @@
   });
 
   el.prev.addEventListener('click', () => { if (page > 1) { page--; renderResults(); } });
-  el.next.addEventListener('click', () => { if (page * PAGE_SIZE < filtered.length) { page++; renderResults(); } });
+  el.next.addEventListener('click', () => { if (page * PAGE_SIZE < results.length) { page++; renderResults(); } });
 
   // initialisation
   loadIndex().then(() => {
-    filtered = index.slice();
+    // affichage initial : tout index
+    results = index.slice().map(it => ({ item: it, score: 0 }));
     renderResults();
   });
 
