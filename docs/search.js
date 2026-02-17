@@ -24,6 +24,54 @@
   function safeResolveUrl(path) {
     try { return new URL(path, location.origin).href; } catch (e) { return path || ''; }
   }
+// Retourne le "dernier" item selon priorité PDF puis date puis position
+function findLatest(preferPdf = true) {
+  if (!index || index.length === 0) return null;
+
+  if (preferPdf) {
+    const pdfs = index.filter(it => (it.type || '').toLowerCase() === 'pdf');
+    if (pdfs.length > 0) {
+      const withDate = pdfs.filter(it => it._dateObj);
+      if (withDate.length) {
+        return withDate.slice().sort((a,b) => b._dateObj - a._dateObj)[0];
+      }
+      return pdfs[pdfs.length - 1];
+    }
+  }
+
+  const withDate = index.filter(it => it._dateObj);
+  if (withDate.length) {
+    return withDate.slice().sort((a,b) => b._dateObj - a._dateObj)[0];
+  }
+
+  return index[index.length - 1];
+}
+
+// Affiche le dernier article dans le DOM (titre + bouton Lire)
+function renderLatestArticle(preferPdf = true) {
+  const container = document.getElementById('latest-article');
+  if (!container) return;
+  const latest = findLatest(preferPdf);
+  if (!latest) { container.innerHTML = ''; return; }
+
+  const url = latest._resolvedUrl || latest.path || '#';
+  const title = latest.title || latest.path || 'Sans titre';
+  const dateVal = latest.date || latest.published || latest.created;
+  const dateHtml = dateVal ? `<time class="meta">${new Date(dateVal).toLocaleDateString()}</time>` : '';
+
+  container.innerHTML = `
+    <div class="latest-card">
+      <div class="latest-left">
+        <strong class="latest-label">Dernier article</strong>
+        <a class="latest-title" href="${url}" target="_blank" rel="noopener noreferrer">${escapeHtml(title)}</a>
+        <div class="latest-meta">${dateHtml}</div>
+      </div>
+      <div class="latest-action">
+        <a class="btn-primary" href="${url}" target="_blank" rel="noopener noreferrer">Lire</a>
+      </div>
+    </div>
+  `;
+}
 
   async function loadIndex() {
     try {
