@@ -306,6 +306,44 @@
       // enrich dates: PDFs first, then HTML (await to ensure correct sorting)
       await enrichPdfDates({ maxConcurrent: 6, maxTotal: 100 });
       await enrichHtmlDates({ maxConcurrent: 6, maxTotal: 50 });
+// récupère le <title> ou premier <h1> d'une page HTML (limité, respect CORS)
+async function fetchTitleFromHtml(url) {
+  try {
+    const r = await fetch(url, { cache: 'no-store' });
+    if (!r.ok) return null;
+    const text = await r.text();
+    // chercher <title>
+    const tMatch = text.match(/<title[^>]*>([^<]+)<\/title>/i);
+    if (tMatch && tMatch[1]) return tMatch[1].trim();
+    // fallback : premier <h1>
+    const h1Match = text.match(/<h1[^>]*>([^<]+)<\/h1>/i);
+    if (h1Match && h1Match[1]) return h1Match[1].trim();
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
+// enrichir les items sans title (concurrence limitée)
+async function enrichTitles({ maxConcurrent = 6, maxTotal = 50 } = {}) {
+  const candidates = index.filter(it => !(it.title) && (it.path || '').toLowerCase().endsWith('.html'));
+  if (candidates.length === 0) return;
+  const toProcess = candidates.slice(0, maxTotal);
+  let i = 0;
+  async function worker() {
+    while (i < toProcess.length) {
+      const idx = i++;
+      const it = toProcess[idx];
+      const url = it._resolvedUrl || safeResolveUrl(it.path || '');
+      const t = await fetchTitleFromHtml(url);
+      if (t) it.title = t;
+    }
+  }
+  const workers = [];
+  for (let k = 0; k < Math.min(maxConcurrent, toProcess.length); k++) workers.push(worker());
+  await Promise.all(workers);
+  console.log('enrichTitles: done', toProcess.length);
+}
 
       // build Fuse if available
       if (typeof Fuse !== 'undefined') {
