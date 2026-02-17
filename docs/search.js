@@ -156,26 +156,113 @@
   el.next && el.next.addEventListener('click', () => { if (page * PAGE_SIZE < results.length) { page++; renderResults(); } });
 
   // Chargement de l'index et initialisation
-  async function loadIndex() {
-    try {
-      const r = await fetch(INDEX_URL, { cache: 'no-store' });
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      index = await r.json();
+ // --- Extraire date depuis l'en-tête HTTP d'un PDF (Last-Modified)
+async function tryExtractDateFromPdfHead(url) {
+  try {
+    const r = await fetch(url, { method: 'HEAD', cache: 'no-store' });
+    if (!r.ok) return null;
+    const lm = r.headers.get('last-modified');
+    if (!lm) return null;
+    const d = new Date(lm);
+    return isNaN(d) ? null : d;
+  } catch (e) {
+    return null;
+  }
+}
 
-      // Résoudre les URLs et normaliser les dates
-      index.forEach(i => {
-        i._resolvedUrl = safeResolveUrl(i.path || '');
-        if (i.date && typeof i.date === 'string') {
-          const d = new Date(i.date);
-          if (!isNaN(d)) i._dateObj = d;
-        } else if (i.published && typeof i.published === 'string') {
-          const d = new Date(i.published);
-          if (!isNaN(d)) i._dateObj = d;
-        } else if (i.created && typeof i.created === 'string') {
-          const d = new Date(i.created);
-          if (!isNaN(d)) i._dateObj = d;
-        }
-      });
+// --- Heuristique : extraire date depuis le nom de fichier (fallback)
+function parseDateFromFilename(path) {
+  if (!path) return null;
+  const re1 = /(\d{1,2})[.\-_\/](\d{1,2})[.\-_\/](\d{2,4})/;
+  const re2 = /(\d{4})[.\-_\/](\d{1,2})[.\-_\/](\d{1,2})/;
+  let m = path.match(re1);
+  if (m) {
+    let day = parseInt(m[1],10), month = parseInt(m[2],10)-1, year = parseInt(m[3],10);
+    if (year < 100) year += (year <= 49 ? 2000 : 1900);
+    const d = new Date(year, month, day);
+    return isNaN(d) ? null : d;
+  }
+  m = path.match(re2);
+  if (m) {
+    const year = parseInt(m[1],10), month = parseInt(m[2],10)-1, day = parseInt(m[3],10);
+    const d = new Date(year, month, day);
+    return isNaN(d) ? null : d;
+  }
+  return null;
+}
+
+// --- Enrichir les PDF : HEAD (Last-Modified) puis fallback filename
+async function enrichPdfDates({ maxConcurrent = 6, maxTotal = 100 } = {}) {
+  const candidates = index.filter(it => !it._dateObj && (it.path || '').toLowerCase().endsWith('.pdf'));
+  if (candidates.length === 0) return;
+  const toProcess = candidates.slice(0, maxTotal);
+  let i = 0;
+  async function worker() {
+    while (i < toProcess.length) {
+      const idx = i++;
+      const it = toProcess[idx];
+      const url = it._resolvedUrl || it.path;
+      let d = await tryExtractDateFromPdfHead(url);
+      if (!d) d = parseDateFromFilename(url);
+      if (d) it._dateObj = d;
+    }
+  }
+  const workers = [];
+  for (let k = 0; k < Math.min(maxConcurrent, toProcess.length); k++) workers.push(worker());
+  await Promise.all(workers);
+  console.log('enrichPdfDates: processed', toProcess.length);
+}
+
+// --- Parser de date dans le texte (P.S. JJ/MM/AA ou variantes)
+function parseDateFromPS(text) {
+  if (!text) return null;
+  const re = /P\.?S\.?\s*[:\-–]?\s*(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})/i;
+  const m = text.match(re);
+  if (!m) return null;
+  let day = parseInt(m[1], 10);
+  let month = parseInt(m[2], 10) - 1;
+  let year = parseInt(m[3], 10);
+  if (year < 100) year += (year <= 49 ? 2000 : 1900);
+  const d = new Date(year, month, day);
+  return isNaN(d) ? null : d;
+}
+
+// --- Tenter d'extraire la date depuis le début ou la fin d'un HTML
+async function tryExtractDateFromHtml(url) {
+  try {
+    const r = await fetch(url, { cache: 'no-store' });
+    if (!r.ok) return null;
+    const text = await r.text();
+    // chercher dans le début et la fin du document (performant)
+    const head = text.slice(0, 1200);
+    const tail = text.slice(-1200);
+    return parseDateFromPS(tail) || parseDateFromPS(head);
+  } catch (e) {
+    return null;
+  }
+}
+
+// --- Enrichir les HTML en cherchant P.S. JJ/MM/AA au début ou à la fin
+async function enrichHtmlDates({ maxConcurrent = 6, maxTotal = 50 } = {}) {
+  const candidates = index.filter(it => !it._dateObj && (it.path || '').toLowerCase().endsWith('.html'));
+  if (candidates.length === 0) return;
+  const toProcess = candidates.slice(0, maxTotal);
+  let i = 0;
+  async function worker() {
+    while (i < toProcess.length) {
+      const idx = i++;
+      const it = toProcess[idx];
+      const url = it._resolvedUrl || it.path;
+      const d = await tryExtractDateFromHtml(url);
+      if (d) it._dateObj = d;
+    }
+  }
+  const workers = [];
+  for (let k = 0; k < Math.min(maxConcurrent, toProcess.length); k++) workers.push(worker());
+  await Promise.all(workers);
+  console.log('enrichHtmlDates: processed', toProcess.length);
+}
+
 
       // Construire Fuse si disponible
       if (typeof Fuse !== 'undefined') {
