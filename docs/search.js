@@ -38,7 +38,7 @@ function safeResolveUrl(path){
 async function loadIndex(){
   try{
     // charger le bon fichier
-    const resp = await fetch('transport/index.json');
+   const resp = await fetch(new URL('/transport/index.json', location.origin).href);
     if(!resp.ok) throw new Error('HTTP ' + resp.status);
 
     // DEBUG: afficher headers utiles
