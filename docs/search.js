@@ -2,7 +2,6 @@
 (function () {
   'use strict';
 
-  // petite utilitaire pour résoudre un chemin relatif en URL absolue
   function safeResolveUrl(path) {
     try {
       if (!path) return '';
@@ -12,7 +11,6 @@
     }
   }
 
-  // stockage global contrôlé
   window._searchIndex = window._searchIndex || [];
 
   async function loadIndex() {
@@ -41,7 +39,6 @@
     }
   }
 
-  // Démarrage : charger l'index au chargement du script
   loadIndex().then(() => {
     console.log('search.js initialisé');
   }).catch(e => {
