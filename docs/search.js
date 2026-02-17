@@ -47,29 +47,6 @@ function findLatest(preferPdf = true) {
   return index[index.length - 1];
 }
 
-// Retourne le "dernier" item selon priorité PDF puis date puis position
-function findLatest(preferPdf = true) {
-  if (!index || index.length === 0) return null;
-
-  if (preferPdf) {
-    const pdfs = index.filter(it => (it.type || '').toLowerCase() === 'pdf');
-    if (pdfs.length > 0) {
-      const withDate = pdfs.filter(it => it._dateObj);
-      if (withDate.length) {
-        return withDate.slice().sort((a,b) => b._dateObj - a._dateObj)[0];
-      }
-      return pdfs[pdfs.length - 1];
-    }
-  }
-
-  const withDate = index.filter(it => it._dateObj);
-  if (withDate.length) {
-    return withDate.slice().sort((a,b) => b._dateObj - a._dateObj)[0];
-  }
-
-  return index[index.length - 1];
-}
-
 // Affiche le dernier article dans le DOM (titre + bouton Lire)
 function renderLatestArticle(preferPdf = true) {
   const container = document.getElementById('latest-article');
@@ -95,6 +72,93 @@ function renderLatestArticle(preferPdf = true) {
     </div>
   `;
 }
+
+// utilitaire pour échapper le HTML
+function escapeHtml(s) {
+  return String(s || '').replace(/[&<>"']/g, function(m){
+    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]);
+  });
+}
+
+async function loadIndex() {
+  try {
+    const r = await fetch(INDEX_URL, {cache: 'no-store'});
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    index = await r.json();
+
+    // Résoudre les URLs et normaliser les dates
+    index.forEach(i => {
+      i._resolvedUrl = safeResolveUrl(i.path || '');
+      if (i.date && typeof i.date === 'string') {
+        const d = new Date(i.date);
+        if (!isNaN(d)) i._dateObj = d;
+      } else if (i.published && typeof i.published === 'string') {
+        const d = new Date(i.published);
+        if (!isNaN(d)) i._dateObj = d;
+      } else if (i.created && typeof i.created === 'string') {
+        const d = new Date(i.created);
+        if (!isNaN(d)) i._dateObj = d;
+      }
+    });
+
+    // Construire Fuse si disponible
+    if (typeof Fuse !== 'undefined') {
+      const options = {
+        includeScore: true,
+        shouldSort: true,
+        threshold: 0.35,
+        distance: 100,
+        minMatchCharLength: 2,
+        keys: [
+          { name: 'title', weight: 0.7 },
+          { name: 'path', weight: 0.2 },
+          { name: 'type', weight: 0.1 }
+        ]
+      };
+      fuse = new Fuse(index, options);
+    } else {
+      fuse = null;
+    }
+
+    console.log('index loaded, items:', index.length);
+  } catch (e) {
+    console.error('Erreur chargement index:', e && e.message ? e.message : e);
+    index = [];
+    fuse = null;
+  }
+}
+
+// appel d'initialisation
+loadIndex().then(() => {
+  // Priorité aux PDF pour l'affichage initial
+  const pdfs = index.filter(it => (it.type || '').toLowerCase() === 'pdf');
+  if (pdfs.length) {
+    const withDate = pdfs.filter(it => it._dateObj);
+    if (withDate.length) {
+      results = withDate.slice().sort((a,b) => b._dateObj - a._dateObj).map(it => ({ item: it, score: 0 }));
+    } else {
+      results = pdfs.slice().reverse().map(it => ({ item: it, score: 0 }));
+    }
+  } else {
+    const withDateAll = index.filter(it => it._dateObj);
+    if (withDateAll.length) {
+      results = index.slice().sort((a,b) => (b._dateObj || 0) - (a._dateObj || 0)).map(it => ({ item: it, score: 0 }));
+    } else {
+      results = index.slice().map(it => ({ item: it, score: 0 }));
+    }
+  }
+
+  // rendu initial
+  page = 1;
+  renderResults();
+
+  // afficher le dernier article (privilégier les PDF)
+  if (typeof renderLatestArticle === 'function') renderLatestArticle(true);
+});
+
+// fin de l'IIFE
+})();
+
 
 
   async function loadIndex() {
