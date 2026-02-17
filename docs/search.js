@@ -37,7 +37,6 @@ function safeResolveUrl(path){
 
 async function loadIndex(){
   try{
-    // charger le fichier publié
     const resp = await fetch('/transport/index.json');
     if(!resp.ok) throw new Error('HTTP ' + resp.status);
 
@@ -48,6 +47,7 @@ async function loadIndex(){
       try { item._resolvedUrl = safeResolveUrl(item.path || ''); }
       catch(e){ item._resolvedUrl = null; }
     });
+
     window._searchIndex = idx;
     console.log('index loaded, items:', idx.length);
     return idx;
