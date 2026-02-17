@@ -60,6 +60,7 @@ async function loadIndex(){
 
 
 
+
     idx.forEach(item => {
       try { item._resolvedUrl = safeResolveUrl(item.path || ''); }
       catch(e){ item._resolvedUrl = null; }
