@@ -35,12 +35,32 @@ function safeResolveUrl(path){
 // -----------------------------
 async function loadIndex(){
   try{
-    // Pour tests, tu peux remplacer par l'URL complète :
-    // const resp = await fetch('https://patintosh.github.io/transport/index.json');
     const resp = await fetch('index.json');
     if(!resp.ok) throw new Error('HTTP ' + resp.status);
+
+    // DEBUG: afficher headers utiles
+    console.log('loadIndex: content-type=', resp.headers.get('content-type'));
+    console.log('loadIndex: content-length=', resp.headers.get('content-length'));
+
     const text = await resp.text();
-    const idx = JSON.parse(text);
+
+    // DEBUG: montrer début/fin et longueur pour repérer BOM/HTML/troncature
+    console.log('loadIndex: text length=', text.length);
+    console.log('loadIndex: start=', JSON.stringify(text.slice(0,120)));
+    console.log('loadIndex: end=', JSON.stringify(text.slice(-120)));
+
+    // Essayer de parser et, en cas d'erreur, loguer un extrait utile
+    let idx;
+    try {
+      idx = JSON.parse(text);
+    } catch(parseErr) {
+      console.error('loadIndex: JSON.parse failed:', parseErr && parseErr.message ? parseErr.message : parseErr);
+      // afficher un extrait plus large autour de la fin pour "Expected ']'"
+      console.error('loadIndex: problematic tail (500 chars):', text.slice(-500));
+      window._searchIndex = [];
+      return [];
+    }
+
     idx.forEach(item => {
       try { item._resolvedUrl = safeResolveUrl(item.url || ''); }
       catch(e){ item._resolvedUrl = null; }
@@ -54,6 +74,7 @@ async function loadIndex(){
     return [];
   }
 }
+
 
 // -----------------------------
 // Fonctions de recherche exposées
