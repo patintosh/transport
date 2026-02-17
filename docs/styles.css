@@ -51,7 +51,7 @@ body{
   max-width:900px;
 }
 .site-link a{
-  color:rgba(255,255,255,0.95);
+  color:rgba(0,0,0,0.12);
   text-decoration:underline;
   font-weight:600;
 }
