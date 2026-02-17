@@ -51,12 +51,13 @@ async function loadIndex(){
     window._searchIndex = idx;
     console.log('index loaded, items:', idx.length);
     return idx;
-  }catch(err){
+  } catch(err) {
     console.error('Erreur lors du chargement de l index :', err && err.message ? err.message : err);
     window._searchIndex = [];
     return [];
   }
 }
+
 
 
     idx.forEach(item => {
