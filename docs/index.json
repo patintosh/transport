@@ -99,7 +99,7 @@
     "path": "transport/abx-revendre.html",
     "type": "html"
   }
-]
+,
 {
   "title": "abx-tris-candidats-dont-dsv",
   "path": "transport/abx-tris-candidats-dont-dsv.html",
@@ -3486,4 +3486,5 @@
   "type": "html"
 }
 ]
+
 
