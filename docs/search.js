@@ -22,8 +22,25 @@
   let page = 1;
 
   function safeResolveUrl(path) {
-    try { return new URL(path, location.origin).href; } catch (e) { return path || ''; }
+  if (!path) return '';
+  path = String(path).trim();
+  // URL absolue
+  try {
+    const u = new URL(path);
+    return u.href;
+  } catch (e) { /* pas une URL absolue */ }
+
+  // chemin absolu sur le site (commence par /)
+  if (path.startsWith('/')) {
+    return location.origin + encodeURI(path);
   }
+
+  // chemin relatif : base sur la racine du site ou sur le dossier courant
+  // si ton site est servi depuis /transport/ (GitHub Pages docs/), ajuste BASE_PATH
+  const BASE_PATH = '/transport/'; // <-- adapte si nécessaire, ou '' si index.json à la racine
+  return location.origin + (BASE_PATH.endsWith('/') ? BASE_PATH : BASE_PATH + '/') + encodeURI(path);
+}
+
 
   function escapeHtml(s) {
     return String(s || '').replace(/[&<>"']/g, function (m) {
