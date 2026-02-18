@@ -3,7 +3,7 @@ console.log("search.js chargé et exécuté");
 (function () {
   'use strict';
 
-  const INDEX_URL = '/index.json'; // adapte si index.json est ailleurs
+  const INDEX_URL = 'index.json';
   const PAGE_SIZE = 12;
   const BASE_PATH = ''; // si ton site est servi depuis /transport/, mettre '/transport/'
 
