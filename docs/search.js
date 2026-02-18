@@ -180,7 +180,9 @@ function tryExtractDateFromPdfHead(headers) {
         const it = toProcess[idx];
         const url = it._resolvedUrl || safeResolveUrl(it.path || '');
         if (!it._dateObj) {
-          const d = await tryExtractDateFromPdfHead(url) || parseDateFromFilename(url);
+          const headResp = await fetch(url, { method: 'HEAD' });
+const d = tryExtractDateFromPdfHead(headResp.headers) || parseDateFromFilename(url);
+
           if (d) it._dateObj = d;
         }
         // title from filename fallback
