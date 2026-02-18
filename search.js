@@ -13,7 +13,7 @@ function normalizePath(path) {
   } catch (e) {
     // Sinon → chemin relatif dans index.json
     // On préfixe avec le chemin du site GitHub Pages
-    return window.location.origin + "/transport/" + path.replace(/^\//, '');
+  return window.location.origin + "/transport/" + encodeURIComponent(path.replace(/^\//, ''));
   }
 }
 
