@@ -154,6 +154,15 @@ console.log("search.js chargé et exécuté");
       return null;
     } catch (e) { return null; }
   }
+function tryExtractDateFromPdfHead(headers) {
+  const lastMod = headers.get('last-modified');
+  if (!lastMod) return null;
+  try {
+    return new Date(lastMod);
+  } catch {
+    return null;
+  }
+}
 
   async function enrichPdfDatesAndTitles({ maxConcurrent = 6, maxTotal = 100 } = {}) {
     const candidates = index.filter(it => (!it._dateObj || !it.title) && (it.path || '').toLowerCase().endsWith('.pdf'));
