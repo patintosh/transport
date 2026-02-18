@@ -1,3 +1,4 @@
+console.log("search.js chargé et exécuté");
 // search.js — consommation d'un index.json enrichi, fallback HEAD pour PDF
 (function () {
   'use strict';
