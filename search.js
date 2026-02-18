@@ -61,7 +61,7 @@ let page = 1;
 // LOAD INDEX.JSON
 // ------------------------------
 async function loadIndex() {
-  const resp = await fetch('/index.json');
+  const resp = await fetch('./index.json');
   index = await resp.json();
 
   // Prépare les champs internes
