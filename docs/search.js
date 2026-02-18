@@ -106,16 +106,20 @@
   if (el.prev) el.prev.addEventListener('click', () => { if (page > 1) { page--; renderResults(); } });
   if (el.next) el.next.addEventListener('click', () => { if (page * PAGE_SIZE < results.length) { page++; renderResults(); } });
 
-  async function tryExtractDateFromPdfHead(url) {
-    try {
-      const r = await fetch(url, { method: 'HEAD', cache: 'no-store' });
-      if (!r.ok) return null;
-      const lm = r.headers.get('last-modified');
-      if (!lm) return null;
-      const d = new Date(lm);
-      return isNaN(d) ? null : d;
-    } catch (e) { return null; }
+  async function loadIndex() {
+  try {
+    const response = await fetch('index.json');
+    if (!response.ok) {
+      throw new Error('HTTP ' + response.status);
+    }
+    const data = await response.json();
+    console.log('Index chargé avec', data.length, 'documents');
+    return data;
+  } catch (e) {
+    console.error('Erreur chargement index:', e.message);
+    return [];
   }
+}
 
   function parseDateFromFilename(path) {
     if (!path) return null;
