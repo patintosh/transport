@@ -66,7 +66,7 @@ async function loadIndex() {
 
   // Prépare les champs internes
   for (const it of index) {
-    const url = safeResolveUrl(it.path);
+   const url = normalizePath(it.path);
 
     // Extraction date
     if (!it._dateObj) {
