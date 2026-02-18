@@ -155,8 +155,13 @@ console.log("search.js chargé et exécuté");
     } catch (e) { return null; }
   }
 function tryExtractDateFromPdfHead(headers) {
+  if (!headers || typeof headers.get !== 'function') {
+    return null;
+  }
+
   const lastMod = headers.get('last-modified');
   if (!lastMod) return null;
+
   try {
     return new Date(lastMod);
   } catch {
