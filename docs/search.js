@@ -1,3 +1,19 @@
+ // --- Début du fichier ---
+const BASE_PATH = '/transport/';
+
+function safeResolveUrl(path) {
+  if (!path) return '';
+  path = String(path).trim();
+
+  try {
+    const u = new URL(path);
+    return u.href;
+  } catch (e) {
+    return BASE_PATH + path.replace(/^\//, '');
+  }
+}
+// --- Fin du bloc correct ---
+
 console.log("search.js chargé et exécuté");
 // search.js — consommation d'un index.json enrichi, fallback HEAD pour PDF
 (function () {
@@ -22,22 +38,6 @@ console.log("search.js chargé et exécuté");
   let fuse = null;
   let results = [];
   let page = 1;
-
-  const BASE_PATH = '/transport/';
-
-function safeResolveUrl(path) {
-  if (!path) return '';
-  path = String(path).trim();
-
-  // Si path est déjà une URL absolue → on la garde
-  try {
-    const u = new URL(path);
-    return u.href;
-  } catch (e) {
-    // Sinon → on construit une URL relative correcte
-    return BASE_PATH + path.replace(/^\//, '');
-  }
-}
 
     if (path.startsWith('/')) return location.origin + encodeURI(path);
     const base = BASE_PATH || '';
