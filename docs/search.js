@@ -5,7 +5,7 @@ console.log("search.js chargé et exécuté");
 
   const INDEX_URL = 'index.json';
   const PAGE_SIZE = 12;
-  const BASE_PATH = ''; // si ton site est servi depuis /transport/, mettre '/transport/'
+  const BASE_PATH = '/transport/';
 
   const el = {
     q: document.getElementById('q'),
@@ -23,13 +23,22 @@ console.log("search.js chargé et exécuté");
   let results = [];
   let page = 1;
 
-  function safeResolveUrl(path) {
-    if (!path) return '';
-    path = String(path).trim();
-    try {
-      const u = new URL(path);
-      return u.href;
-    } catch (e) {}
+  const BASE_PATH = '/transport/';
+
+function safeResolveUrl(path) {
+  if (!path) return '';
+  path = String(path).trim();
+
+  // Si path est déjà une URL absolue → on la garde
+  try {
+    const u = new URL(path);
+    return u.href;
+  } catch (e) {
+    // Sinon → on construit une URL relative correcte
+    return BASE_PATH + path.replace(/^\//, '');
+  }
+}
+
     if (path.startsWith('/')) return location.origin + encodeURI(path);
     const base = BASE_PATH || '';
     return location.origin + (base.endsWith('/') || base === '' ? base : base + '/') + encodeURI(path);
