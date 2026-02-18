@@ -5,7 +5,7 @@ const glob = require('glob');
 const pdf = require('pdf-parse');
 const { JSDOM } = require('jsdom');
 
-const OUT = path.join(process.cwd(), 'index.json');
+const OUT = path.join(process.cwd(), 'docs', 'index.json');
 
 // Tes fichiers sont directement dans ~/Documents/transport
 // Donc on scanne le dossier courant
