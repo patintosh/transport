@@ -1,0 +1,23 @@
+name: Build index
+on:
+  push:
+    paths:
+      - 'pdfs/**'
+      - 'pages/**'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install poppler
+        run: sudo apt-get update && sudo apt-get install -y poppler-utils
+      - name: Generate index.json
+        run: |
+          node scripts/generate-index.js
+      - name: Commit index
+        run: |
+          git config user.name "CI"
+          git config user.email "ci@example.com"
+          git add index.json
+          git commit -m "Update index.json [ci skip]" || echo "no changes"
+          git push
