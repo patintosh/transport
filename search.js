@@ -5,19 +5,18 @@
 // ------------------------------
 // URL RESOLUTION
 // ------------------------------
-function safeResolveUrl(path) {
-  if (!path) return '';
-  path = String(path).trim();
-
+function normalizePath(path) {
   // Si path est déjà une URL absolue
   try {
     const u = new URL(path);
     return u.href;
   } catch (e) {
-    // Sinon → chemin relatif tel qu'il apparaît dans index.json
-    return '/' + path.replace(/^\//, '');
+    // Sinon → chemin relatif dans index.json
+    // On préfixe avec le chemin du site GitHub Pages
+    return window.location.origin + "/transport/" + path.replace(/^\//, '');
   }
 }
+
 
 // ------------------------------
 // ESCAPE HTML
