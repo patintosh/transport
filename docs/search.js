@@ -1,17 +1,20 @@
  // --- Début du fichier ---
-const BASE_PATH = '/transport/';
+
 
 function safeResolveUrl(path) {
   if (!path) return '';
   path = String(path).trim();
 
+  // Si path est déjà une URL absolue
   try {
     const u = new URL(path);
     return u.href;
   } catch (e) {
-    return BASE_PATH + path.replace(/^\//, '');
+    // Sinon, path est un chemin relatif tel qu'il apparaît dans index.json
+    return '/' + path.replace(/^\//, '');
   }
 }
+
 // --- Fin du bloc correct ---
 
 console.log("search.js chargé et exécuté");
