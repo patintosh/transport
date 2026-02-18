@@ -6,8 +6,8 @@ const pdf = require('pdf-parse');
 const { JSDOM } = require('jsdom');
 
 const OUT = path.join(process.cwd(), 'index.json');
-const PDF_DIR = path.join(process.cwd(), 'pdfs'); // adapte si nécessaire
-const HTML_DIR = path.join(process.cwd(), 'pages'); // adapte si nécessaire
+const PDF_DIR = process.cwd();   // le dossier courant = transport/
+const HTML_DIR = process.cwd();  // idem
 
 function safeIso(d) { return d ? new Date(d).toISOString() : null; }
 
