@@ -11,8 +11,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          path: transport
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -20,15 +18,12 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        working-directory: transport
         run: npm ci
 
       - name: Generate index.json
-        working-directory: transport
         run: npm run generate-index
 
       - name: Commit index.json
-        working-directory: transport
         run: |
           git config user.name "CI"
           git config user.email "ci@example.com"
