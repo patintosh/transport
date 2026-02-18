@@ -42,10 +42,36 @@ console.log("search.js chargé et exécuté");
   let results = [];
   let page = 1;
 
-    if (path.startsWith('/')) return location.origin + encodeURI(path);
-    const base = BASE_PATH || '';
-    return location.origin + (base.endsWith('/') || base === '' ? base : base + '/') + encodeURI(path);
+   // ------------------------------
+// URL RESOLUTION
+// ------------------------------
+function safeResolveUrl(path) {
+  if (!path) return '';
+  path = String(path).trim();
+
+  // Si path est déjà une URL absolue
+  try {
+    const u = new URL(path);
+    return u.href;
+  } catch (e) {
+    // Sinon → chemin relatif tel qu'il apparaît dans index.json
+    return '/' + path.replace(/^\//, '');
   }
+}
+
+// ------------------------------
+// ESCAPE HTML
+// ------------------------------
+function escapeHtml(s) {
+  return String(s || '').replace(/[&<>"']/g, m => ({
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '"':'&quot;',
+    "'":'&#39;'
+  }[m]));
+}
+
 
   function escapeHtml(s) {
     return String(s || '').replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
