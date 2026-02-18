@@ -5,7 +5,7 @@ console.log("search.js chargé et exécuté");
 
   const INDEX_URL = 'index.json';
   const PAGE_SIZE = 12;
-  const BASE_PATH = '/transport/';
+
 
   const el = {
     q: document.getElementById('q'),
