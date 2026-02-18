@@ -7,9 +7,9 @@ const { JSDOM } = require('jsdom');
 
 const OUT = path.join(process.cwd(), 'index.json');
 
-// IMPORTANT : tes fichiers sont dans transport/ directement
-const PDF_DIR = process.cwd();
-const HTML_DIR = process.cwd();
+// Tes fichiers sont directement dans transport/
+// Donc on scanne le dossier courant
+const ROOT = process.cwd();
 
 function safeIso(d) {
   if (!d) return null;
@@ -99,14 +99,16 @@ async function processHtml(filePath) {
 async function main() {
   const items = [];
 
-  const pdfFiles = glob.sync(path.join(PDF_DIR, '*.pdf'));
+  // PDF dans transport/
+  const pdfFiles = glob.sync(path.join(ROOT, '*.pdf'));
   for (const f of pdfFiles) {
     const it = await processPdf(f);
     items.push(it);
     console.log('PDF →', it.path);
   }
 
-  const htmlFiles = glob.sync(path.join(HTML_DIR, '*.html'));
+  // HTML dans transport/
+  const htmlFiles = glob.sync(path.join(ROOT, '*.html'));
   for (const f of htmlFiles) {
     const it = await processHtml(f);
     items.push(it);
