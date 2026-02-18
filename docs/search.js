@@ -164,9 +164,12 @@ console.log("search.js chargé et exécuté");
     } catch (e) { return null; }
   }
 function tryExtractDateFromPdfHead(headers) {
-  if (!headers || typeof headers.get !== 'function') {
-    return null;
-  }
+  if (!headers) return null;
+  const lm = headers.get('last-modified');
+  if (!lm) return null;
+  const d = new Date(lm);
+  return isNaN(d.getTime()) ? null : d;
+}
 
   const lastMod = headers.get('last-modified');
   if (!lastMod) return null;
@@ -192,14 +195,19 @@ function tryExtractDateFromPdfHead(headers) {
           const headResp = await fetch(url, { method: 'HEAD' });
 const d = tryExtractDateFromPdfHead(headResp.headers) || parseDateFromFilename(url);
 
-          if (d) it._dateObj = d;
-        }
-        // title from filename fallback
-        if (!it.title) {
-          const fname = (it.path || '').split('/').pop() || '';
-          it.title = decodeURIComponent(fname.replace(/[-_]/g, ' '));
-        }
-      }
+         if (!it._dateObj) {
+  try {
+    const headResp = await fetch(url, { method: 'HEAD' });
+    const d =
+      tryExtractDateFromPdfHead(headResp.headers) ||
+      parseDateFromFilename(url);
+    if (d) it._dateObj = d;
+  } catch (e) {
+    const d = parseDateFromFilename(url);
+    if (d) it._dateObj = d;
+  }
+}
+
     }
     const workers = [];
     for (let k = 0; k < Math.min(maxConcurrent, toProcess.length); k++) workers.push(worker());
