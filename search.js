@@ -1,158 +1,158 @@
-// -----------------------------
-// Helpers à placer en tête
-// -----------------------------
-window.normalizeForSearch = function(s){
-  return (s||'').toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-};
+// ============================================================
+//  SEARCH ENGINE FOR TRANSPORT DOCUMENTS
+// ============================================================
 
-const baseForIndex = (() => {
+// ------------------------------
+// URL RESOLUTION
+// ------------------------------
+function safeResolveUrl(path) {
+  if (!path) return '';
+  path = String(path).trim();
+
+  // Si path est déjà une URL absolue
   try {
-    return location.origin + location.pathname.replace(/\/[^/]*$/, '/');
-  } catch(e) {
-    return window.location.href.replace(/\/[^/]*$/, '/');
-  }
-})();
-
-function safeResolveUrl(path){
-  if(!path) return null;
-  try{
-    return new URL(path, baseForIndex).toString();
-  }catch(e){
-    try{
-      const parts = path.split('/').map(p => {
-        try { return encodeURIComponent(decodeURIComponent(p)).replace(/%2F/g, '/'); }
-        catch(_) { return encodeURIComponent(p).replace(/%2F/g, '/'); }
-      });
-      return new URL(parts.join('/'), baseForIndex).toString();
-    }catch(e2){
-      return baseForIndex + encodeURI(path);
-    }
+    const u = new URL(path);
+    return u.href;
+  } catch (e) {
+    // Sinon → chemin relatif tel qu'il apparaît dans index.json
+    return '/' + path.replace(/^\//, '');
   }
 }
 
-// -----------------------------
-// Chargement sécurisé de l'index
-// -----------------------------
-async function loadIndex(){
-  try{
-    // Pour tests, tu peux remplacer par l'URL complète :
-    // const resp = await fetch('https://patintosh.github.io/transport/index.json');
-    const resp = await fetch('index.json');
-    if(!resp.ok) throw new Error('HTTP ' + resp.status);
-    const text = await resp.text();
-    const idx = JSON.parse(text);
-    idx.forEach(item => {
-      try { item._resolvedUrl = safeResolveUrl(item.url || ''); }
-      catch(e){ item._resolvedUrl = null; }
-    });
-    window._searchIndex = idx;
-    console.log('index loaded, items:', idx.length);
-    return idx;
-  }catch(err){
-    console.error('Erreur lors du chargement de l index :', err && err.message ? err.message : err);
-    window._searchIndex = [];
-    return [];
-  }
+// ------------------------------
+// ESCAPE HTML
+// ------------------------------
+function escapeHtml(s) {
+  return String(s || '').replace(/[&<>"']/g, m => ({
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '"':'&quot;',
+    "'":'&#39;'
+  }[m]));
 }
 
-// -----------------------------
-// Fonctions de recherche exposées
-// -----------------------------
-window.searchIndex = function(query, index){
-  if(!query || !index || !Array.isArray(index)) return [];
-  const q = window.normalizeForSearch(query.trim());
-  if(!q) return [];
-  return index.filter(item => {
-    const title = window.normalizeForSearch(item.title || "");
-    const content = window.normalizeForSearch(item.content || "");
-    const url = window.normalizeForSearch(item.url || "");
-    const year = window.normalizeForSearch(item.year || "");
-    return title.includes(q) || content.includes(q) || url.includes(q) || year.includes(q);
-  });
-};
-
-window.performSearch = function(query){
-  const idx = window._searchIndex || [];
-  const results = window.searchIndex(query, idx);
-  if(typeof window.displayResults === 'function'){
-    window.displayResults(results);
-  } else {
-    // fallback d'affichage
-    const out = document.getElementById('results') || document.body;
-    if(results.length === 0){
-      out.innerHTML = '<p>Aucun résultat trouvé.</p>';
-    } else {
-      out.innerHTML = '';
-      results.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'result';
-        const url = item._resolvedUrl || item.url || '#';
-        div.innerHTML = `
-          <div class="result-title">${item.title || '—'}</div>
-          <div class="result-year">${item.year || '—'}</div>
-          <a href="${url}" target="_blank" rel="noopener noreferrer">📄 Ouvrir le document</a>
-        `;
-        out.appendChild(div);
-      });
-    }
-  }
-};
-
-// -----------------------------
-// Si tu as déjà une displayResults, garde-la ; sinon la fallback ci-dessus suffit.
-// -----------------------------
-function displayResults(results) {
-  // Si tu veux forcer l'utilisation de la fonction globale, décommente la ligne suivante :
-  // return window.performSearch === displayResults ? null : window.performSearch;
-  // (ici on laisse la fallback gérée dans performSearch)
+// ------------------------------
+// DATE EXTRACTION
+// ------------------------------
+function tryExtractDateFromPdfHead(headers) {
+  if (!headers) return null;
+  const lm = headers.get('last-modified');
+  if (!lm) return null;
+  const d = new Date(lm);
+  return isNaN(d.getTime()) ? null : d;
 }
 
-// -----------------------------
-// Initialisation DOM et interception du formulaire
-// -----------------------------
-document.addEventListener('DOMContentLoaded', async () => {
-  // Charge l'index (attend la fin pour garantir disponibilité)
-  const index = await loadIndex();
+function parseDateFromFilename(path) {
+  const m = String(path).match(/(\d{4})/);
+  if (!m) return null;
+  const d = new Date(Number(m[1]), 0, 1);
+  return isNaN(d.getTime()) ? null : d;
+}
 
-  // Sélecteurs : adapte si tes IDs diffèrent
-  const input = document.getElementById('searchBox') || document.querySelector('input[name="q"]');
-  const button = document.getElementById('searchButton') || document.querySelector('button[type="submit"]');
-  const form = document.querySelector('form#searchForm') || document.querySelector('form');
+// ------------------------------
+// GLOBALS
+// ------------------------------
+let index = [];
+let fuse = null;
+let results = [];
+let page = 1;
 
-  // Intercepter la soumission du formulaire pour éviter la navigation
-  if(form){
-    form.addEventListener('submit', e => {
-      e.preventDefault();
-      const q = input ? input.value : '';
-      window.performSearch(q);
-    });
-  }
+// ------------------------------
+// LOAD INDEX.JSON
+// ------------------------------
+async function loadIndex() {
+  const resp = await fetch('/index.json');
+  index = await resp.json();
 
-  // Clic sur le bouton
-  if(button){
-    button.addEventListener('click', e => {
-      e.preventDefault();
-      const q = input ? input.value : '';
-      window.performSearch(q);
-    });
-  }
+  // Prépare les champs internes
+  for (const it of index) {
+    const url = safeResolveUrl(it.path);
 
-  // Entrée clavier dans le champ
-  if(input){
-    input.addEventListener('keydown', e => {
-      if(e.key === 'Enter'){
-        e.preventDefault();
-        window.performSearch(input.value);
+    // Extraction date
+    if (!it._dateObj) {
+      try {
+        const headResp = await fetch(url, { method: 'HEAD' });
+        const d =
+          tryExtractDateFromPdfHead(headResp.headers) ||
+          parseDateFromFilename(url);
+        if (d) it._dateObj = d;
+      } catch (e) {
+        const d = parseDateFromFilename(url);
+        if (d) it._dateObj = d;
       }
-    });
+    }
+
+    // URL finale
+    it._url = url;
   }
 
-  // Expose un raccourci console pour tests rapides
-  window.performSearchConsole = function(q){
-    const res = window.searchIndex(q, window._searchIndex || []);
-    console.log('performSearchConsole results', res.length, res.slice(0,10));
-    return res;
-  };
+  // Fuse.js
+  fuse = new Fuse(index, {
+    keys: ['title', 'path'],
+    threshold: 0.3,
+    includeScore: true
+  });
+}
 
-  console.log('search.js initialisé');
+// ------------------------------
+// PERFORM SEARCH
+// ------------------------------
+function performSearch(q) {
+  if (!fuse) return [];
+
+  if (!q || !q.trim()) {
+    return index
+      .slice()
+      .sort((a, b) => (b._dateObj || 0) - (a._dateObj || 0));
+  }
+
+  const r = fuse.search(q.trim());
+  return r
+    .map(x => x.item)
+    .sort((a, b) => (b._dateObj || 0) - (a._dateObj || 0));
+}
+
+// ------------------------------
+// RENDER RESULTS
+// ------------------------------
+function renderResults(list) {
+  const container = document.getElementById('results');
+  if (!container) return;
+
+  container.innerHTML = list
+    .map(it => {
+      const date = it._dateObj
+        ? it._dateObj.getFullYear()
+        : '';
+      return `
+        <div class="result">
+          <a href="${escapeHtml(it._url)}" target="_blank">
+            ${escapeHtml(it.title)}
+          </a>
+          <span class="date">${date}</span>
+        </div>
+      `;
+    })
+    .join('');
+}
+
+// ------------------------------
+// INIT
+// ------------------------------
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadIndex();
+
+  const input = document.getElementById('search');
+  if (!input) return;
+
+  input.addEventListener('input', () => {
+    const q = input.value;
+    results = performSearch(q);
+    renderResults(results);
+  });
+
+  // Affiche tout au début
+  results = performSearch('');
+  renderResults(results);
 });
