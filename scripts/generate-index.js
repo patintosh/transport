@@ -7,7 +7,7 @@ const { JSDOM } = require('jsdom');
 
 const OUT = path.join(process.cwd(), 'index.json');
 
-// Tes fichiers sont directement dans transport/
+// Tes fichiers sont directement dans ~/Documents/transport
 // Donc on scanne le dossier courant
 const ROOT = process.cwd();
 
