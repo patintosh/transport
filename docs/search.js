@@ -1,25 +1,31 @@
 // ============================================================
 //  SEARCH ENGINE FOR TRANSPORT DOCUMENTS — VERSION STABLE 2026
-//  Updated: encode paths and robust URL resolution
+//  Updated for script located in docs/ — robust index resolution
 // ============================================================
 
 // ------------------------------
 // URL RESOLUTION AND ENCODING
 // ------------------------------
 function normalizePath(path) {
-  // If path already looks like an absolute URL, encode and return it
+  // If path is already an absolute URL, encode and return it
   try {
     const maybeUrl = new URL(path);
     return encodeURI(maybeUrl.href);
   } catch (e) {
-    // Not an absolute URL: build a full URL relative to the current site base
-    // Determine a sensible base: the directory of the current page (e.g., /transport/)
-    const pageBase = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/');
-    // Remove any leading slash from path to avoid double slashes
+    // Not an absolute URL: build a full URL relative to the site root or current page
+    // Determine a sensible base: prefer site root (e.g., /transport/) if present in pathname
+    const pathname = window.location.pathname; // e.g., /transport/docs/search.html
+    // Try to detect repo base like /transport/
+    const match = pathname.match(/^\/[^/]+\/?/);
+    const repoBase = match ? match[0] : '/';
+    // If the script lives in /transport/docs/, we want base to be /transport/
+    const siteBase = pathname.includes('/docs/') ? pathname.split('/docs/')[0] + '/' : repoBase;
+    // Remove leading slash from path to avoid double slashes
     const clean = String(path).replace(/^\//, '');
-    // Encode the path but preserve slashes between path segments
+    // Encode the path but preserve slashes
     const encoded = encodeURI(clean);
-    return pageBase + encoded;
+    // Build final URL
+    return window.location.origin + siteBase + encoded;
   }
 }
 
@@ -62,56 +68,43 @@ window.fuse = null;
 let results = [];
 
 // ------------------------------
-// LOAD INDEX.JSON
+// LOAD INDEX.JSON (robust for docs/ location)
 // ------------------------------
 async function loadIndex() {
-  // Try to fetch index.json relative to the current page first
-  let indexUrl = './index.json';
-  try {
-    const resp = await fetch(indexUrl);
-    if (!resp.ok) {
-      // fallback to /index.json or /docs/index.json if needed
-      const alt1 = '/index.json';
-      const alt2 = './docs/index.json';
-      const r1 = await fetch(alt1);
-      if (r1.ok) indexUrl = alt1;
-      else {
-        const r2 = await fetch(alt2);
-        if (r2.ok) indexUrl = alt2;
-        else {
-          // final fallback: try /transport/index.json (GitHub Pages user repo)
-          const r3 = await fetch('/transport/index.json');
-          if (r3.ok) indexUrl = '/transport/index.json';
-          else {
-            // if none found, throw to be handled by caller
-            throw new Error('index.json not found');
-          }
-        }
+  // Candidate locations to try, in order. Because this script runs from docs/,
+  // try ./index.json, ../index.json, /index.json, /transport/index.json
+  const candidates = [
+    './index.json',
+    '../index.json',
+    '/index.json',
+    '/transport/index.json',
+    './docs/index.json'
+  ];
+
+  let indexUrl = null;
+  for (const c of candidates) {
+    try {
+      const r = await fetch(c, { method: 'GET', cache: 'no-store' });
+      if (r.ok) {
+        indexUrl = c;
+        break;
       }
+    } catch (e) {
+      // ignore and try next
     }
-  } catch (e) {
-    // try a few common fallbacks synchronously
-    const fallbacks = ['/index.json', './docs/index.json', '/transport/index.json'];
-    let found = false;
-    for (const f of fallbacks) {
-      try {
-        const r = await fetch(f);
-        if (r.ok) {
-          indexUrl = f;
-          found = true;
-          break;
-        }
-      } catch (err) { /* ignore */ }
-    }
-    if (!found) throw e;
   }
 
-  const indexResp = await fetch(indexUrl);
+  if (!indexUrl) {
+    throw new Error('index.json introuvable aux emplacements attendus.');
+  }
+
+  const indexResp = await fetch(indexUrl, { cache: 'no-store' });
+  if (!indexResp.ok) throw new Error('Impossible de charger index.json: ' + indexResp.status);
   window.indexData = await indexResp.json();
 
   // Enrich entries with resolved, encoded URLs and try to get dates
   for (const it of window.indexData) {
-    // Use the raw path from the index but build a normalized URL
+    // Build normalized URL from the raw path in the index
     const url = normalizePath(it.path);
 
     if (!it._dateObj) {
@@ -138,9 +131,8 @@ async function loadIndex() {
     includeScore: true
   };
 
-  // Ensure Fuse is available
   if (typeof Fuse === 'undefined') {
-    console.warn('Fuse.js not found. Search will not be fuzzy.');
+    console.warn('Fuse.js non trouvé — utilisation d’un fallback de recherche simple.');
     window.fuse = null;
   } else {
     window.fuse = new Fuse(window.indexData, fuseOptions);
@@ -160,7 +152,6 @@ function performSearch(q) {
   }
 
   if (!window.fuse) {
-    // simple fallback substring search
     const term = q.trim().toLowerCase();
     return window.indexData
       .filter(it => (it.title || '').toLowerCase().includes(term) || (it.path || '').toLowerCase().includes(term))
@@ -183,7 +174,6 @@ function renderResults(list) {
   container.innerHTML = list
     .map(it => {
       const date = it._dateObj ? it._dateObj.getFullYear() : '';
-      // Use the already encoded _url; escape title for safety
       return `
         <div class="result">
           <a href="${escapeHtml(it._url)}" target="_blank" rel="noopener noreferrer">
@@ -203,7 +193,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
     await loadIndex();
   } catch (e) {
-    console.error('Failed to load index.json', e);
+    console.error('Échec du chargement de index.json', e);
     const container = document.getElementById('results');
     if (container) container.innerHTML = '<div class="error">Index introuvable. Vérifie index.json.</div>';
     return;
