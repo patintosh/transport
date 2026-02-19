@@ -83,7 +83,8 @@ async function loadIndex() {
   }
 
   // Fuse.js
-  fuse = new Fuse(index, {
+  window.fuse = new Fuse(window.indexData, fuseOptions);
+
     keys: ['title', 'path'],
     threshold: 0.3,
     includeScore: true
