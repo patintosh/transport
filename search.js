@@ -62,10 +62,9 @@ async function loadIndex() {
   const resp = await fetch('./index.json');
   window.indexData = await resp.json();
 
-  for (const it of index) {
+  for (const it of window.indexData) {
     const url = normalizePath(it.path);
 
-    // Extraction date
     if (!it._dateObj) {
       try {
         const headResp = await fetch(url, { method: 'HEAD' });
@@ -82,8 +81,9 @@ async function loadIndex() {
     it._url = url;
   }
 
-  // Fuse.js
+  // Initialisation de Fuse APRÈS le chargement
   window.fuse = new Fuse(window.indexData, fuseOptions);
+}
 
     keys: ['title', 'path'],
     threshold: 0.3,
