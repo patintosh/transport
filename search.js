@@ -60,7 +60,7 @@ let results = [];
 // ------------------------------
 async function loadIndex() {
   const resp = await fetch('./index.json');
-  index = await resp.json();
+  window.indexData = await resp.json();
 
   for (const it of index) {
     const url = normalizePath(it.path);
