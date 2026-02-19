@@ -1,5 +1,5 @@
 // ============================================================
-//  SEARCH ENGINE FOR TRANSPORT DOCUMENTS
+//  SEARCH ENGINE FOR TRANSPORT DOCUMENTS — VERSION STABLE 2026
 // ============================================================
 
 // ------------------------------
@@ -12,11 +12,10 @@ function normalizePath(path) {
     return u.href;
   } catch (e) {
     // Sinon → chemin relatif dans index.json
-    // On préfixe avec le chemin du site GitHub Pages
-  return window.location.origin + "/transport/" + encodeURIComponent(path.replace(/^\//, ''));
+    const clean = path.replace(/^\//, '');
+    return window.location.origin + "/transport/" + clean;
   }
 }
-
 
 // ------------------------------
 // ESCAPE HTML
@@ -55,7 +54,6 @@ function parseDateFromFilename(path) {
 let index = [];
 let fuse = null;
 let results = [];
-let page = 1;
 
 // ------------------------------
 // LOAD INDEX.JSON
@@ -64,9 +62,8 @@ async function loadIndex() {
   const resp = await fetch('./index.json');
   index = await resp.json();
 
-  // Prépare les champs internes
   for (const it of index) {
-   const url = normalizePath(it.path);
+    const url = normalizePath(it.path);
 
     // Extraction date
     if (!it._dateObj) {
@@ -77,12 +74,11 @@ async function loadIndex() {
           parseDateFromFilename(url);
         if (d) it._dateObj = d;
       } catch (e) {
-        const d = parseDateFromFilename(url);
-        if (d) it._dateObj = d;
+        const fallback = parseDateFromFilename(url);
+        if (fallback) it._dateObj = fallback;
       }
     }
 
-    // URL finale
     it._url = url;
   }
 
@@ -121,9 +117,7 @@ function renderResults(list) {
 
   container.innerHTML = list
     .map(it => {
-      const date = it._dateObj
-        ? it._dateObj.getFullYear()
-        : '';
+      const date = it._dateObj ? it._dateObj.getFullYear() : '';
       return `
         <div class="result">
           <a href="${escapeHtml(it._url)}" target="_blank">
