@@ -6,12 +6,10 @@
 // URL RESOLUTION
 // ------------------------------
 function normalizePath(path) {
-  // Si path est déjà une URL absolue
   try {
     const u = new URL(path);
     return u.href;
   } catch (e) {
-    // Sinon → chemin relatif dans index.json
     const clean = path.replace(/^\//, '');
     return window.location.origin + "/transport/" + clean;
   }
@@ -51,8 +49,8 @@ function parseDateFromFilename(path) {
 // ------------------------------
 // GLOBALS
 // ------------------------------
-let index = [];
-let fuse = null;
+window.indexData = [];
+window.fuse = null;
 let results = [];
 
 // ------------------------------
@@ -60,12 +58,11 @@ let results = [];
 // ------------------------------
 async function loadIndex() {
   const resp = await fetch('./index.json');
-  index = await resp.json();
+  window.indexData = await resp.json();
 
-  for (const it of index) {
+  for (const it of window.indexData) {
     const url = normalizePath(it.path);
 
-    // Extraction date
     if (!it._dateObj) {
       try {
         const headResp = await fetch(url, { method: 'HEAD' });
@@ -82,27 +79,28 @@ async function loadIndex() {
     it._url = url;
   }
 
-  // Fuse.js
-  fuse = new Fuse(index, {
+  const fuseOptions = {
     keys: ['title', 'path'],
     threshold: 0.3,
     includeScore: true
-  });
+  };
+
+  window.fuse = new Fuse(window.indexData, fuseOptions);
 }
 
 // ------------------------------
-// PERFORM SEARCH
+// PERFORM SEARCH (UNIQUE VERSION)
 // ------------------------------
 function performSearch(q) {
-  if (!fuse) return [];
+  if (!window.fuse) return [];
 
   if (!q || !q.trim()) {
-    return index
+    return window.indexData
       .slice()
       .sort((a, b) => (b._dateObj || 0) - (a._dateObj || 0));
   }
 
-  const r = fuse.search(q.trim());
+  const r = window.fuse.search(q.trim());
   return r
     .map(x => x.item)
     .sort((a, b) => (b._dateObj || 0) - (a._dateObj || 0));
@@ -145,7 +143,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderResults(results);
   });
 
-  // Affiche tout au début
   results = performSearch('');
   renderResults(results);
 });
