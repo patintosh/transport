@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Bibliothèque numérique de Patrice Salini</title>
+
+  <!-- SEO / Social -->
+  <meta name="description" content="Bibliothèque numérique de Patrice Salini — articles, documents et études publiques sur les transports et la socioéconomie.">
+  <meta name="keywords" content="transports, socioéconomie, études, articles, Patrice Salini, Penser Transport">
+  <meta name="author" content="Patrice Salini">
+  <link rel="canonical" href="https://patintosh.github.io/transport/">
+  <meta property="og:title" content="Bibliothèque numérique de Patrice Salini">
+  <meta property="og:description" content="Articles, documents et études publiques sur les transports et la socioéconomie.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://patintosh.github.io/transport/">
+  <meta property="og:site_name" content="Bibliothèque numérique de Patrice Salini">
+  <meta name="twitter:card" content="summary">
+
+  <!-- Stylesheet (place styles.css at the same level as this index.html) -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <h1 class="site-title">Bibliothèque numérique de Patrice Salini</h1>
+      <p class="site-subtitle">articles, documents, études publiques sur les transports et la socioéconomie</p>
+
+      <p class="site-link">
+        <a href="https://pensertransports.simdif.com" target="_blank" rel="noopener noreferrer">Penser Transport — cliquer pour aller sur le site partagé avec Christian Reynaud</a>
+      </p>
+
+      <!-- Dernier article (sera rempli par search.js) -->
+      <div id="latest-article" class="latest-article" aria-live="polite"></div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section id="search-section" aria-labelledby="search-title" class="search-section">
+      <h2 id="search-title" class="visually-hidden">Recherche</h2>
+
+      <form id="search-form" class="search-form" role="search" onsubmit="return false;">
+        <label for="q" class="label">Rechercher</label>
+        <div class="search-row">
+          <input id="q" name="q" type="search" placeholder="Tapez un mot‑clé, ex : veolia" autocomplete="off" />
+          <button id="search-btn" type="button" class="btn-primary">Rechercher</button>
+        </div>
+        <p class="hint">Appuyez sur Entrée pour lancer la recherche</p>
+      </form>
+
+      <div id="results-info" class="results-info" aria-live="polite"></div>
+
+      <ul id="results" class="results-grid" aria-live="polite"></ul>
+
+      <nav id="pager" class="pager" aria-label="Pagination" hidden>
+        <button id="prev" class="btn-ghost">Précédent</button>
+        <span id="page-info" class="page-info"></span>
+        <button id="next" class="btn-ghost">Suivant</button>
+      </nav>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <small>© Patrice Salini - reproduction libre</small>
+      <div class="contact">Contact : <a href="mailto:patrice.salini@wanadoo.fr">patrice.salini@wanadoo.fr</a></div>
+    </div>
+  </footer>
+
+  <!-- Fuse.js pour recherche floue (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.min.js" defer></script>
+
+  <!-- Script principal (place search.js at the same level as this index.html) -->
+  <script src="search.js" defer></script>
+</body>
+</html>
