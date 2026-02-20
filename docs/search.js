@@ -62,14 +62,16 @@ let results = [];
 // LOAD INDEX.JSON — SINGLE SOURCE OF TRUTH
 // ------------------------------
 async function loadIndex() {
-  const indexUrl = '/transport/index.json';   // ← UN SEUL INDEX
+  const indexUrl = '../index.json';  // ← LE BON CHEMIN
 
   const indexResp = await fetch(indexUrl, { cache: 'no-store' });
-  if (!indexResp.ok) throw new Error('Impossible de charger index.json: ' + indexResp.status);
+  if (!indexResp.ok) {
+    throw new Error('Impossible de charger index.json: ' + indexResp.status);
+  }
 
   window.indexData = await indexResp.json();
 
-  // Enrich entries
+  // enrichissement identique…
   for (const it of window.indexData) {
     const url = normalizePath(it.path);
 
