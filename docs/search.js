@@ -1,31 +1,22 @@
 // ============================================================
 //  SEARCH ENGINE FOR TRANSPORT DOCUMENTS — VERSION STABLE 2026
-//  Updated for script located in docs/ — robust index resolution
+//  Simplified: loads ONLY /transport/index.json (latest version)
 // ============================================================
 
 // ------------------------------
 // URL RESOLUTION AND ENCODING
 // ------------------------------
 function normalizePath(path) {
-  // If path is already an absolute URL, encode and return it
   try {
     const maybeUrl = new URL(path);
     return encodeURI(maybeUrl.href);
   } catch (e) {
-    // Not an absolute URL: build a full URL relative to the site root or current page
-    // Determine a sensible base: prefer site root (e.g., /transport/) if present in pathname
-    const pathname = window.location.pathname; // e.g., /transport/docs/search.html
-    // Try to detect repo base like /transport/
+    const pathname = window.location.pathname;
     const match = pathname.match(/^\/[^/]+\/?/);
     const repoBase = match ? match[0] : '/';
-    // If the script lives in /transport/docs/, we want base to be /transport/
-    const siteBase = pathname.includes('/docs/') ? pathname.split('/docs/')[0] + '/' : repoBase;
-    // Remove leading slash from path to avoid double slashes
     const clean = String(path).replace(/^\//, '');
-    // Encode the path but preserve slashes
     const encoded = encodeURI(clean);
-    // Build final URL
-    return window.location.origin + siteBase + encoded;
+    return window.location.origin + repoBase + encoded;
   }
 }
 
@@ -68,55 +59,28 @@ window.fuse = null;
 let results = [];
 
 // ------------------------------
-// LOAD INDEX.JSON (robust for docs/ location)
+// LOAD INDEX.JSON — SINGLE SOURCE OF TRUTH
 // ------------------------------
 async function loadIndex() {
-  // Candidate locations to try, in order. Because this script runs from docs/,
-  // try ./index.json, ../index.json, /index.json, /transport/index.json
-  const candidates = [
-    './index.json',
-    '../index.json',
-    '/index.json',
-    '/transport/index.json',
-    './docs/index.json'
-  ];
-
-  let indexUrl = null;
-  for (const c of candidates) {
-    try {
-      const r = await fetch(c, { method: 'GET', cache: 'no-store' });
-      if (r.ok) {
-        indexUrl = c;
-        break;
-      }
-    } catch (e) {
-      // ignore and try next
-    }
-  }
-
-  if (!indexUrl) {
-    throw new Error('index.json introuvable aux emplacements attendus.');
-  }
+  const indexUrl = '/transport/index.json';   // ← UN SEUL INDEX
 
   const indexResp = await fetch(indexUrl, { cache: 'no-store' });
   if (!indexResp.ok) throw new Error('Impossible de charger index.json: ' + indexResp.status);
+
   window.indexData = await indexResp.json();
 
-  // Enrich entries with resolved, encoded URLs and try to get dates
+  // Enrich entries
   for (const it of window.indexData) {
-    // Build normalized URL from the raw path in the index
     const url = normalizePath(it.path);
 
     if (!it._dateObj) {
       try {
-        // HEAD request to get last-modified if available
         const headResp = await fetch(url, { method: 'HEAD' });
         const d =
           tryExtractDateFromPdfHead(headResp.headers) ||
           parseDateFromFilename(it.path);
         if (d) it._dateObj = d;
       } catch (e) {
-        // fallback to parsing filename
         const fallback = parseDateFromFilename(it.path);
         if (fallback) it._dateObj = fallback;
       }
@@ -131,12 +95,9 @@ async function loadIndex() {
     includeScore: true
   };
 
-  if (typeof Fuse === 'undefined') {
-    console.warn('Fuse.js non trouvé — utilisation d’un fallback de recherche simple.');
-    window.fuse = null;
-  } else {
-    window.fuse = new Fuse(window.indexData, fuseOptions);
-  }
+  window.fuse = typeof Fuse === 'undefined'
+    ? null
+    : new Fuse(window.indexData, fuseOptions);
 }
 
 // ------------------------------
@@ -208,7 +169,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderResults(results);
   });
 
-  // initial render
   results = performSearch('');
   renderResults(results);
 });
