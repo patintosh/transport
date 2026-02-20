@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Résultats de recherche</title>
 
-    <!-- Chemins corrects : on pointe vers /docs/ -->
+    <!-- Scripts chargés proprement -->
     <script src="fuse.min.js"></script>
     <script src="search.js" defer></script>
 
@@ -18,7 +18,7 @@
             font-size: 28px;
             margin-bottom: 10px;
         }
-        #searchBox {
+        #search {
             width: 60%;
             padding: 10px;
             font-size: 16px;
@@ -63,7 +63,7 @@
 
 <h1>Résultats</h1>
 
-<input id="searchBox" type="text" placeholder="Tapez votre recherche…">
+<input id="search" type="text" placeholder="Tapez votre recherche…">
 <button id="searchButton">Rechercher</button>
 
 <div id="results"></div>
