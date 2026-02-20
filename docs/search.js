@@ -1,6 +1,6 @@
 // ============================================================
 //  SEARCH ENGINE FOR TRANSPORT DOCUMENTS — VERSION STABLE 2026
-//  Simplified: loads ONLY /transport/index.json (latest version)
+//  Loads index.json located in /transport/, from docs/search.html
 // ============================================================
 
 // ------------------------------
@@ -62,7 +62,12 @@ let results = [];
 // LOAD INDEX.JSON — SINGLE SOURCE OF TRUTH
 // ------------------------------
 async function loadIndex() {
- const indexUrl = './index.json';  // ← LE BON CHEMIN
+
+  // *** CECI EST LE BON CHEMIN ***
+  // search.html est dans /transport/docs/
+  // index.json est dans /transport/
+  // donc ../index.json est EXACTEMENT correct
+  const indexUrl = '../index.json';
 
   const indexResp = await fetch(indexUrl, { cache: 'no-store' });
   if (!indexResp.ok) {
