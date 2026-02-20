@@ -62,7 +62,7 @@ let results = [];
 // LOAD INDEX.JSON — SINGLE SOURCE OF TRUTH
 // ------------------------------
 async function loadIndex() {
-  const indexUrl = '../index.json';  // ← LE BON CHEMIN
+ const indexUrl = './index.json';  // ← LE BON CHEMIN
 
   const indexResp = await fetch(indexUrl, { cache: 'no-store' });
   if (!indexResp.ok) {
