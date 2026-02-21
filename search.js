@@ -167,7 +167,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
-  const input = document.getElementById('search');
+  const input = document.getElementById('q');
   if (!input) return;
 
   input.addEventListener('input', () => {
