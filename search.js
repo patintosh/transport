@@ -63,11 +63,7 @@ let results = [];
 // ------------------------------
 async function loadIndex() {
 
-  // *** CECI EST LE BON CHEMIN ***
-  // search.html est dans /transport
-  // index.json est dans /transport
-  // donc ../index.json est EXACTEMENT correct
-const indexUrl = '/transport/index.json';
+  const indexUrl = '/transport/index.json';
 
   const indexResp = await fetch(indexUrl, { cache: 'no-store' });
   if (!indexResp.ok) {
@@ -76,7 +72,6 @@ const indexUrl = '/transport/index.json';
 
   window.indexData = await indexResp.json();
 
-  // enrichissement identique…
   for (const it of window.indexData) {
     const url = normalizePath(it.path);
 
@@ -170,12 +165,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   const input = document.getElementById('q');
   if (!input) return;
 
+  // Recherche en temps réel
   input.addEventListener('input', () => {
     const q = input.value;
     results = performSearch(q);
     renderResults(results);
   });
 
+  // Recherche via le bouton
+  const btn = document.getElementById('search-btn');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      const q = input.value;
+      results = performSearch(q);
+      renderResults(results);
+    });
+  }
+
+  // Affichage initial
   results = performSearch('');
   renderResults(results);
 });
