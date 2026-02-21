@@ -1,5 +1,10 @@
 // ============================================================
 console.log("search.js chargé !");
+document.addEventListener('DOMContentLoaded', () => {
+  console.log("DOM prêt, initialisation du moteur de recherche…");
+  // … ton code existant
+});
+
 
 //  SEARCH ENGINE FOR TRANSPORT DOCUMENTS — VERSION STABLE 2026
 //  Loads index.json located in /transport/, from /search.html
