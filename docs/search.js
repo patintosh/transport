@@ -67,7 +67,7 @@ async function loadIndex() {
   // search.html est dans /transport/docs/
   // index.json est dans /transport/
   // donc ../index.json est EXACTEMENT correct
-  const indexUrl = '../index.json';
+ const indexUrl = 'index.json';
 
   const indexResp = await fetch(indexUrl, { cache: 'no-store' });
   if (!indexResp.ok) {
