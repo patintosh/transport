@@ -1,14 +1,9 @@
 // ============================================================
-console.log("search.js chargé !");
-document.addEventListener('DOMContentLoaded', () => {
-  console.log("DOM prêt, initialisation du moteur de recherche…");
-  // … ton code existant
-});
-
-
-//  SEARCH ENGINE FOR TRANSPORT DOCUMENTS — VERSION STABLE 2026
-//  Loads index.json located in /transport/, from /search.html
+//  SEARCH ENGINE FOR TRANSPORT DOCUMENTS — VERSION STABLE 21 FEV 2026
 // ============================================================
+
+// --- TRACING DE DÉMARRAGE ---
+console.log("search.js chargé !");
 
 // ------------------------------
 // URL RESOLUTION AND ENCODING
@@ -66,18 +61,18 @@ window.fuse = null;
 let results = [];
 
 // ------------------------------
-// LOAD INDEX.JSON — SINGLE SOURCE OF TRUTH
+// LOAD INDEX.JSON
 // ------------------------------
 async function loadIndex() {
 
   const indexUrl = '/transport/index.json';
 
   console.log("Chargement index.json…", indexUrl);
-const indexResp = await fetch(indexUrl, { cache: 'no-store' });
-console.log("Réponse index.json :", indexResp.status);
+  const indexResp = await fetch(indexUrl, { cache: 'no-store' });
+  console.log("Réponse index.json :", indexResp.status);
 
-window.indexData = await indexResp.json();
-console.log("indexData chargé :", Array.isArray(window.indexData) ? window.indexData.length : "non-tableau");
+  window.indexData = await indexResp.json();
+  console.log("indexData chargé :", Array.isArray(window.indexData) ? window.indexData.length : "non-tableau");
 
   for (const it of window.indexData) {
     const url = normalizePath(it.path);
@@ -160,6 +155,12 @@ function renderResults(list) {
 // INIT
 // ------------------------------
 document.addEventListener('DOMContentLoaded', async () => {
+
+  console.log("DOM prêt, initialisation du moteur de recherche…");
+
+  const input = document.getElementById('q');
+  const btn = document.getElementById('search-btn');
+
   try {
     await loadIndex();
   } catch (e) {
@@ -170,33 +171,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function runSearch() {
-  const q = document.getElementById('q').value.trim();
-  console.log("Recherche lancée avec la requête :", q);
+    const q = input.value.trim();
+    console.log("Recherche lancée avec la requête :", q);
 
-  if (!window.indexData || !window.indexData.length) {
-    console.log("Pas de données d’index disponibles.");
-    return;
-  }
+    if (!window.indexData || !window.indexData.length) {
+      console.log("Pas de données d’index disponibles.");
+      return;
+    }
 
-  // … suite de la recherche
-}
-
-  // Recherche en temps réel
-  input.addEventListener('input', () => {
-    const q = input.value;
     results = performSearch(q);
     renderResults(results);
-  });
+  }
+
+  // Recherche en temps réel
+  input.addEventListener('input', runSearch);
 
   // Recherche via le bouton
-  const btn = document.getElementById('search-btn');
-  if (btn) {
-    btn.addEventListener('click', () => {
-      const q = input.value;
-      results = performSearch(q);
-      renderResults(results);
-    });
-  }
+  if (btn) btn.addEventListener('click', runSearch);
 
   // Affichage initial
   results = performSearch('');
