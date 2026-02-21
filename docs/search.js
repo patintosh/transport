@@ -65,7 +65,7 @@ async function loadIndex() {
 
   // *** CECI EST LE BON CHEMIN ***
   // search.html est dans /transport/docs/
-  // index.json est dans /transport/
+  // index.json est dans /transport/docs
   // donc ../index.json est EXACTEMENT correct
  const indexUrl = 'index.json';
 
