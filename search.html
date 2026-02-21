@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <title>Résultats de recherche</title>
 
-    <!-- Scripts chargés proprement -->
+    <!-- Scripts -->
     <script src="fuse.min.js"></script>
     <script src="search.js" defer></script>
 
@@ -18,7 +18,7 @@
             font-size: 28px;
             margin-bottom: 10px;
         }
-        #search {
+        #q {
             width: 60%;
             padding: 10px;
             font-size: 16px;
@@ -26,7 +26,7 @@
             border-radius: 4px;
             outline: none;
         }
-        #searchButton {
+        #search-btn {
             padding: 10px 18px;
             font-size: 16px;
             margin-left: 8px;
@@ -36,7 +36,7 @@
             border-radius: 4px;
             cursor: pointer;
         }
-        #searchButton:hover {
+        #search-btn:hover {
             background-color: #005fa3;
         }
         .result {
@@ -63,8 +63,8 @@
 
 <h1>Résultats</h1>
 
-<input id="q" …> type="text" placeholder="Tapez votre recherche ¦">
-<button id="searchButton">Rechercher</button>
+<input id="q" type="text" placeholder="Tapez votre recherche">
+<button id="search-btn">Rechercher</button>
 
 <div id="results"></div>
 
