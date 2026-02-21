@@ -1,4 +1,6 @@
 // ============================================================
+console.log("search.js chargé !");
+
 //  SEARCH ENGINE FOR TRANSPORT DOCUMENTS — VERSION STABLE 2026
 //  Loads index.json located in /transport/, from /search.html
 // ============================================================
