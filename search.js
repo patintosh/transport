@@ -72,12 +72,12 @@ async function loadIndex() {
 
   const indexUrl = '/transport/index.json';
 
-  const indexResp = await fetch(indexUrl, { cache: 'no-store' });
-  if (!indexResp.ok) {
-    throw new Error('Impossible de charger index.json: ' + indexResp.status);
-  }
+  console.log("Chargement index.json…", indexUrl);
+const indexResp = await fetch(indexUrl, { cache: 'no-store' });
+console.log("Réponse index.json :", indexResp.status);
 
-  window.indexData = await indexResp.json();
+window.indexData = await indexResp.json();
+console.log("indexData chargé :", Array.isArray(window.indexData) ? window.indexData.length : "non-tableau");
 
   for (const it of window.indexData) {
     const url = normalizePath(it.path);
