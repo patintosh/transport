@@ -6,8 +6,8 @@ from datetime import datetime
 from PyPDF2 import PdfReader
 
 ROOT = "."
-HTML_DIR = "docs"
-PDF_DIR = "docs"
+HTML_DIR = "."
+PDF_DIR = "."
 
 OUTPUT = "index.json"
 
@@ -67,27 +67,17 @@ def main():
     entries = []
 
     # HTML
-       # Parcours des PDF
-    for fname in os.listdir(PDF_DIR):
-        if fname.lower().endswith(".pdf"):
-            path = f"{PDF_DIR}/{fname}"
+    for fname in os.listdir(HTML_DIR):
+        if fname.lower().endswith(".html"):
+            path = fname
             fullpath = os.path.abspath(path)
-            title, snippet = extract_pdf_info(fullpath)
-            if title != "PDF illisible":
-                entries.append({
-                    "type": "pdf",
-                    "path": path,
-                    "title": title,
-                    "snippet": snippet
-                })
-
-
+            entries.append(build_entry(path, fullpath, "html"))
 
     # PDF
     for fname in os.listdir(PDF_DIR):
-        if fname.endswith(".pdf"):
-            path = f"{PDF_DIR}/{fname}"
-            fullpath = os.path.join(ROOT, path)
+        if fname.lower().endswith(".pdf"):
+            path = fname
+            fullpath = os.path.abspath(path)
             entries.append(build_entry(path, fullpath, "pdf"))
 
     # Sauvegarde
