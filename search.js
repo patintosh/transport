@@ -1,9 +1,6 @@
 // ============================================================
-//  SEARCH ENGINE FOR TRANSPORT DOCUMENTS — VERSION STABLE 21 FEV 2026
+//  SEARCH ENGINE FOR TRANSPORT DOCUMENTS — VERSION STABLE 2026
 // ============================================================
-
-// --- TRACING DE DÉMARRAGE ---
-console.log("search.js chargé !");
 
 // ------------------------------
 // URL RESOLUTION AND ENCODING
@@ -65,15 +62,17 @@ let results = [];
 // ------------------------------
 async function loadIndex() {
 
+  // Chemin ABSOLU, toujours correct sur GitHub Pages
   const indexUrl = '/transport/index.json';
 
-  console.log("Chargement index.json…", indexUrl);
   const indexResp = await fetch(indexUrl, { cache: 'no-store' });
-  console.log("Réponse index.json :", indexResp.status);
+  if (!indexResp.ok) {
+    throw new Error('Impossible de charger index.json: ' + indexResp.status);
+  }
 
   window.indexData = await indexResp.json();
-  console.log("indexData chargé :", Array.isArray(window.indexData) ? window.indexData.length : "non-tableau");
 
+  // enrichissement
   for (const it of window.indexData) {
     const url = normalizePath(it.path);
 
@@ -155,12 +154,6 @@ function renderResults(list) {
 // INIT
 // ------------------------------
 document.addEventListener('DOMContentLoaded', async () => {
-
-  console.log("DOM prêt, initialisation du moteur de recherche…");
-
-  const input = document.getElementById('q');
-  const btn = document.getElementById('search-btn');
-
   try {
     await loadIndex();
   } catch (e) {
@@ -170,27 +163,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
-  function runSearch() {
-  const q = input.value.trim();
-  console.log("Recherche lancée avec la requête :", q);
+  // *** CORRECTION CRITIQUE ***
+  // Sur index.html, l'input s'appelle "q"
+  // Sur search.html, l'input s'appelle "search"
+  const input = document.getElementById('q') || document.getElementById('search');
+  if (!input) return;
 
-  if (!window.indexData || !window.indexData.length) {
-    console.log("Pas de données d’index disponibles.");
-    return;
+  // Recherche en tapant
+  input.addEventListener('input', () => {
+    const q = input.value;
+    results = performSearch(q);
+    renderResults(results);
+  });
+
+  // *** CORRECTION : bouton Rechercher ***
+  const btn = document.getElementById('search-btn');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      const q = input.value;
+      results = performSearch(q);
+      renderResults(results);
+    });
   }
 
-  results = performSearch(q);
-  renderResults(results);
-}
-
-
-  // Recherche en temps réel
-  input.addEventListener('input', runSearch);
-
-  // Recherche via le bouton
-  if (btn) btn.addEventListener('click', runSearch);
-
-  // Affichage initial
+  // Résultats initiaux
   results = performSearch('');
   renderResults(results);
 });
