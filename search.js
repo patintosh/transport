@@ -171,17 +171,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function runSearch() {
-    const q = input.value.trim();
-    console.log("Recherche lancée avec la requête :", q);
+  const q = input.value.trim();
+  console.log("Recherche lancée avec la requête :", q);
 
-    if (!window.indexData || !window.indexData.length) {
-      console.log("Pas de données d’index disponibles.");
-      return;
-    }
-
-    results = performSearch(q);
-    renderResults(results);
+  if (!window.indexData || !window.indexData.length) {
+    console.log("Pas de données d’index disponibles.");
+    return;
   }
+
+  results = performSearch(q);
+  renderResults(results);
+}
+
 
   // Recherche en temps réel
   input.addEventListener('input', runSearch);
