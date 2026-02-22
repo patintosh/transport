@@ -1,5 +1,5 @@
 // ============================================================
-//  SEARCH ENGINE FOR TRANSPORT DOCUMENTS — VERSION 22 fev STABLE 2026
+//  SEARCH ENGINE FOR TRANSPORT DOCUMENTS — VERSION STABLE 2026
 // ============================================================
 
 // ------------------------------
@@ -35,14 +35,6 @@ function escapeHtml(s) {
 // ------------------------------
 // DATE EXTRACTION
 // ------------------------------
-function tryExtractDateFromPdfHead(headers) {
-  if (!headers) return null;
-  const lm = headers.get('last-modified');
-  if (!lm) return null;
-  const d = new Date(lm);
-  return isNaN(d.getTime()) ? null : d;
-}
-
 function parseDateFromFilename(path) {
   const m = String(path).match(/(\d{4})/);
   if (!m) return null;
@@ -72,22 +64,12 @@ async function loadIndex() {
 
   window.indexData = await indexResp.json();
 
-  // enrichissement
+  // enrichissement (SANS HEAD → plus de CORS)
   for (const it of window.indexData) {
     const url = normalizePath(it.path);
 
-    if (!it._dateObj) {
-      try {
-        const headResp = await fetch(url, { method: 'HEAD' });
-        const d =
-          tryExtractDateFromPdfHead(headResp.headers) ||
-          parseDateFromFilename(it.path);
-        if (d) it._dateObj = d;
-      } catch (e) {
-        const fallback = parseDateFromFilename(it.path);
-        if (fallback) it._dateObj = fallback;
-      }
-    }
+    const d = parseDateFromFilename(it.path);
+    if (d) it._dateObj = d;
 
     it._url = url;
   }
@@ -163,9 +145,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
-  // *** CORRECTION CRITIQUE ***
-  // Sur index.html, l'input s'appelle "q"
-  // Sur search.html, l'input s'appelle "search"
+  // *** INPUT COMPATIBLE AVEC LES DEUX PAGES ***
   const input = document.getElementById('q') || document.getElementById('search');
   if (!input) return;
 
@@ -176,7 +156,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderResults(results);
   });
 
-  // *** CORRECTION : bouton Rechercher ***
+  // Bouton Rechercher (page d'accueil)
   const btn = document.getElementById('search-btn');
   if (btn) {
     btn.addEventListener('click', () => {
