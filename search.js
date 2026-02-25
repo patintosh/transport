@@ -1,6 +1,6 @@
 // ============================================================
-//  SEARCH ENGINE — VERSION STABLE 24 fev 2026 — 12:10
-//  Multi-termes + Pondération positionnelle + Highlight limité
+//  SEARCH ENGINE — VERSION AMÉLIORÉE (Chapitres 1–3)
+//  Date : 24 février 2026 — PARTIE 1 / 3
 // ============================================================
 
 
@@ -32,22 +32,57 @@ function escapeHtml(s) {
 }
 
 
-// ------------------------------
-// DATE EXTRACTION — VERSION SÉCURISÉE
-// ------------------------------
+// ============================================================
+//  DATE EXTRACTION — VERSION SÉCURISÉE (Chapitre 3)
+// ============================================================
 function extractDate(it) {
   if (!it.date) return null;
 
-  const y = it.date.match(/\b(19|20)\d{2}\b/);
-  if (!y) return null;
+  const raw = String(it.date).trim().toLowerCase();
 
-  const year = Number(y[0]);
+  // 1) Format JJ.MM.AAAA / JJ-MM-AAAA / JJ/MM/AAAA
+  let m = raw.match(/(\d{1,2})[.\-/](\d{1,2})[.\-/](\d{4})/);
+  if (m) {
+    let d = Math.min(Number(m[1]), 28);
+    let mo = Math.min(Number(m[2]), 12);
+    let y = Number(m[3]);
+    return new Date(y, mo - 1, d);
+  }
 
-  if (year < 1950 || year > 2025) return null;
+  // 2) Format JJ mois AAAA
+  m = raw.match(/(\d{1,2})\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+(\d{4})/);
+  if (m) {
+    const mois = {
+      janvier:0, février:1, mars:2, avril:3, mai:4, juin:5,
+      juillet:6, août:7, septembre:8, octobre:9, novembre:10, décembre:11
+    };
+    let d = Math.min(Number(m[1]), 28);
+    let mo = mois[m[2]];
+    let y = Number(m[3]);
+    return new Date(y, mo, d);
+  }
 
-  const d = new Date(year, 0, 1);
-  return isNaN(d.getTime()) ? null : d;
+  // 3) Format mois AAAA
+  m = raw.match(/(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+(\d{4})/);
+  if (m) {
+    const mois = {
+      janvier:0, février:1, mars:2, avril:3, mai:4, juin:5,
+      juillet:6, août:7, septembre:8, octobre:9, novembre:10, décembre:11
+    };
+    let mo = mois[m[1]];
+    let y = Number(m[2]);
+    return new Date(y, mo, 1);
+  }
+
+  // 4) Format AAAA
+  m = raw.match(/(19|20)\d{2}/);
+  if (m) {
+    return new Date(Number(m[0]), 0, 1);
+  }
+
+  return null;
 }
+
 
 
 // ------------------------------
@@ -58,9 +93,9 @@ let GLOSSAIRE = {};
 let results = [];
 
 
-// ------------------------------
-// LOAD INDEX.JSON
-// ------------------------------
+// ============================================================
+//  LOAD INDEX.JSON
+// ============================================================
 async function loadIndex() {
   const resp = await fetch("index.json", { cache: "no-store" });
   if (!resp.ok) throw new Error("index.json introuvable");
@@ -74,9 +109,9 @@ async function loadIndex() {
 }
 
 
-// ------------------------------
-// LOAD GLOSSAIRE
-// ------------------------------
+// ============================================================
+//  LOAD GLOSSAIRE (depuis glossaire_fusionne.json)
+// ============================================================
 async function loadGlossaire() {
   try {
     const resp = await fetch("glossaire_fusionne.json", { cache: "no-store" });
@@ -88,37 +123,73 @@ async function loadGlossaire() {
 
 
 // ============================================================
-//  EXPANSION MULTI-TERMES
+//  EXPANSION MULTI-TERMES — VERSION GLOSSAIRE RENFORCÉE
 // ============================================================
 function expandQuery(q) {
   const base = q.trim().toLowerCase();
-  const terms = new Set();
-
   if (!base) return [];
 
-  // Expression complète
+  const terms = new Set();
+
+  // 1) Expression complète
   terms.add(base);
 
-  // Synonymes multi-termes
+  // 2) Synonymes de l'expression complète (multi-mots inclus)
   if (GLOSSAIRE[base]) {
     for (const syn of GLOSSAIRE[base]) {
       terms.add(String(syn).toLowerCase());
     }
   }
 
-  // Découpage en mots simples
-  const words = base.split(/[^a-z0-9à-öø-ÿ]+/).filter(Boolean);
+  // 3) Découpage en mots simples
+  let words = base.split(/[^a-z0-9à-öø-ÿ]+/).filter(Boolean);
+
+  // Stopwords : on ignore les mots trop courts (< 3 lettres)
+  words = words.filter(w => w.length >= 3);
+
   for (const w of words) {
     terms.add(w);
+
+    // Synonymes du mot simple
     if (GLOSSAIRE[w]) {
       for (const syn of GLOSSAIRE[w]) {
         terms.add(String(syn).toLowerCase());
+      }
+    }
+
+    // Variantes singulier/pluriel
+    if (w.endsWith("s")) {
+      terms.add(w.slice(0, -1));
+    } else {
+      terms.add(w + "s");
+    }
+  }
+
+  // 4) Expansion multi-mots : si un terme contient plusieurs mots,
+  //    on ajoute aussi chaque mot individuellement et leurs synonymes.
+  const expanded = Array.from(terms);
+  for (const t of expanded) {
+    if (t.includes(" ")) {
+      let parts = t.split(/[^a-z0-9à-öø-ÿ]+/).filter(Boolean);
+
+      // Stopwords ici aussi
+      parts = parts.filter(p => p.length >= 3);
+
+      for (const p of parts) {
+        terms.add(p);
+
+        if (GLOSSAIRE[p]) {
+          for (const syn of GLOSSAIRE[p]) {
+            terms.add(String(syn).toLowerCase());
+          }
+        }
       }
     }
   }
 
   return Array.from(terms);
 }
+
 
 
 // ============================================================
@@ -139,12 +210,13 @@ function scoreDocument(it, terms) {
   for (const t of terms) {
     const re = new RegExp(`\\b${t}\\b`, "i");
 
-    if (re.test(title)) score += 10;
-    if (re.test(first200)) score += 6;
-    if (re.test(last200)) score += 4;
-    if (re.test(keywords)) score += 2;
-    if (re.test(desc)) score += 1;
-    if (re.test(path)) score += 0.5;
+    if (re.test(title)) score += 6;
+if (re.test(first200)) score += 4;
+if (re.test(last200)) score += 3;
+if (re.test(keywords)) score += 1;
+if (re.test(desc)) score += 1;
+if (re.test(path)) score += 0.5;
+
   }
 
   return score;
@@ -152,11 +224,25 @@ function scoreDocument(it, terms) {
 
 
 // ============================================================
-//  SEARCH ENGINE — VERSION PONDÉRÉE
+//  BONUS DATE — SURPONDÉRATION
+// ============================================================
+function dateBonus(it) {
+  if (!it._dateObj) return 0;
+
+  const year = it._dateObj.getFullYear();
+  if (year < 1950 || year > 2025) return 0;
+
+  return ((year - 1950) / 100) * 6;
+}
+
+
+// ============================================================
+//  SEARCH ENGINE — VERSION PONDÉRÉE (score + date)
 // ============================================================
 function performSearch(q) {
   const query = q.trim().toLowerCase();
 
+  // Cas : champ vide → tri chrono simple
   if (!query) {
     return window.indexData
       .slice()
@@ -165,7 +251,8 @@ function performSearch(q) {
 
   const terms = expandQuery(query);
 
-  return window.indexData
+  // 1) On calcule le score textuel
+  const scored = window.indexData
     .map(it => {
       const hay = (
         (it.title || "") + " " +
@@ -182,17 +269,37 @@ function performSearch(q) {
 
       if (!matches) return null;
 
+      const baseScore = scoreDocument(it, terms);
       return {
         ...it,
-        _score: scoreDocument(it, terms)
+        _textScore: Math.sqrt(baseScore)
       };
     })
-    .filter(Boolean)
-    .sort((a, b) => {
-      if (b._score !== a._score) return b._score - a._score;
-      return (b._dateObj || 0) - (a._dateObj || 0);
-    });
+    .filter(Boolean);
+
+  // 2) On trie par date d'abord
+  scored.sort((a, b) => (b._dateObj || 0) - (a._dateObj || 0));
+
+  // 3) Puis on trie par score textuel *à l'intérieur des années proches*
+  const FINAL = scored.sort((a, b) => {
+    const da = a._dateObj ? a._dateObj.getFullYear() : 0;
+    const db = b._dateObj ? b._dateObj.getFullYear() : 0;
+
+    // même année → tri par pertinence
+    if (da === db) return b._textScore - a._textScore;
+
+    // années proches (±1 an) → pertinence joue un peu
+    if (Math.abs(da - db) <= 1) {
+      return (db - da) * 0.7 + (b._textScore - a._textScore) * 0.3;
+    }
+
+    // années éloignées → la date domine
+    return db - da;
+  });
+
+  return FINAL;
 }
+
 
 
 // ============================================================
@@ -221,7 +328,7 @@ function highlight(text, terms) {
 
 
 // ============================================================
-//  RENDER RESULTS — TITRE CLIQUABLE + HIGHLIGHT
+//  RENDER RESULTS — TITRE CLIQUABLE + HIGHLIGHT + DATE
 // ============================================================
 function renderResults(list) {
   const container = document.getElementById("results");
@@ -296,9 +403,9 @@ function updateResults() {
 }
 
 
-// ------------------------------
-// INIT
-// ------------------------------
+// ============================================================
+//  INIT
+// ============================================================
 document.addEventListener("DOMContentLoaded", async () => {
   try {
     await loadIndex();
