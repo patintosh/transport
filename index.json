@@ -2,9 +2,9 @@
   {
     "title": "A0152",
     "path": "A0152.pdf",
-    "description": "Patrice SALINI 21 chemin du Bois Brûlé Palaiseau, 91120 Baritella Pianottoli-Caldarello, 20131 Portable : 06 804 302 32 Adresse de messagerie : patrice.salini@wanadoo.fr Site Web : http://patrice.salini.free.fr/ Siret : 389 259 45…",
+    "description": "resofret",
     "date": "61.11.2008",
-    "numero": "Patrice SALINI 21 chemin du Bois Brûlé Palaiseau, 91120 Baritella Pianottoli-Caldarello, 20131 Portable : 06 804 302 32 Adresse de messagerie : patrice",
+    "numero": "",
     "type_doc": "Étude",
     "keywords": []
   },
@@ -66,7 +66,7 @@
     "title": "A0047",
     "path": "A0047.pdf",
     "description": "DSP maritime Corse : Une décision de 217 pages La Commission Européenne vient de publier sa décision du 26 novembre 2024 concernant la desserte maritime de la Corse entre 2023 et 2030 (en fait les DSP). Cette publication fait suit…",
-    "date": "26.11.2024",
+    "date": "20.01.2026",
     "numero": "DSP maritime Corse : Une décision de 217 pages La Commission Européenne vient de publier sa décision du 26 novembre 2024 concernant la desserte maritime de la Corse entre 2023 et 2030 (en fait les DSP",
     "type_doc": "Article",
     "keywords": []
@@ -651,7 +651,7 @@
     "title": "A0080",
     "path": "A0080.pdf",
     "description": "Transport combiné Patrice Salini Où comment les politiques de transport de marchandises sont devenues impossibles l’augmentation de la part modale du rail demandait plus qu’une gentille politique vaguement incitatrice. par Patrice…",
-    "date": "1980",
+    "date": "28.05.2021",
     "numero": "Transport combiné Patrice Salini Où comment les politiques de transport de marchandises sont devenues impossibles l’augmentation de la part modale du rail demandait plus qu’une gentille politique vagu",
     "type_doc": "Article",
     "keywords": []
@@ -984,10 +984,13 @@
     "title": "A0043",
     "path": "A0043.pdf",
     "description": "#Corse #Continuité Territoriale : Les DSP du moindre risque ? L’histoire de la desserte maritime de la Corse est grossièrement marquée par quatre périodes : • La période antérieure à la guerre de 1939-1945 et ses concessions (voir…",
-    "date": "",
+    "date": "31.12.2022",
     "numero": "#Corse #Continuité Territoriale : Les DSP du moindre risque ? L’histoire de la desserte maritime de la Corse est grossièrement marquée par quatre périodes : • La période antérieure à la guerre de 1939",
     "type_doc": "Article",
-    "keywords": []
+    "keywords": [],
+    "meta": {
+      "dateSource": "footer"
+    }
   },
   {
     "title": "A0123",
@@ -1092,10 +1095,13 @@
     "title": "A0079",
     "path": "A0079.pdf",
     "description": "L’autoroute ferroviaire a-t-elle un avenir ? | Le Cercle Les Echos 31/03/12 15:48 L’autoroute ferroviaire a-t-elle un avenir ? Comment, alors que le fret ferroviaire est passé au niveau atteint au pire moment de la crise des année…",
-    "date": "",
+    "date": "31.03.2012",
     "numero": "L’autoroute ferroviaire a-t-elle un avenir ? | Le Cercle Les Echos 31/03/12 15:48 L’autoroute ferroviaire a-t-elle un avenir ? Comment, alors que le fret ferroviaire est passé au niveau atteint au pir",
     "type_doc": "Article",
-    "keywords": []
+    "keywords": [],
+    "meta": {
+      "dateSource": "header"
+    }
   },
   {
     "title": "A0086",
@@ -1686,7 +1692,7 @@
     "title": "A0003",
     "path": "A0003.pdf",
     "description": "Fret ferroviaire Les données Les données du recul Le déclin du fret ferroviaire français L a question de l’évolution du fret ferroviaire sur une longue période, doit tout d’abord être traitée statistiquement. Autrement dit il conv…",
-    "date": "",
+    "date": "23.03.2025",
     "numero": "Fret ferroviaire Les données Les données du recul Le déclin du fret ferroviaire français L a question de l’évolution du fret ferroviaire sur une longue période, doit tout d’abord être traitée statisti",
     "type_doc": "Étude",
     "keywords": []
@@ -1785,10 +1791,13 @@
     "title": "A0004",
     "path": "A0004.pdf",
     "description": "Après les grèves du transport maritime de service public avec la Corse Un contexte complexe La Corse a renoué, début 2026, avec les grèves maritimes. D’une intensité modérée depuis 2016, contrastant avec les périodes de 2004-2005…",
-    "date": "",
+    "date": "11.02.2026",
     "numero": "Après les grèves du transport maritime de service public avec la Corse Un contexte complexe La Corse a renoué, début 2026, avec les grèves maritimes",
     "type_doc": "Article",
-    "keywords": []
+    "keywords": [],
+    "meta": {
+      "dateSource": "footer"
+    }
   },
   {
     "title": "A0212",
@@ -1956,10 +1965,13 @@
     "title": "B0001",
     "path": "B0001.pdf",
     "description": "Zoom sur la progression routière en France Patrice Salini 2026 Données en base 100 en Transport National tous pavillons en milliards de t.km Parc estimé de tracteurs circulant en France (*) 3 000,0 2 250,0 1 500,0 Années 1950 1971…",
-    "date": "",
+    "date": "01.01.2026",
     "numero": "Zoom sur la progression routière en France Patrice Salini 2026 Données en base 100 en Transport National tous pavillons en milliards de t",
     "type_doc": "Article",
-    "keywords": []
+    "keywords": [],
+    "meta": {
+      "dateSource": "page-garde (year-only)"
+    }
   },
   {
     "title": "A0114",
@@ -2001,10 +2013,13 @@
     "title": "A0089",
     "path": "A0089.pdf",
     "description": "Les Valeurs comptables des réseaux ferroviaires européens difficilement comparables et sans doute sous-évaluées ! | Le Cercle Les Echos 05/04/12 12:45 Les Valeurs comptables des réseaux ferroviaires européens difficilement compara…",
-    "date": "",
+    "date": "05.04.2012",
     "numero": "Les Valeurs comptables des réseaux ferroviaires européens difficilement comparables et sans doute sous-évaluées ! | Le Cercle Les Echos 05/04/12 12:45 Les Valeurs comptables des réseaux ferroviaires",
     "type_doc": "Article",
-    "keywords": []
+    "keywords": [],
+    "meta": {
+      "dateSource": "header"
+    }
   },
   {
     "title": "A0102",
@@ -2055,10 +2070,13 @@
     "title": "A0107",
     "path": "A0107.pdf",
     "description": "04/01/08 Services FERROVIAIRE Contrainte de ramener sa participation dans l’opérateur de transport combiné à 38 %, la SNCF se serait entendue avec le transporteur Dentressangle pour détenir ensemble les deux tiers du capital. La S…",
-    "date": "",
+    "date": "04.01.2008",
     "numero": "04/01/08 Services FERROVIAIRE Contrainte de ramener sa participation dans l’opérateur de transport combiné à 38 %, la SNCF se serait entendue avec le transporteur Dentressangle pour détenir ensemble l",
     "type_doc": "Article",
-    "keywords": []
+    "keywords": [],
+    "meta": {
+      "dateSource": "normalized"
+    }
   },
   {
     "title": "TIH293",
@@ -2190,9 +2208,12 @@
     "title": "A0071",
     "path": "A0071.pdf",
     "description": "Le 4ème Kondratieﬀ et son retournement Kondratieﬀ et les retournements de cycles longs Dans ses écrits des années 1920, Nicolaï Kondratieﬀ présente les résultats de sont analyse des cycles longs auxquels son nom est désormais asso…",
-    "date": "",
+    "date": "02.01.2026",
     "numero": "Le 4ème Kondratieﬀ et son retournement Kondratieﬀ et les retournements de cycles longs Dans ses écrits des années 1920, Nicolaï Kondratieﬀ présente les résultats de sont analyse des cycles longs auxqu",
     "type_doc": "Article",
-    "keywords": []
+    "keywords": [],
+    "meta": {
+      "dateSource": "footer"
+    }
   }
 ]

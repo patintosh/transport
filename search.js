@@ -1,6 +1,5 @@
 // ============================================================
-//  SEARCH ENGINE — VERSION AMÉLIORÉE (Chapitres 1–3)
-//  Date : 24 février 2026 — PARTIE 1 / 3
+//  SEARCH ENGINE — VERSION PROPRE ET STABLE
 // ============================================================
 
 
@@ -33,7 +32,7 @@ function escapeHtml(s) {
 
 
 // ============================================================
-//  DATE EXTRACTION — VERSION SÉCURISÉE (Chapitre 3)
+//  DATE EXTRACTION — VERSION SÉCURISÉE
 // ============================================================
 function extractDate(it) {
   if (!it.date) return null;
@@ -91,6 +90,8 @@ function extractDate(it) {
 window.indexData = [];
 let GLOSSAIRE = {};
 let results = [];
+let SORT_MODE = "recent";
+
 
 
 // ============================================================
@@ -110,11 +111,11 @@ async function loadIndex() {
 
 
 // ============================================================
-//  LOAD GLOSSAIRE (depuis glossaire_fusionne.json)
+//  LOAD GLOSSAIRE
 // ============================================================
 async function loadGlossaire() {
   try {
-    const resp = await fetch("glossaire_fusionne.json", { cache: "no-store" });
+    const resp = await fetch("glossaireinverse.json", { cache: "no-store" });
     if (resp.ok) GLOSSAIRE = await resp.json();
   } catch (e) {
     console.warn("Glossaire non chargé");
@@ -122,8 +123,9 @@ async function loadGlossaire() {
 }
 
 
+
 // ============================================================
-//  EXPANSION MULTI-TERMES — VERSION GLOSSAIRE RENFORCÉE
+//  EXPANSION MULTI-TERMES — VERSION STABLE
 // ============================================================
 function expandQuery(q) {
   const base = q.trim().toLowerCase();
@@ -134,7 +136,7 @@ function expandQuery(q) {
   // 1) Expression complète
   terms.add(base);
 
-  // 2) Synonymes de l'expression complète (multi-mots inclus)
+  // 2) Synonymes expression complète
   if (GLOSSAIRE[base]) {
     for (const syn of GLOSSAIRE[base]) {
       terms.add(String(syn).toLowerCase());
@@ -143,57 +145,59 @@ function expandQuery(q) {
 
   // 3) Découpage en mots simples
   let words = base.split(/[^a-z0-9à-öø-ÿ]+/).filter(Boolean);
-
-  // Stopwords : on ignore les mots trop courts (< 3 lettres)
   words = words.filter(w => w.length >= 3);
 
   for (const w of words) {
     terms.add(w);
 
-    // Synonymes du mot simple
     if (GLOSSAIRE[w]) {
       for (const syn of GLOSSAIRE[w]) {
         terms.add(String(syn).toLowerCase());
       }
     }
 
-    // Variantes singulier/pluriel
-    if (w.endsWith("s")) {
-      terms.add(w.slice(0, -1));
-    } else {
-      terms.add(w + "s");
-    }
+    if (w.endsWith("s")) terms.add(w.slice(0, -1));
+    else terms.add(w + "s");
   }
 
-  // 4) Expansion multi-mots : si un terme contient plusieurs mots,
-  //    on ajoute aussi chaque mot individuellement et leurs synonymes.
+  // 4) Expansion multi-mots (si pas dans le glossaire)
   const expanded = Array.from(terms);
   for (const t of expanded) {
-    if (t.includes(" ")) {
-      let parts = t.split(/[^a-z0-9à-öø-ÿ]+/).filter(Boolean);
+    if (!t.includes(" ")) continue;
+    if (GLOSSAIRE[t]) continue;
 
-      // Stopwords ici aussi
-      parts = parts.filter(p => p.length >= 3);
+    let parts = t.split(/[^a-z0-9à-öø-ÿ]+/).filter(Boolean);
+    parts = parts.filter(p => p.length >= 3);
 
-      for (const p of parts) {
-        terms.add(p);
+    for (const p of parts) {
+      terms.add(p);
 
-        if (GLOSSAIRE[p]) {
-          for (const syn of GLOSSAIRE[p]) {
-            terms.add(String(syn).toLowerCase());
-          }
+      if (GLOSSAIRE[p]) {
+        for (const syn of GLOSSAIRE[p]) {
+          terms.add(String(syn).toLowerCase());
         }
       }
     }
   }
 
-  return Array.from(terms);
+  // 5) Si un multi-mot est présent, retirer ses composants simples
+  const final = new Set(terms);
+  for (const t of terms) {
+    if (t.includes(" ")) {
+      const parts = t.split(/[^a-z0-9à-öø-ÿ]+/).filter(Boolean);
+      for (const p of parts) {
+        if (p.length >= 3) final.delete(p);
+      }
+    }
+  }
+
+  return Array.from(final);
 }
 
 
 
 // ============================================================
-//  PONDÉRATION POSITIONNELLE
+//  SCORE DOCUMENT — VERSION MULTI-MOTS
 // ============================================================
 function scoreDocument(it, terms) {
   let score = 0;
@@ -208,41 +212,40 @@ function scoreDocument(it, terms) {
   const last200 = words.slice(-200).join(" ");
 
   for (const t of terms) {
+
+    // Multi-mots : match simple
+    if (t.includes(" ")) {
+      if (title.includes(t)) score += 6;
+      if (first200.includes(t)) score += 4;
+      if (last200.includes(t)) score += 3;
+      if (keywords.includes(t)) score += 1;
+      if (desc.includes(t)) score += 1;
+      if (path.includes(t)) score += 0.5;
+      continue;
+    }
+
+    // Mots simples : regex stricte
     const re = new RegExp(`\\b${t}\\b`, "i");
 
     if (re.test(title)) score += 6;
-if (re.test(first200)) score += 4;
-if (re.test(last200)) score += 3;
-if (re.test(keywords)) score += 1;
-if (re.test(desc)) score += 1;
-if (re.test(path)) score += 0.5;
-
+    if (re.test(first200)) score += 4;
+    if (re.test(last200)) score += 3;
+    if (re.test(keywords)) score += 1;
+    if (re.test(desc)) score += 1;
+    if (re.test(path)) score += 0.5;
   }
 
   return score;
 }
 
 
-// ============================================================
-//  BONUS DATE — SURPONDÉRATION
-// ============================================================
-function dateBonus(it) {
-  if (!it._dateObj) return 0;
-
-  const year = it._dateObj.getFullYear();
-  if (year < 1950 || year > 2025) return 0;
-
-  return ((year - 1950) / 100) * 6;
-}
-
 
 // ============================================================
-//  SEARCH ENGINE — VERSION PONDÉRÉE (score + date)
+//  SEARCH ENGINE — MATCH + SCORE + TRI
 // ============================================================
 function performSearch(q) {
   const query = q.trim().toLowerCase();
 
-  // Cas : champ vide → tri chrono simple
   if (!query) {
     return window.indexData
       .slice()
@@ -251,7 +254,6 @@ function performSearch(q) {
 
   const terms = expandQuery(query);
 
-  // 1) On calcule le score textuel
   const scored = window.indexData
     .map(it => {
       const hay = (
@@ -262,14 +264,25 @@ function performSearch(q) {
         (it.keywords || "").toString()
       ).toLowerCase();
 
-      const matches = terms.some(t =>
-        hay.includes(t) ||
-        hay.split(/[^a-z0-9à-öø-ÿ]+/).includes(t)
-      );
+      // Matching strict par mots
+      const tokens = hay.split(/[^a-z0-9à-öø-ÿ]+/);
+
+      const matches = terms.some(t => {
+        if (t.includes(" ")) {
+          // Multi-mots : match robuste
+          const pattern = t.replace(/\s+/g, "\\s+");
+          const re = new RegExp(pattern, "i");
+          return re.test(hay);
+        }
+
+        // Mots simples
+        return tokens.includes(t);
+      });
 
       if (!matches) return null;
 
       const baseScore = scoreDocument(it, terms);
+
       return {
         ...it,
         _textScore: Math.sqrt(baseScore)
@@ -277,58 +290,44 @@ function performSearch(q) {
     })
     .filter(Boolean);
 
-  // 2) On trie par date d'abord
+  // Tri date
   scored.sort((a, b) => (b._dateObj || 0) - (a._dateObj || 0));
 
-  // 3) Puis on trie par score textuel *à l'intérieur des années proches*
-  const FINAL = scored.sort((a, b) => {
+  // Tri pertinence dans années proches
+  return scored.sort((a, b) => {
     const da = a._dateObj ? a._dateObj.getFullYear() : 0;
     const db = b._dateObj ? b._dateObj.getFullYear() : 0;
 
-    // même année → tri par pertinence
     if (da === db) return b._textScore - a._textScore;
-
-    // années proches (±1 an) → pertinence joue un peu
-    if (Math.abs(da - db) <= 1) {
+    if (Math.abs(da - db) <= 1)
       return (db - da) * 0.7 + (b._textScore - a._textScore) * 0.3;
-    }
 
-    // années éloignées → la date domine
     return db - da;
   });
-
-  return FINAL;
 }
 
 
 
 // ============================================================
-//  HIGHLIGHT LIMITÉ (max 3 occurrences)
+//  TRI FINAL SELON LE TOGGLE
 // ============================================================
-function highlight(text, terms) {
-  if (!text) return "";
+function applyDateSort(list) {
+  return list.slice().sort((a, b) => {
+    const da = a._dateObj;
+    const db = b._dateObj;
 
-  let remaining = 3;
-  let out = text;
+    if (!da && !db) return 0;
+    if (!da) return 1;
+    if (!db) return -1;
 
-  for (const t of terms) {
-    if (remaining <= 0) break;
-
-    const re = new RegExp(`\\b(${t})\\b`, "gi");
-
-    out = out.replace(re, match => {
-      if (remaining <= 0) return match;
-      remaining--;
-      return `<mark>${match}</mark>`;
-    });
-  }
-
-  return out;
+    return SORT_MODE === "recent" ? db - da : da - db;
+  });
 }
 
 
+
 // ============================================================
-//  RENDER RESULTS — TITRE CLIQUABLE + HIGHLIGHT + DATE
+//  RENDER RESULTS
 // ============================================================
 function renderResults(list) {
   const container = document.getElementById("results");
@@ -336,7 +335,7 @@ function renderResults(list) {
 
   let html = `
     <div class="info-tri" style="font-size:14px; margin-bottom:10px;">
-      Résultats classés par pertinence (score + date)
+      Tri : ${SORT_MODE === "recent" ? "récents → anciens" : "anciens → récents"}
     </div>
   `;
 
@@ -378,6 +377,33 @@ function renderResults(list) {
 }
 
 
+
+// ============================================================
+//  HIGHLIGHT LIMITÉ
+// ============================================================
+function highlight(text, terms) {
+  if (!text) return "";
+
+  let remaining = 3;
+  let out = text;
+
+  for (const t of terms) {
+    if (remaining <= 0) break;
+
+    const re = new RegExp(`\\b(${t})\\b`, "gi");
+
+    out = out.replace(re, match => {
+      if (remaining <= 0) return match;
+      remaining--;
+      return `<mark>${match}</mark>`;
+    });
+  }
+
+  return out;
+}
+
+
+
 // ------------------------------
 // SHORT DESCRIPTION
 // ------------------------------
@@ -389,9 +415,10 @@ function shorten(text) {
 }
 
 
-// ------------------------------
-// UPDATE RESULTS
-// ------------------------------
+
+// ============================================================
+//  UPDATE RESULTS
+// ============================================================
 function updateResults() {
   const input =
     document.getElementById("search") ||
@@ -399,8 +426,10 @@ function updateResults() {
 
   const q = input ? input.value : "";
   results = performSearch(q);
+  results = applyDateSort(results);
   renderResults(results);
 }
+
 
 
 // ============================================================
@@ -425,6 +454,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     input.addEventListener("input", updateResults);
   }
 
+  const toggle = document.getElementById("toggleTri");
+  if (toggle) {
+    toggle.addEventListener("click", () => {
+      SORT_MODE = SORT_MODE === "recent" ? "ancien" : "recent";
+      toggle.textContent =
+        SORT_MODE === "recent"
+          ? "Trier : récents → anciens"
+          : "Trier : anciens → récents";
+      updateResults();
+    });
+  }
+
   results = performSearch("");
+  results = applyDateSort(results);
   renderResults(results);
 });
