@@ -1,0 +1,125 @@
+/* --- Structure générale --- */
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  background: #f5f7fa;
+  color: #222;
+  line-height: 1.6;
+}
+
+.wrap {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* --- Header --- */
+
+.site-header {
+  background: #ffffff;
+  border-bottom: 3px solid #0044cc;
+  padding: 30px 0;
+  margin-bottom: 20px;
+}
+
+.site-title {
+  font-size: 2rem;
+  margin: 0;
+  font-weight: 700;
+}
+
+.site-subtitle {
+  margin: 5px 0 15px 0;
+  font-size: 1.1rem;
+  color: #444;
+}
+
+.site-link a {
+  font-size: 1rem;
+  display: inline-block;
+  margin-bottom: 5px;
+}
+
+/* --- Zone de recherche --- */
+
+.search-section {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.search-row {
+  margin-top: 10px;
+}
+
+#searchInput {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 1.1rem;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+/* --- Résultats --- */
+
+.results-grid {
+  margin-top: 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.result-item {
+  background: #ffffff;
+  padding: 18px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.result-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #0044cc;
+  margin: 0 0 8px 0;
+}
+
+.result-description {
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.result-meta {
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 6px;
+}
+
+/* --- Footer --- */
+
+.site-footer {
+  text-align: center;
+  padding: 20px 0;
+  margin-top: 40px;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+/* --- Responsive --- */
+
+@media (max-width: 600px) {
+  .wrap {
+    padding: 15px;
+  }
+
+  .site-title {
+    font-size: 1.6rem;
+  }
+
+  #searchInput {
+    font-size: 1rem;
+  }
+}
