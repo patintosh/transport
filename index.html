@@ -43,22 +43,27 @@
   </header>
 
   <main class="wrap">
-    <section id="search-section" class="search-section">
+   <section id="search-section" class="search-section">
 
-      <form id="search-form" class="search-form" onsubmit="return false;">
-        <label for="searchInput" class="label">Rechercher</label>
-        <div class="search-row">
-          <input id="searchInput"
-                 type="search"
-                 placeholder="Tapez un mot‑clé, ex : rail, route, combiné"
-                 autocomplete="off"
-                 oninput="updateResults()" />
-        </div>
-      </form>
+  <form id="search-form" class="search-form" onsubmit="return false;">
+    <label for="q" class="label">Rechercher</label>
+    <div class="search-row">
+      <input id="q"
+             type="search"
+             placeholder="Tapez un mot‑clé, ex : rail, route, combiné"
+             autocomplete="off" />
+      <button id="search-btn" type="button">Rechercher</button>
+    </div>
+  </form>
 
-      <div id="results" class="results-grid"></div>
+  <button id="toggleSortDate" class="toggle-sort" type="button">
+    Tri : récent → ancien
+  </button>
 
-    </section>
+  <div id="results" class="results-grid"></div>
+
+</section>
+
   </main>
 
   <footer class="site-footer">
