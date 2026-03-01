@@ -85,11 +85,10 @@
         </div>
     </main>
 
-    <script>
+   <script>
 let DATA = [];
 let SORT_MODE = "recent";
 
-// Votre glossaire pour une recherche par concepts (Rail = Ferroviaire)
 const GLOSSAIRE = {
     "rail": ["ferroviaire", "train", "sncf", "ferré", "chemin de fer"],
     "ferroviaire": ["rail", "train", "ferré", "chemin de fer"],
@@ -98,15 +97,18 @@ const GLOSSAIRE = {
     "aerien": ["avion", "vol", "aéroport"]
 };
 
-// Fonction pour normaliser les chemins (compatible GitHub et Local)
-function normalizePath(p) {
+// --- LA VERSION FLEXIBLE (Gère Majuscules et Minuscules) ---
+function normalizePath(p, it) {
     if (!p) return "#";
     p = p.trim();
     if (p.startsWith('http')) return p;
+    // Si le titre est un code (A0065), on force le lien vers "A0065.pdf" en majuscules
+    if (it && it.title && it.title.match(/^[A-Z]\d+/i)) {
+        return it.title.toUpperCase() + ".pdf";
+    }
     return p.replace(/^\//, '');
 }
 
-// Transformation de "23.03.2025" ou "2025" en nombre pour le tri (AAAAMMJJ)
 function parseDateForSort(d) {
     if (!d) return 0;
     const s = String(d).trim();
@@ -118,7 +120,6 @@ function parseDateForSort(d) {
 
 async function init() {
     try {
-        // Anti-cache pour forcer la lecture du JSON local mis à jour
         const r = await fetch("index.json?v=" + Date.now());
         DATA = await r.json();
         document.getElementById("search-input").oninput = update;
@@ -135,22 +136,13 @@ async function init() {
 
 function update() {
     const query = document.getElementById("search-input").value.toLowerCase().trim();
-    
-    // 1. Découpage de la recherche en mots (Tokens) pour le multi-mots
     const searchTerms = query.split(/\s+/).filter(t => t.length > 0);
 
     const res = DATA.filter(it => {
         if (searchTerms.length === 0) return true;
-
-        // On prépare le texte du document (Titre + Desc + Keywords)
         const docText = (it.title + " " + it.description + " " + (it.keywords || []).join(" ")).toLowerCase();
-
-        // Pour que le doc soit retenu, TOUS les mots de la recherche doivent correspondre
         return searchTerms.every(term => {
-            // Correspondance directe
             if (docText.includes(term)) return true;
-
-            // Correspondance via le glossaire (Synonymes)
             if (GLOSSAIRE[term]) {
                 return GLOSSAIRE[term].some(syn => docText.includes(syn));
             }
@@ -158,7 +150,6 @@ function update() {
         });
     });
 
-    // 2. Tri chronologique précis
     res.sort((a, b) => {
         const vA = parseDateForSort(a.date);
         const vB = parseDateForSort(b.date);
@@ -178,20 +169,17 @@ function render(arr) {
         const path = it.path || "";
         const isWeb = path.includes('http') || path.includes('simdif');
         
-        // --- LOGIQUE D'AFFICHAGE SÉCURISÉE ---
         let titrePrincipal = it.title || "Document sans titre";
         let descriptionLongue = it.description || "";
 
-        // Si le titre ressemble à un code (ex: A0199, A199, B12), 
-        // on utilise le début de la description comme titre cliquable
         if (titrePrincipal.match(/^[A-Z]\d+/i) && descriptionLongue.length > 10) {
             titrePrincipal = descriptionLongue.substring(0, 110) + "...";
         }
 
         const html = '<div class="result-item">' +
-            // ICI : Le lien est forcé sur le titre, quel que soit le format
             '<div class="result-title">' +
-                '<a href="' + normalizePath(path) + '" target="_blank">' + titrePrincipal + '</a>' +
+                // Note : on passe 'it' à normalizePath ici
+                '<a href="' + normalizePath(path, it) + '" target="_blank">' + titrePrincipal + '</a>' +
             '</div>' +
             '<p style="font-size:0.95rem; color:#444; margin:10px 0;">' + descriptionLongue + '</p>' +
             '<div style="font-size:0.85rem; color:#86868b;">' + 
