@@ -178,26 +178,25 @@ function render(arr) {
         const path = it.path || "";
         const isWeb = path.includes('http') || path.includes('simdif');
         
-        // --- LOGIQUE D'AFFICHAGE OPTIMISÉE ---
-        // Si le titre ressemble à un nom de fichier (ex: A0065), 
-        // on utilise un morceau de la description comme titre cliquable.
-        let titreAffiche = it.title || "Document sans titre";
-        let soustitreAffiche = it.description || "";
+        // --- LOGIQUE D'AFFICHAGE SÉCURISÉE ---
+        let titrePrincipal = it.title || "Document sans titre";
+        let descriptionLongue = it.description || "";
 
-        if (titreAffiche.match(/^[A-Z]\d{4}$/i) && it.description) {
-            titreAffiche = it.description.substring(0, 80) + "...";
-            soustitreAffiche = it.description; // On garde la description complète en dessous
+        // Si le titre ressemble à un code (ex: A0199, A199, B12), 
+        // on utilise le début de la description comme titre cliquable
+        if (titrePrincipal.match(/^[A-Z]\d+/i) && descriptionLongue.length > 10) {
+            titrePrincipal = descriptionLongue.substring(0, 110) + "...";
         }
 
         const html = '<div class="result-item">' +
-            // Le titre est maintenant le contenu
-            '<div class="result-title"><a href="' + normalizePath(path) + '" target="_blank">' + titreAffiche + '</a></div>' +
-            // La description complète
-            '<p style="font-size:0.95rem; color:#444; margin:10px 0;">' + soustitreAffiche + '</p>' +
-            // La ligne d'infos : Date | Type | Nom du fichier
+            // ICI : Le lien est forcé sur le titre, quel que soit le format
+            '<div class="result-title">' +
+                '<a href="' + normalizePath(path) + '" target="_blank">' + titrePrincipal + '</a>' +
+            '</div>' +
+            '<p style="font-size:0.95rem; color:#444; margin:10px 0;">' + descriptionLongue + '</p>' +
             '<div style="font-size:0.85rem; color:#86868b;">' + 
                 '📅 ' + (it.date || "N/A") + 
-                ' | ' + (it.type_doc || "PDF") + 
+                ' | ' + (it.type_doc || "Article") + 
                 ' | 📂 ' + (it.title || "") + 
             '</div>' +
             '</div>';
