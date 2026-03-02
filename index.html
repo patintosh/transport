@@ -49,28 +49,25 @@ let RECENT = true;
 
 const GLOSSAIRE = {
     "fret": ["marchandises", "logistique"], "marchandises": ["fret"],
-    "rail": ["ferroviaire", "sncf", "train"], "ferroviaire": ["rail", "sncf"],
-    "fluvial": ["canal", "canaux", "voie d'eau", "vn"],
-    "combiné": ["intermodal", "ferroutage", "multimodal", "rail-route"],
-    "sss": ["cabotage", "short-sea", "maritime"], "oest": ["observatoire", "statistiques"]
+    "rail": ["ferroviaire", "sncf", "train"], "ferroviaire": ["rail", "sncf"]
 };
 
 function getScore(it) {
-    let title = (it.title || "");
+    let t = (it.title || "");
+    let d = (it.date || "");
     let desc = (it.description || "");
-    let dateStr = (it.date || "");
-    let fullText = (title + desc + dateStr);
-
-    // 1. Priorité 2026 (A0003 ou texte mentionnant 2026)
-    if (title.toUpperCase().includes("A0003") || fullText.includes("2026")) return 20260000;
     
-    // 2. Priorité 2025 ou KEY (Documents récents / Keynote)
-    if (title.toUpperCase().includes("KEY") || fullText.includes("2025")) return 20250000;
+    // PRIORITÉ 1 : Mars 2026 (A0003)
+    if (t.toUpperCase().includes("A0003")) return 20260302;
     
-    // 3. Extraction d'année classique pour le reste
-    let m = fullText.match(/\d{4}/);
+    // PRIORITÉ 2 : Les Keynotes récents ou mentions 2025/2026
+    if (t.toUpperCase().includes("KEY") || t.includes("2026") || t.includes("2025") || desc.includes("2025")) return 20250000;
+    
+    // PRIORITÉ 3 : Extraction d'année (4 chiffres entre 1950 et 2024)
+    let m = (t + d).match(/(19|20)\d{2}/);
     if (m) return parseInt(m[0]) * 10000;
-    
+
+    // PAR DÉFAUT : Très vieux (pour éviter que Tarnos 463 remonte)
     return 19000000;
 }
 
@@ -103,21 +100,20 @@ function update() {
 
     filtered.forEach(it => {
         let url = it.url || it.path || "";
+        // RÉPARATION MAJUSCULE : On extrait le nom exact du JSON
+        let parts = url.split('/');
+        let exactFileName = parts[parts.length - 1]; 
         
-        // --- GESTION STRICTE DES MAJUSCULES ---
-        // On récupère le nom du fichier tel qu'écrit dans le JSON (ex: A0003.pdf)
-        let fileName = url.split('/').pop(); 
-        
-        const isPdf = fileName.toLowerCase().endsWith('.pdf');
-        
+        const isPdf = exactFileName.toLowerCase().endsWith('.pdf');
         let displayTitle = it.title;
-        // Si le titre est un code aride, on affiche la description signifiante
+
+        // Titre lisible pour les codes A0003, A0231 ou KEY
         if ((it.title.match(/^[A-Za-z]\d{4}$/) || it.title.includes('key')) && it.description) {
             displayTitle = it.description.split('.')[0].substring(0, 110);
         }
 
         const html = `<div class="card ${isPdf?'is-pdf':'is-web'}">
-            <a href="${isPdf ? fileName : url}" target="_blank">${displayTitle}</a>
+            <a href="${isPdf ? exactFileName : url}" target="_blank">${displayTitle}</a>
             <div class="meta">📅 ${it.date || 'Archive'} | Réf: ${it.title}</div>
         </div>`;
         
