@@ -5,22 +5,20 @@
     <title>Bibliothèque Patrice Salini</title>
     <style>
         :root { --accent: #0071e3; --pdf: #d93025; --web: #1a73e8; }
-        body { font-family: -apple-system, sans-serif; background: #f5f5f7; margin: 0; color: #1d1d1f; line-height: 1.5; }
+        body { font-family: -apple-system, sans-serif; background: #f5f5f7; margin: 0; color: #1d1d1f; }
         .wrap { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        header { text-align: center; padding: 30px; background: white; border-bottom: 1px solid #ddd; }
+        header { text-align: center; padding: 25px; background: white; border-bottom: 1px solid #ddd; }
         .links-ref { margin-top: 15px; }
         .links-ref a { color: var(--accent); text-decoration: none; margin: 0 15px; font-weight: bold; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px; }
-        .card { background: white; padding: 18px; border-radius: 12px; margin-bottom: 15px; border-left: 6px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: 0.2s; }
-        .card:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .card { background: white; padding: 18px; border-radius: 12px; margin-bottom: 15px; border-left: 6px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .is-pdf { border-left-color: var(--pdf); }
         .is-web { border-left-color: var(--web); }
-        .card a { color: var(--accent); text-decoration: none; font-weight: bold; font-size: 1.1rem; display: block; margin-bottom: 8px; }
-        .meta { font-size: 0.85rem; color: #666; border-top: 1px solid #eee; padding-top: 10px; margin-top: 10px; }
+        .card a { color: var(--accent); text-decoration: none; font-weight: bold; font-size: 1.1rem; display: block; margin-bottom: 5px; }
+        .meta { font-size: 0.85rem; color: #666; margin-top: 10px; border-top: 1px solid #eee; padding-top: 8px; }
         .search-area { position: sticky; top: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 20px; z-index: 100; border-bottom: 1px solid #eee; }
-        #search-input { width: 100%; padding: 15px; border-radius: 10px; border: 2px solid #ddd; font-size: 1.1rem; outline: none; }
-        #search-input:focus { border-color: var(--accent); }
-        .btn-sort { padding: 10px 20px; cursor: pointer; background: #1d1d1f; color: white; border: none; border-radius: 8px; margin-top: 10px; font-weight: bold; }
+        #search-input { width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #ccc; font-size: 1.1rem; }
+        .btn-sort { padding: 10px 20px; cursor: pointer; background: #1d1d1f; color: white; border: none; border-radius: 8px; margin-top: 10px; }
         @media (max-width: 850px) { .grid { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -29,76 +27,75 @@
     <h1>Ma Bibliothèque Numérique</h1>
     <div class="links-ref">
         <a href="https://pensertransports.simdif.com" target="_blank">🌐 Penser les transports (C. Reynaud & P. Salini)</a>
-        <a href="https://www.editions-harmattan.fr/catalogue/auteur/patrice-salini/15031" target="_blank">📚 Mes Livres (Ed. Harmattan)</a>
+        <a href="https://www.editions-harmattan.fr/catalogue/auteur/patrice-salini/15031" target="_blank">📚 Mes Livres</a>
     </div>
 </header>
-
 <div class="wrap">
     <div class="search-area">
-        <input type="text" id="search-input" placeholder="Rechercher (ex: rail, fret, combiné, SSS, OEST...)">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
-            <span id="counter" style="font-weight:bold;">Initialisation...</span>
-            <button id="sortBtn" class="btn-sort">📅 Inverser l'ordre chronologique</button>
+        <input type="text" id="search-input" placeholder="Rechercher (ex: rail, fret, SSS, oest...)">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <p id="counter" style="font-weight:bold;">Chargement...</p>
+            <button id="sortBtn" class="btn-sort">📅 Inverser l'ordre</button>
         </div>
     </div>
     <div class="grid">
         <section><h2>📄 Archives & Notes (PDF)</h2><div id="pdf-list"></div></section>
-        <section><h2>🌐 Articles Web (Penser les Transports)</h2><div id="web-list"></div></section>
+        <section><h2>🌐 Articles Web (SimDif)</h2><div id="web-list"></div></section>
     </div>
 </div>
-
 <script>
 let DATA = [];
 let RECENT = true;
 
-// TON GLOSSAIRE INVERSE COMPLET
 const GLOSSAIRE = {
-    "marchandises": ["fret", "choses"], "fret": ["marchandises"], "choses": ["marchandises"],
-    "voyageurs": ["passagers", "usagers", "personnes"],
-    "rail": ["ferroviaire", "ferré", "chemin de fer", "sncf", "train"],
-    "ferroviaire": ["rail"], "ferré": ["rail"], "chemin de fer": ["rail"],
-    "camion": ["poids lourd", "pl", "routier"], "poids lourd": ["camion", "pl"], "pl": ["camion"],
-    "fluvial": ["canal", "canaux", "voie d'eau", "vn", "péniche"],
-    "combiné": ["intermodal", "ferroutage", "multimodal", "rail-route", "piggyback"],
-    "intermodal": ["combiné"], "multimodal": ["combiné"], "rail-route": ["combiné"],
-    "sss": ["cabotage", "short-sea", "maritime"], "cabotage": ["sss"],
-    "oest": ["observatoire", "statistiques"],
-    "plan": ["planification", "stratégie", "commissariat", "datar"]
+    "fret": ["marchandises", "logistique"], "marchandises": ["fret"],
+    "rail": ["ferroviaire", "sncf", "train"], "ferroviaire": ["rail", "sncf"],
+    "fluvial": ["canal", "canaux", "voie d'eau", "vn"],
+    "combiné": ["intermodal", "ferroutage", "multimodal", "rail-route"],
+    "sss": ["cabotage", "short-sea", "maritime"], "oest": ["observatoire", "statistiques"]
 };
 
-function getVal(it) {
-    if (it.title.toLowerCase().includes("a0003")) return 20260302;
-    let m = (it.date || "").match(/\d{4}/);
-    return m ? parseInt(m[0]) * 10000 : 19000000;
+function getScore(it) {
+    let title = (it.title || "").toLowerCase();
+    let dateStr = (it.date || "").toLowerCase();
+    
+    // Priorité absolue
+    if (title.includes("a0003")) return 20260302;
+    
+    // Détection des fichiers récents par mots clés ou dates
+    if (title.includes("key26") || title.includes("2026")) return 20260000;
+    if (title.includes("2025") || dateStr.includes("2025")) return 20250000;
+    
+    // Extraction classique d'année
+    let m = (dateStr + title).match(/\d{4}/);
+    if (m) return parseInt(m[0]) * 10000;
+    
+    // Par défaut, vieux documents
+    return 19000000;
 }
 
 async function start() {
-    try {
-        const r = await fetch('index.json?v=' + Date.now());
-        DATA = await r.json();
-        update();
-    } catch (e) { document.getElementById('counter').innerText = "Erreur JSON"; }
+    const r = await fetch('index.json?v=' + Date.now());
+    DATA = await r.json();
+    update();
 }
 
 function update() {
     const q = document.getElementById('search-input').value.toLowerCase().trim();
     let terms = [q];
-    
-    if (q.length > 2) {
-        for (let key in GLOSSAIRE) {
-            if (q.includes(key) || GLOSSAIRE[key].some(a => q.includes(a))) {
-                terms = [...new Set([...terms, key, ...GLOSSAIRE[key]])];
-            }
+    for (let key in GLOSSAIRE) {
+        if (q.includes(key) || GLOSSAIRE[key].some(a => q.includes(a))) {
+            terms = [...new Set([...terms, key, ...GLOSSAIRE[key]])];
         }
     }
 
     let filtered = DATA.filter(it => {
         if (!q) return true;
-        const text = (it.title + " " + (it.description || "")).toLowerCase();
-        return terms.some(t => text.includes(t));
+        const txt = (it.title + " " + (it.description || "")).toLowerCase();
+        return terms.some(t => txt.includes(t));
     });
 
-    filtered.sort((a,b) => RECENT ? getVal(b) - getVal(a) : getVal(a) - getVal(b));
+    filtered.sort((a,b) => RECENT ? getScore(b) - getScore(a) : getScore(a) - getScore(b));
 
     const pL = document.getElementById('pdf-list');
     const wL = document.getElementById('web-list');
@@ -106,23 +103,24 @@ function update() {
 
     filtered.forEach(it => {
         let url = it.url || it.path || "";
-        url = url.replace('/pdf/', '/').replace('https://patintosh.github.io/transport/pdf/', '');
-        const isPdf = url.toLowerCase().includes('.pdf');
+        // Réparation des liens : on pointe vers le fichier à la racine
+        let fileName = url.split('/').pop(); 
         
-        // Titre signifiant : on évite les codes a0003 ou 1646...
+        const isPdf = fileName.toLowerCase().endsWith('.pdf');
+        
         let displayTitle = it.title;
-        if ((it.title.match(/^[a-z]\d{4}$/i) || it.title.includes('-')) && it.description) {
-            displayTitle = it.description.split('.')[0].substring(0, 110);
+        if ((it.title.match(/^[a-z]\d{4}$/i) || it.title.includes('key')) && it.description) {
+            displayTitle = it.description.split('.')[0].substring(0, 100);
         }
 
-        const html = `
-            <div class="card ${isPdf?'is-pdf':'is-web'}">
-                <a href="${encodeURI(url)}" target="_blank">${displayTitle}</a>
-                <div class="meta">📅 ${it.date || 'Archive'} | <small>Réf: ${it.title}</small></div>
-            </div>`;
+        const html = `<div class="card ${isPdf?'is-pdf':'is-web'}">
+            <a href="${isPdf ? fileName : url}" target="_blank">${displayTitle}</a>
+            <div class="meta">📅 ${it.date || 'Archive'} | Réf: ${it.title}</div>
+        </div>`;
+        
         if(isPdf) pL.innerHTML += html; else wL.innerHTML += html;
     });
-    document.getElementById('counter').innerText = filtered.length + " document(s) trouvé(s)";
+    document.getElementById('counter').innerText = filtered.length + " doc(s)";
 }
 
 document.getElementById('search-input').oninput = update;
