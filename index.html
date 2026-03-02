@@ -53,21 +53,17 @@ const GLOSSAIRE = {
 };
 
 function getScore(it) {
-    let t = (it.title || "");
+    let t = (it.title || "").toUpperCase();
     let d = (it.date || "");
     let desc = (it.description || "");
+
+    // 1. Priorité absolue : Mars 2026 (A0003)
+    if (t.includes("A0003")) return 20260302;
     
-    // PRIORITÉ 1 : Mars 2026 (A0003)
-    if (t.toUpperCase().includes("A0003")) return 20260302;
-    
-    // PRIORITÉ 2 : Les Keynotes récents ou mentions 2025/2026
-    if (t.toUpperCase().includes("KEY") || t.includes("2026") || t.includes("2025") || desc.includes("2025")) return 20250000;
-    
-    // PRIORITÉ 3 : Extraction d'année (4 chiffres entre 1950 et 2024)
-    let m = (t + d).match(/(19|20)\d{2}/);
+    // 2. Règle des Années (Cherche 2026, 2025, 2024...)
+    let m = (t + d + desc).match(/(20\d{2}|19\d{2})/);
     if (m) return parseInt(m[0]) * 10000;
 
-    // PAR DÉFAUT : Très vieux (pour éviter que Tarnos 463 remonte)
     return 19000000;
 }
 
@@ -100,20 +96,22 @@ function update() {
 
     filtered.forEach(it => {
         let url = it.url || it.path || "";
-        // RÉPARATION MAJUSCULE : On extrait le nom exact du JSON
-        let parts = url.split('/');
-        let exactFileName = parts[parts.length - 1]; 
+        let fileName = url.split('/').pop(); 
+        const isPdf = fileName.toLowerCase().endsWith('.pdf');
         
-        const isPdf = exactFileName.toLowerCase().endsWith('.pdf');
+        // --- TRADUCTION DES TITRES ---
         let displayTitle = it.title;
-
-        // Titre lisible pour les codes A0003, A0231 ou KEY
+        // Remplacement TIH et TM
+        displayTitle = displayTitle.replace(/TIH\s?/gi, "Transport Info Hebdo n°");
+        displayTitle = displayTitle.replace(/TM\s?/gi, "Transport Magazine n°");
+        
+        // Si c'est un code (A0003, A0231...) on met la description
         if ((it.title.match(/^[A-Za-z]\d{4}$/) || it.title.includes('key')) && it.description) {
             displayTitle = it.description.split('.')[0].substring(0, 110);
         }
 
         const html = `<div class="card ${isPdf?'is-pdf':'is-web'}">
-            <a href="${isPdf ? exactFileName : url}" target="_blank">${displayTitle}</a>
+            <a href="${isPdf ? fileName : url}" target="_blank">${displayTitle}</a>
             <div class="meta">📅 ${it.date || 'Archive'} | Réf: ${it.title}</div>
         </div>`;
         
