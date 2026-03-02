@@ -2,150 +2,99 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bibliothèque numérique - Patrice Salini</title>
+    <title>Bibliothèque Patrice Salini</title>
     <style>
-        :root { --bg-color: #f5f5f7; --accent: #0071e3; --text: #1d1d1f; }
-        body { margin: 0; font-family: -apple-system, sans-serif; background: var(--bg-color); color: var(--text); line-height: 1.5; }
+        :root { --accent: #0071e3; --text: #1d1d1f; }
+        body { font-family: -apple-system, sans-serif; background: #f5f5f7; color: var(--text); margin: 0; }
         .wrap { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        .site-header { padding: 30px 0; text-align: center; background: white; border-bottom: 1px solid #ddd; margin-bottom: 20px; }
-        .links-ref { margin-top: 10px; }
-        .links-ref a { color: var(--accent); text-decoration: none; margin: 0 10px; font-weight: 500; }
-        .search-area { position: sticky; top: 0; background: rgba(245,245,247,0.98); backdrop-filter: blur(10px); padding: 15px 0; z-index: 100; border-bottom: 1px solid #eee; }
-        #search-input { width: 100%; padding: 14px; border-radius: 10px; border: 1px solid #d2d2d7; font-size: 1.1rem; outline: none; box-sizing: border-box; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 20px; }
-        .result-item { background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); border-left: 4px solid #ccc; }
-        .pdf-item { border-left-color: #e30000; }
-        .web-item { border-left-color: #0071e3; }
-        .result-title a { color: var(--accent); text-decoration: none; font-weight: 700; font-size: 1.15rem; display: block; margin-bottom: 8px; }
-        .result-desc { font-size: 0.95rem; color: #333; margin-bottom: 10px; }
-        .meta { font-size: 0.85rem; color: #666; font-family: monospace; background: #f9f9f9; padding: 5px; border-radius: 4px; }
-        .btn-sort { background: #1d1d1f; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
-        h2 { font-size: 1.4rem; color: #1d1d1f; border-bottom: 3px solid #1d1d1f; padding-bottom: 8px; }
-        @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+        header { text-align: center; padding: 30px; background: white; border-bottom: 1px solid #ddd; }
+        .links-ref a { color: var(--accent); text-decoration: none; margin: 0 10px; font-weight: bold; }
+        .search-area { position: sticky; top: 0; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); padding: 15px; z-index: 100; border-bottom: 1px solid #eee; }
+        #search-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px; }
+        .card { background: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-left: 5px solid #ccc; }
+        .is-pdf { border-left-color: #d93025; }
+        .is-web { border-left-color: #1a73e8; }
+        .card a { color: var(--accent); text-decoration: none; font-weight: bold; font-size: 1.1rem; }
+        .meta { font-size: 0.8rem; color: #666; margin-top: 8px; display: block; }
+        .btn-sort { padding: 8px 15px; cursor: pointer; background: #333; color: white; border: none; border-radius: 5px; }
+        @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
-
-<header class="site-header">
-    <div class="wrap">
-        <h1>Bibliothèque numérique</h1>
-        <p><strong>Patrice Salini</strong> - Transports & Mobilités</p>
-        <div class="links-ref">
-            <a href="https://pensertransports.simdif.com" target="_blank">🌐 Penser les transports (Reynaud & Salini)</a> | 
-            <a href="https://www.editions-harmattan.fr/catalogue/auteur/patrice-salini/15031" target="_blank">📚 Catalogue L'Harmattan</a>
-        </div>
+<header>
+    <h1>Bibliothèque numérique</h1>
+    <p>Patrice Salini - Transports & Mobilités</p>
+    <div class="links-ref">
+        <a href="https://pensertransports.simdif.com" target="_blank">🌐 Penser les transports</a> | 
+        <a href="https://www.editions-harmattan.fr/catalogue/auteur/patrice-salini/15031" target="_blank">📚 L'Harmattan</a>
     </div>
 </header>
 
 <div class="wrap">
     <div class="search-area">
-        <input type="text" id="search-input" placeholder="Rechercher (ex: rail, fret, 2025...)" autofocus>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
-            <span id="counter" style="font-weight:bold;">Initialisation...</span>
-            <button id="sortBtn" class="btn-sort">📅 Tri : Plus récents en premier</button>
+        <input type="text" id="search-input" placeholder="Rechercher...">
+        <div style="margin-top:10px; display:flex; justify-content:space-between;">
+            <span id="counter">Chargement...</span>
+            <button id="sortBtn" class="btn-sort">📅 Trier par date</button>
         </div>
     </div>
-
     <div class="grid">
-        <section>
-            <h2>📄 Documents PDF</h2>
-            <div id="results-pdf"></div>
-        </section>
-        <section>
-            <h2>🌐 Articles & Liens Web</h2>
-            <div id="results-web"></div>
-        </section>
+        <section><h2>📄 Documents PDF</h2><div id="pdf-list"></div></section>
+        <section><h2>🌐 Liens Web</h2><div id="web-list"></div></section>
     </div>
 </div>
 
 <script>
 let DATA = [];
-let RECENT_FIRST = true;
+let RECENT = true;
 
-const GLOSSARY = { "rail": "ferroviaire", "ferroviaire": "rail", "fret": "marchandises" };
-
-function getVal(it) {
-    // Forçage manuel pour l'article récent a0003
-    if (it.title && it.title.includes("a0003")) return 20260302;
-    
-    const text = (it.date + " " + it.title).toLowerCase();
-    
-    // 1. Chercher format JJ/MM/AAAA
-    const full = text.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-    if (full) return parseInt(full[3]+full[2]+full[1]);
-    
-    // 2. Chercher année 4 chiffres
-    const m = text.match(/\b(19|20)\d{2}\b/);
-    if (m) return parseInt(m[0]) * 10000;
-    
-    return 19000000;
+function getNumeric(it) {
+    if (it.title.includes("a0003")) return 20260302;
+    let d = String(it.date || "");
+    let m = d.match(/\d{4}/);
+    return m ? parseInt(m[0]) * 10000 : 19000000;
 }
 
 async function start() {
-    try {
-        const r = await fetch('index.json?v=' + Date.now());
-        DATA = await r.json();
-        document.getElementById('search-input').oninput = update;
-        document.getElementById('sortBtn').onclick = () => {
-            RECENT_FIRST = !RECENT_FIRST;
-            document.getElementById('sortBtn').innerText = RECENT_FIRST ? "📅 Tri : Plus récents" : "📅 Tri : Plus anciens";
-            update();
-        };
-        update();
-    } catch(e) { document.getElementById('counter').innerText = "Erreur chargement index."; }
+    const r = await fetch('index.json?v=' + Date.now());
+    DATA = await r.json();
+    update();
 }
 
 function update() {
-    const q = document.getElementById('search-input').value.toLowerCase().trim();
-    const syn = GLOSSARY[q] || "";
+    const q = document.getElementById('search-input').value.toLowerCase();
+    let filtered = DATA.map(it => ({ ...it, val: getNumeric(it) }));
+    
+    if (q) {
+        filtered = filtered.filter(it => (it.title + it.description).toLowerCase().includes(q));
+    }
+    
+    filtered.sort((a, b) => RECENT ? b.val - a.val : a.val - b.val);
+    
+    const pDiv = document.getElementById('pdf-list');
+    const wDiv = document.getElementById('web-list');
+    pDiv.innerHTML = ""; wDiv.innerHTML = "";
+    document.getElementById('counter').innerText = filtered.length + " doc(s)";
 
-    let list = DATA.map(it => {
-        const content = (it.title + " " + (it.description || "")).toLowerCase();
-        let score = 0;
-        if (!q) score = 1;
-        else if (content.includes(q) || (syn && content.includes(syn))) {
-            score = content.includes(q) ? 100 : 50;
-            if (it.title.toLowerCase().includes(q)) score += 50;
-        }
-        return { ...it, score, time: getVal(it) };
-    }).filter(it => it.score > 0);
-
-    list.sort((a, b) => {
-        if (!q) return RECENT_FIRST ? (b.time - a.time) : (a.time - b.time);
-        return (b.score - a.score) || (b.time - a.time);
-    });
-
-    render(list);
-}
-
-function render(list) {
-    const pdf = document.getElementById('results-pdf');
-    const web = document.getElementById('results-web');
-    pdf.innerHTML = ""; web.innerHTML = "";
-    document.getElementById('counter').innerText = list.length + " document(s)";
-
-    list.forEach(it => {
+    filtered.forEach(it => {
         const link = it.url || it.path || "";
-        const isWeb = link.includes('http') || link.includes('simdif');
+        const isWeb = link.includes('http');
+        const url = isWeb ? link : "pdf/" + (it.title.endsWith('.pdf') ? it.title : it.title + ".pdf");
         
-        const finalLink = isWeb ? link : ("pdf/" + (it.title.endsWith('.pdf') ? it.title : it.title + ".pdf"));
-        
-        let title = it.title;
-        if (it.description && (title.length < 10 || title.match(/^[a-z]\d/i))) {
-            title = it.description.substring(0, 95) + "...";
-        }
-
         const html = `
-            <div class="result-item ${isWeb ? 'web-item' : 'pdf-item'}">
-                <div class="result-title"><a href="${finalLink}" target="_blank">${title}</a></div>
-                <div class="result-desc">${(it.description || "Consulter le document.").substring(0, 250)}</div>
-                <div class="meta">📅 ${it.date || 'Archive'} | Réf: ${it.title}</div>
+            <div class="card ${isWeb ? 'is-web' : 'is-pdf'}">
+                <a href="${url}" target="_blank">${it.description ? it.description.substring(0,80)+'...' : it.title}</a>
+                <p style="font-size:0.9rem; margin:5px 0;">${(it.description || "").substring(0,150)}</p>
+                <span class="meta">📅 ${it.date || 'Archive'} | Réf: ${it.title}</span>
             </div>`;
         
-        if (isWeb) webDiv = web.innerHTML += html; else pdf.innerHTML += html;
+        if (isWeb) wDiv.innerHTML += html; else pDiv.innerHTML += html;
     });
 }
+
+document.getElementById('search-input').oninput = update;
+document.getElementById('sortBtn').onclick = () => { RECENT = !RECENT; update(); };
 window.onload = start;
 </script>
 </body>
