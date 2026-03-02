@@ -5,106 +5,119 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bibliothèque numérique - Patrice Salini</title>
     <style>
-        :root { --bg-color: #f5f5f7; --accent-color: #0071e3; --text-color: #1d1d1f; --border-radius: 18px; }
+        :root { --bg-color: #f5f5f7; --accent-color: #0071e3; --text-color: #1d1d1f; --border-radius: 14px; }
         body { margin: 0; font-family: -apple-system, sans-serif; background: var(--bg-color); color: var(--text-color); }
-        .wrap { max-width: 1100px; margin: 0 auto; padding: 20px; }
-        .site-header { background: rgba(255,255,255,0.8); backdrop-filter: blur(20px); padding: 40px 0; text-align: center; border-bottom: 1px solid #ddd; }
-        .search-section { margin: -30px auto 30px; max-width: 800px; }
-        #search-input { width: 100%; padding: 20px; border-radius: var(--border-radius); border: 1px solid #ccc; font-size: 1.2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .toolbar { display: flex; justify-content: space-between; margin-top: 15px; background: white; padding: 10px 20px; border-radius: 10px; }
-        .results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .result-item { background: white; padding: 20px; border-radius: var(--border-radius); margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .result-title a { font-weight: bold; color: var(--accent-color); text-decoration: none; font-size: 1.1rem; }
-        .toggle-button { background: #333; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; }
-        @media (max-width: 800px) { .results-grid { grid-template-columns: 1fr; } }
+        .wrap { max-width: 1000px; margin: 0 auto; padding: 20px; }
+        .site-header { padding: 40px 0; text-align: center; background: white; border-bottom: 1px solid #e5e5e5; }
+        .search-area { margin: 20px 0; position: sticky; top: 0; z-index: 100; background: var(--bg-color); padding: 10px 0; }
+        #search-input { width: 100%; padding: 15px; border-radius: var(--border-radius); border: 1px solid #d2d2d7; font-size: 1.1rem; outline: none; }
+        .controls { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+        .result-item { background: white; padding: 20px; border-radius: var(--border-radius); margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .result-title a { color: var(--accent-color); text-decoration: none; font-weight: 600; font-size: 1.1rem; }
+        .meta { font-size: 0.85rem; color: #86868b; margin-top: 8px; }
+        .btn-sort { background: #1d1d1f; color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 0.9rem; }
     </style>
 </head>
 <body>
 
 <header class="site-header">
     <div class="wrap">
-        <h1>Bibliothèque numérique - Patrice Salini</h1>
-        <p>Articles et études publiques sur les transports</p>
+        <h1>Bibliothèque numérique</h1>
+        <p>Patrice Salini - Transports & Mobilités</p>
     </div>
 </header>
 
-<main class="wrap">
-    <section class="search-section">
-        <input type="text" id="search-input" placeholder="Rechercher un mot (ex: rail, fret, TM70...)" autocomplete="off">
-        <div class="toolbar">
-            <span id="result-count">Chargement...</span>
-            <button id="toggleSort" class="toggle-button">📅 Plus récents en tête</button>
+<div class="wrap">
+    <div class="search-area">
+        <input type="text" id="search-input" placeholder="Rechercher (ex: rail, 1992, fret...)" autofocus>
+        <div class="controls">
+            <span id="counter">Chargement...</span>
+            <button id="btnSort" class="btn-sort">📅 Voir les plus récents en premier</button>
         </div>
-    </section>
-
-    <div class="results-grid">
-        <section>
-            <h2>📄 Documents PDF</h2>
-            <div id="results-pdf"></div>
-        </section>
-        <section>
-            <h2>🌐 Liens Web</h2>
-            <div id="results-web"></div>
-        </section>
     </div>
-</main>
+
+    <div id="results-list"></div>
+</div>
 
 <script>
 let DATA = [];
 let RECENT_FIRST = true;
 
-async function init() {
-    try {
-        const r = await fetch("index.json?v=" + Date.now());
-        DATA = await r.json();
-        document.getElementById("search-input").oninput = update;
-        document.getElementById("toggleSort").onclick = () => {
-            RECENT_FIRST = !RECENT_FIRST;
-            document.getElementById("toggleSort").innerText = RECENT_FIRST ? "📅 Plus récents en tête" : "📅 Plus anciens en tête";
-            update();
-        };
+// Fonction magique pour transformer n'importe quel format de date en nombre triable
+function parseToNumericDate(dateStr) {
+    if (!dateStr || dateStr === "N/A" || dateStr === "Archive") return 0;
+    
+    const s = dateStr.toString();
+    let year = 0;
+    let month = 0;
+
+    // 1. Chercher une année à 4 chiffres (ex: 2026, 1995)
+    const year4 = s.match(/\b(19|20)\d{2}\b/);
+    if (year4) {
+        year = parseInt(year4[0]);
+    } else {
+        // 2. Chercher une année à 2 chiffres (ex: 92, 04)
+        const year2 = s.match(/\b\d{2}\b/g);
+        if (year2) {
+            let last = parseInt(year2[year2.length - 1]);
+            year = (last > 50) ? 1900 + last : 2000 + last;
+        }
+    }
+
+    // 3. Chercher un mois (1 à 12)
+    const monthMatch = s.match(/\b(0?[1-9]|1[0-2])\b/);
+    if (monthMatch) month = parseInt(monthMatch[0]);
+
+    return (year * 100) + month; // Retourne un nombre comme 199205 pour Mai 1992
+}
+
+async function start() {
+    const r = await fetch('index.json?v=' + Date.now());
+    DATA = await r.json();
+    
+    document.getElementById('search-input').oninput = update;
+    document.getElementById('btnSort').onclick = () => {
+        RECENT_FIRST = !RECENT_FIRST;
+        document.getElementById('btnSort').innerText = RECENT_FIRST ? "📅 Voir les plus récents" : "📅 Voir les plus anciens";
         update();
-    } catch (e) { document.getElementById("result-count").innerText = "Erreur de chargement"; }
+    };
+    update();
 }
 
 function update() {
-    const query = document.getElementById("search-input").value.toLowerCase();
+    const q = document.getElementById('search-input').value.toLowerCase();
     
-    // Filtrage
     let filtered = DATA.filter(it => {
-        const text = (it.title + " " + it.description + " " + (it.keywords || []).join(" ")).toLowerCase();
-        return text.includes(query);
+        const content = `${it.title} ${it.description} ${it.date}`.toLowerCase();
+        return content.includes(q);
     });
 
-    // Tri par titre (TM78 > TM01)
+    // Tri intelligent
     filtered.sort((a, b) => {
-        return RECENT_FIRST ? b.title.localeCompare(a.title) : a.title.localeCompare(b.title);
+        const valA = parseToNumericDate(a.date);
+        const valB = parseToNumericDate(b.date);
+        return RECENT_FIRST ? (valB - valA) : (valA - valB);
     });
 
     render(filtered);
 }
 
-function render(arr) {
-    const pdfDiv = document.getElementById("results-pdf");
-    const webDiv = document.getElementById("results-web");
-    pdfDiv.innerHTML = ""; webDiv.innerHTML = "";
-    document.getElementById("result-count").innerText = arr.length + " résultat(s)";
-
-    arr.forEach(it => {
-        const isWeb = it.url.includes('http');
-        const html = `
-            <div class="result-item">
-                <div class="result-title">
-                    <a href="${it.url}" target="_blank">${it.title}</a>
-                </div>
-                <p style="font-size:0.9rem; color:#555;">${it.description}</p>
-                <div style="font-size:0.8rem; color:#999;">📅 ${it.date} | 📂 ${it.title}</div>
-            </div>`;
-        if (isWeb) webDiv.innerHTML += html;
-        else pdfDiv.innerHTML += html;
-    });
+function render(list) {
+    const container = document.getElementById('results-list');
+    document.getElementById('counter').innerText = `${list.length} document(s)`;
+    
+    container.innerHTML = list.map(it => `
+        <div class="result-item">
+            <div class="result-title">
+                <a href="${it.url}" target="_blank">${it.title}</a>
+            </div>
+            <p style="margin:10px 0; font-size:0.95rem;">${it.description}</p>
+            <div class="meta">📅 Date: ${it.date} | 📂 Réf: ${it.title.split('.')[0]}</div>
+        </div>
+    `).join('');
 }
-window.onload = init;
+
+window.onload = start;
 </script>
 </body>
 </html>
