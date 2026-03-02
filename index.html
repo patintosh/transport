@@ -5,98 +5,95 @@
     <title>Bibliothèque Patrice Salini</title>
     <style>
         :root { --accent: #0071e3; --pdf: #d93025; --web: #1a73e8; }
-        body { font-family: -apple-system, sans-serif; background: #f5f5f7; margin: 0; color: #1d1d1f; }
+        body { font-family: -apple-system, sans-serif; background: #f5f5f7; margin: 0; padding: 0; color: #1d1d1f; }
         .wrap { max-width: 1100px; margin: 0 auto; padding: 20px; }
         header { text-align: center; padding: 30px; background: white; border-bottom: 1px solid #ddd; }
+        .search-area { position: sticky; top: 0; background: white; padding: 20px; z-index: 100; border-bottom: 1px solid #eee; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        #search-input { width: 100%; padding: 15px; border-radius: 8px; border: 1px solid #ccc; font-size: 1.1rem; box-sizing: border-box; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px; }
-        .card { background: white; padding: 18px; border-radius: 12px; margin-bottom: 15px; border-left: 6px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .is-pdf { border-left-color: var(--pdf); }
-        .is-web { border-left-color: var(--web); }
+        .card { background: white; padding: 18px; border-radius: 12px; margin-bottom: 15px; border-left: 6px solid #ccc; transition: 0.2s; }
+        .card:hover { transform: translateY(-2px); }
+        .card.is-pdf { border-left-color: var(--pdf); }
+        .card.is-web { border-left-color: var(--web); }
         .card a { color: var(--accent); text-decoration: none; font-weight: bold; font-size: 1.1rem; display: block; margin-bottom: 5px; }
-        .meta { font-size: 0.85rem; color: #666; margin-top: 10px; border-top: 1px solid #eee; padding-top: 8px; }
-        .search-area { position: sticky; top: 0; background: white; padding: 20px; z-index: 100; border-bottom: 1px solid #eee; }
-        #search-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; }
-        .btn-sort { background: #1d1d1f; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .meta { font-size: 0.85rem; color: #666; border-top: 1px solid #eee; padding-top: 8px; margin-top: 10px; }
+        h2 { border-bottom: 2px solid #333; padding-bottom: 10px; }
+        @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 <header>
-    <h1>Ma Bibliothèque Numérique</h1>
-    <p><a href="https://pensertransports.simdif.com" target="_blank">🌐 Penser les transports</a></p>
+    <h1>Bibliothèque Numérique Patrice Salini</h1>
+    <p><a href="https://pensertransports.simdif.com" target="_blank">🌐 Site Penser les transports</a></p>
 </header>
 <div class="wrap">
     <div class="search-area">
-        <input type="text" id="search-input" placeholder="Rechercher...">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
-            <span id="counter" style="font-weight:bold;">Chargement...</span>
-            <button id="sortBtn" class="btn-sort">📅 Inverser l'Ordre Chronologique</button>
-        </div>
+        <input type="text" id="search-input" placeholder="Tapez votre recherche (ex: rail, 2026, fret)...">
+        <p id="counter" style="margin-top:10px; font-weight:bold;">Chargement...</p>
     </div>
     <div class="grid">
-        <section><h2>📄 PDF (Archives & Notes)</h2><div id="pdf-list"></div></section>
-        <section><h2>🌐 Web (Articles)</h2><div id="web-list"></div></section>
+        <section><h2>📄 PDF (Notes & Archives)</h2><div id="pdf-list"></div></section>
+        <section><h2>🌐 WEB (Articles SimDif)</h2><div id="web-list"></div></section>
     </div>
 </div>
 <script>
 let DATA = [];
-let RECENT_FIRST = true;
 
-function extractYear(it) {
-    if (it.title.includes("A0003")) return 2026;
-    // On cherche uniquement des années réalistes (4 chiffres commençant par 19 ou 20)
-    let text = (it.date || "") + (it.title || "") + (it.description || "");
-    let match = text.match(/\b(19|20)\d{2}\b/);
-    return match ? parseInt(match[0]) : 1900;
+// Fonction de tri simplifiée : Priorité 2026, puis 2025, puis le reste
+function getSortValue(it) {
+    const text = (it.title + " " + (it.description || "") + " " + (it.date || "")).toUpperCase();
+    if (text.includes("A0003") || text.includes("2026")) return 2026;
+    if (text.includes("2025")) return 2025;
+    const m = text.match(/\b(19|20)\d{2}\b/);
+    return m ? parseInt(m[0]) : 1900;
 }
 
-async function start() {
+async function init() {
     const r = await fetch('index.json?v=' + Date.now());
     DATA = await r.json();
     render();
 }
 
 function render() {
-    const q = document.getElementById('search-input').value.toLowerCase().trim();
-    
-    // Filtrage simple
-    let filtered = DATA.filter(it => {
-        let content = (it.title + " " + (it.description || "")).toLowerCase();
-        return content.includes(q);
-    });
+    const query = document.getElementById('search-input').value.toLowerCase();
+    const pList = document.getElementById('pdf-list');
+    const wList = document.getElementById('web-list');
+    pList.innerHTML = ""; wList.innerHTML = "";
 
-    // Tri strict
-    filtered.sort((a,b) => {
-        let yA = extractYear(a), yB = extractYear(b);
-        return RECENT_FIRST ? yB - yA : yA - yB;
-    });
+    // Tri par année décroissante
+    const sorted = [...DATA].sort((a,b) => getSortValue(b) - getSortValue(a));
 
-    const pL = document.getElementById('pdf-list');
-    const wL = document.getElementById('web-list');
-    pL.innerHTML = ""; wL.innerHTML = "";
+    const filtered = sorted.filter(it => {
+        const content = (it.title + " " + (it.description || "") + " " + (it.url || "")).toLowerCase();
+        return content.includes(query);
+    });
 
     filtered.forEach(it => {
-        let url = it.url || it.path || "";
-        // RÉPARATION : On garde le nom de fichier exactement tel qu'il est dans le JSON
-        let fileName = url.split('/').pop(); 
+        const url = it.url || it.path || "";
+        // RÉPARATION CRUCIALE : on garde le nom de fichier EXACT du JSON (respecte A0231.pdf)
+        const fileName = url.split('/').pop();
         const isPdf = fileName.toLowerCase().endsWith('.pdf');
         
         let displayTitle = it.title;
-        if (it.description && (it.title.length < 10 || it.title.includes("A0"))) {
-            displayTitle = it.description.split('.')[0].substring(0, 120);
+        // Si code court, on prend la description pour la lisibilité
+        if (it.description && it.title.length < 10) {
+            displayTitle = it.description.split('.')[0];
         }
 
-        const html = `<div class="card ${isPdf?'is-pdf':'is-web'}">
-            <a href="${isPdf ? fileName : url}" target="_blank">${displayTitle}</a>
-            <div class="meta">📅 ${it.date || 'Année non précisée'} | Réf: ${it.title}</div>
-        </div>`;
-        if(isPdf) pL.innerHTML += html; else wL.innerHTML += html;
+        const card = `
+            <div class="card ${isPdf?'is-pdf':'is-web'}">
+                <a href="${isPdf ? fileName : url}" target="_blank">${displayTitle}</a>
+                <div class="meta">📅 ${it.date || 'Archive'} | Réf: ${it.title}</div>
+            </div>`;
+        
+        if (isPdf) pList.insertAdjacentHTML('beforeend', card);
+        else wList.insertAdjacentHTML('beforeend', card);
     });
-    document.getElementById('counter').innerText = filtered.length + " document(s)";
+    document.getElementById('counter').innerText = filtered.length + " document(s) trouvé(s)";
 }
 
 document.getElementById('search-input').oninput = render;
-document.getElementById('sortBtn').onclick = () => { RECENT_FIRST = !RECENT_FIRST; render(); };
-window.onload = start;
+window.onload = init;
 </script>
 </body>
 </html>
