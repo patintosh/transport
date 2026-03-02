@@ -1,4 +1,3 @@
-cat << 'EOF' > index.html
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -13,7 +12,7 @@ cat << 'EOF' > index.html
         .links-ref { margin-top: 10px; }
         .links-ref a { color: var(--accent); text-decoration: none; margin: 0 10px; font-weight: 500; }
         .search-area { position: sticky; top: 0; background: rgba(245,245,247,0.98); backdrop-filter: blur(10px); padding: 15px 0; z-index: 100; border-bottom: 1px solid #eee; }
-        #search-input { width: 100%; padding: 14px; border-radius: 10px; border: 1px solid #d2d2d7; font-size: 1.1rem; outline: none; }
+        #search-input { width: 100%; padding: 14px; border-radius: 10px; border: 1px solid #d2d2d7; font-size: 1.1rem; outline: none; box-sizing: border-box; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 20px; }
         .result-item { background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); border-left: 4px solid #ccc; }
         .pdf-item { border-left-color: #e30000; }
@@ -67,19 +66,20 @@ let RECENT_FIRST = true;
 const GLOSSARY = { "rail": "ferroviaire", "ferroviaire": "rail", "fret": "marchandises" };
 
 function getVal(it) {
-    // Forçage manuel pour le document de tête
+    // Forçage manuel pour l'article récent a0003
     if (it.title && it.title.includes("a0003")) return 20260302;
     
     const text = (it.date + " " + it.title).toLowerCase();
-    // Chercher une année 4 chiffres
-    const m = text.match(/\b(19|20)\d{2}\b/);
-    let year = m ? parseInt(m[0]) : 1900;
     
-    // Si format JJ/MM/AAAA
+    // 1. Chercher format JJ/MM/AAAA
     const full = text.match(/(\d{2})\/(\d{2})\/(\d{4})/);
     if (full) return parseInt(full[3]+full[2]+full[1]);
     
-    return year * 10000;
+    // 2. Chercher année 4 chiffres
+    const m = text.match(/\b(19|20)\d{2}\b/);
+    if (m) return parseInt(m[0]) * 10000;
+    
+    return 19000000;
 }
 
 async function start() {
@@ -111,7 +111,6 @@ function update() {
         return { ...it, score, time: getVal(it) };
     }).filter(it => it.score > 0);
 
-    // Tri strict : Date d'abord, Score ensuite si recherche
     list.sort((a, b) => {
         if (!q) return RECENT_FIRST ? (b.time - a.time) : (a.time - b.time);
         return (b.score - a.score) || (b.time - a.time);
@@ -128,28 +127,26 @@ function render(list) {
 
     list.forEach(it => {
         const link = it.url || it.path || "";
-        // TEST CRUCIAL : Si contient "http" ou "simdif" -> WEB. Sinon -> PDF.
         const isWeb = link.includes('http') || link.includes('simdif');
         
         const finalLink = isWeb ? link : ("pdf/" + (it.title.endsWith('.pdf') ? it.title : it.title + ".pdf"));
         
         let title = it.title;
-        if (it.description && (title.length < 8 || title.match(/^[a-z]\d/i))) {
-            title = it.description.substring(0, 90) + "...";
+        if (it.description && (title.length < 10 || title.match(/^[a-z]\d/i))) {
+            title = it.description.substring(0, 95) + "...";
         }
 
         const html = `
             <div class="result-item ${isWeb ? 'web-item' : 'pdf-item'}">
                 <div class="result-title"><a href="${finalLink}" target="_blank">${title}</a></div>
-                <div class="result-desc">${(it.description || "").substring(0, 250)}</div>
+                <div class="result-desc">${(it.description || "Consulter le document.").substring(0, 250)}</div>
                 <div class="meta">📅 ${it.date || 'Archive'} | Réf: ${it.title}</div>
             </div>`;
         
-        if (isWeb) web.innerHTML += html; else pdf.innerHTML += html;
+        if (isWeb) webDiv = web.innerHTML += html; else pdf.innerHTML += html;
     });
 }
 window.onload = start;
 </script>
 </body>
 </html>
-EOF
