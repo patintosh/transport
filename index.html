@@ -14,8 +14,9 @@
         .is-web { border-left-color: var(--web); }
         .card a { color: var(--accent); text-decoration: none; font-weight: bold; font-size: 1.1rem; display: block; margin-bottom: 5px; }
         .meta { font-size: 0.85rem; color: #666; margin-top: 10px; border-top: 1px solid #eee; padding-top: 8px; }
-        .search-area { position: sticky; top: 0; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); padding: 20px; z-index: 100; border-bottom: 1px solid #eee; }
+        .search-area { position: sticky; top: 0; background: white; padding: 20px; z-index: 100; border-bottom: 1px solid #eee; }
         #search-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; }
+        .btn-sort { background: #1d1d1f; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -26,7 +27,10 @@
 <div class="wrap">
     <div class="search-area">
         <input type="text" id="search-input" placeholder="Rechercher...">
-        <p id="counter" style="margin-top:10px; font-weight:bold;">Initialisation...</p>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+            <span id="counter" style="font-weight:bold;">Chargement...</span>
+            <button id="sortBtn" class="btn-sort">📅 Inverser l'Ordre Chronologique</button>
+        </div>
     </div>
     <div class="grid">
         <section><h2>📄 PDF (Archives & Notes)</h2><div id="pdf-list"></div></section>
@@ -35,16 +39,13 @@
 </div>
 <script>
 let DATA = [];
+let RECENT_FIRST = true;
 
-function getYear(it) {
-    // 1. Priorité absolue au document de Mars 2026 (A0003)
-    if (it.title.includes("A0003")) return 202603;
-
-    // 2. Extraction stricte de l'année depuis le JSON (date, title ou description)
-    // On cherche 4 chiffres consécutifs (ex: 2025)
-    let textToScan = (it.date || "") + (it.title || "") + (it.description || "");
-    let match = textToScan.match(/(20|19)\d{2}/);
-    
+function extractYear(it) {
+    if (it.title.includes("A0003")) return 2026;
+    // On cherche uniquement des années réalistes (4 chiffres commençant par 19 ou 20)
+    let text = (it.date || "") + (it.title || "") + (it.description || "");
+    let match = text.match(/\b(19|20)\d{2}\b/);
     return match ? parseInt(match[0]) : 1900;
 }
 
@@ -56,10 +57,18 @@ async function start() {
 
 function render() {
     const q = document.getElementById('search-input').value.toLowerCase().trim();
-    let filtered = DATA.filter(it => (it.title + " " + (it.description || "")).toLowerCase().includes(q));
     
-    // Tri par année décroissante
-    filtered.sort((a,b) => getYear(b) - getYear(a));
+    // Filtrage simple
+    let filtered = DATA.filter(it => {
+        let content = (it.title + " " + (it.description || "")).toLowerCase();
+        return content.includes(q);
+    });
+
+    // Tri strict
+    filtered.sort((a,b) => {
+        let yA = extractYear(a), yB = extractYear(b);
+        return RECENT_FIRST ? yB - yA : yA - yB;
+    });
 
     const pL = document.getElementById('pdf-list');
     const wL = document.getElementById('web-list');
@@ -67,12 +76,14 @@ function render() {
 
     filtered.forEach(it => {
         let url = it.url || it.path || "";
-        // RÉPARATION CRUCIALE : On extrait le nom exact SANS changer la casse (A0003 reste A0003)
+        // RÉPARATION : On garde le nom de fichier exactement tel qu'il est dans le JSON
         let fileName = url.split('/').pop(); 
         const isPdf = fileName.toLowerCase().endsWith('.pdf');
         
-        // Affichage : Si le titre est court (code), on utilise la description
-        let displayTitle = (it.description && it.title.length < 10) ? it.description.split('.')[0] : it.title;
+        let displayTitle = it.title;
+        if (it.description && (it.title.length < 10 || it.title.includes("A0"))) {
+            displayTitle = it.description.split('.')[0].substring(0, 120);
+        }
 
         const html = `<div class="card ${isPdf?'is-pdf':'is-web'}">
             <a href="${isPdf ? fileName : url}" target="_blank">${displayTitle}</a>
@@ -80,10 +91,11 @@ function render() {
         </div>`;
         if(isPdf) pL.innerHTML += html; else wL.innerHTML += html;
     });
-    document.getElementById('counter').innerText = filtered.length + " document(s) trouvé(s)";
+    document.getElementById('counter').innerText = filtered.length + " document(s)";
 }
 
 document.getElementById('search-input').oninput = render;
+document.getElementById('sortBtn').onclick = () => { RECENT_FIRST = !RECENT_FIRST; render(); };
 window.onload = start;
 </script>
 </body>
