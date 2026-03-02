@@ -4,76 +4,57 @@
     <meta charset="UTF-8">
     <title>Bibliothèque Patrice Salini</title>
     <style>
-        :root { --accent: #0071e3; --pdf: #d93025; --web: #1a73e8; }
-        body { font-family: -apple-system, sans-serif; background: #f5f5f7; margin: 0; color: #1d1d1f; }
+        :root { --pdf: #d93025; --web: #1a73e8; }
+        body { font-family: -apple-system, sans-serif; background: #f5f5f7; margin: 0; }
         .wrap { max-width: 1100px; margin: 0 auto; padding: 20px; }
-        header { text-align: center; padding: 30px; background: white; border-bottom: 1px solid #ddd; }
-        .search-area { position: sticky; top: 0; background: white; padding: 20px; z-index: 100; border-bottom: 1px solid #eee; }
-        #search-input { width: 100%; padding: 15px; border-radius: 8px; border: 1px solid #ccc; font-size: 1.1rem; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px; }
-        .card { background: white; padding: 18px; border-radius: 12px; margin-bottom: 15px; border-left: 6px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .card.is-pdf { border-left-color: var(--pdf); }
-        .card.is-web { border-left-color: var(--web); }
-        .card a { color: var(--accent); text-decoration: none; font-weight: bold; font-size: 1.1rem; display: block; margin-bottom: 5px; }
-        .meta { font-size: 0.85rem; color: #666; margin-top: 10px; border-top: 1px solid #eee; padding-top: 8px; }
+        .search-area { position: sticky; top: 0; background: white; padding: 20px; border-bottom: 1px solid #ddd; z-index: 100; }
+        #search-input { width: 100%; padding: 12px; font-size: 1.1rem; border-radius: 8px; border: 1px solid #ccc; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+        .card { background: white; padding: 15px; border-radius: 10px; border-left: 5px solid #ccc; margin-bottom: 10px; }
+        .is-pdf { border-left-color: var(--pdf); }
+        .is-web { border-left-color: var(--web); }
+        .card a { color: #0071e3; text-decoration: none; font-weight: bold; }
+        .meta { font-size: 0.8rem; color: #666; margin-top: 5px; }
     </style>
 </head>
 <body>
-<header><h1>Ma Bibliothèque Numérique</h1></header>
 <div class="wrap">
     <div class="search-area">
-        <input type="text" id="search-input" placeholder="Rechercher...">
-        <p id="counter" style="margin-top:10px; font-weight:bold;">Chargement...</p>
+        <input type="text" id="search-input" placeholder="Recherche (rail, route, 2026...)">
+        <p id="counter"></p>
     </div>
     <div class="grid">
-        <section><h2>📄 PDF (Note & Archives)</h2><div id="pdf-list"></div></section>
-        <section><h2>🌐 WEB (Articles)</h2><div id="web-list"></div></section>
+        <section><h2>📄 PDF</h2><div id="pdf-list"></div></section>
+        <section><h2>🌐 WEB</h2><div id="web-list"></div></section>
     </div>
 </div>
 <script>
 let DATA = [];
-
-function getYear(it) {
-    // Si la date est bien formée (YYYY-MM-DD ou DD/MM/YYYY)
-    const d = it.date || "";
-    const match = d.match(/(20|19)\d{2}/);
-    if (match) return parseInt(match[0]);
-    // Si c'est A0003, on sait que c'est 2026
-    if (it.title.includes("A0003")) return 2026;
-    return 0; // Archives sans date
-}
-
 async function start() {
     const r = await fetch('index.json?v=' + Date.now());
     DATA = await r.json();
     render();
 }
-
 function render() {
     const q = document.getElementById('search-input').value.toLowerCase();
     const pL = document.getElementById('pdf-list');
     const wL = document.getElementById('web-list');
     pL.innerHTML = ""; wL.innerHTML = "";
 
-    // Tri décroissant (Plus récent en haut)
-    const sorted = DATA.sort((a,b) => getYear(b) - getYear(a));
-
-    const filtered = sorted.filter(it => (it.title + " " + (it.description || "")).toLowerCase().includes(q));
+    const filtered = DATA.filter(it => {
+        return (it.title + " " + (it.description || "") + " " + (it.url || "")).toLowerCase().includes(q);
+    });
 
     filtered.forEach(it => {
-        const url = it.url || it.path || "";
-        const fileName = url.split('/').pop(); 
-        const isPdf = fileName.toLowerCase().endsWith('.pdf');
-        
-        let displayTitle = (it.description && it.description.length > 5) ? it.description.split('.')[0] : it.title;
-
+        const url = it.url || "";
+        const isPdf = url.toLowerCase().endsWith('.pdf');
         const html = `<div class="card ${isPdf?'is-pdf':'is-web'}">
-            <a href="${isPdf ? fileName : url}" target="_blank">${displayTitle}</a>
-            <div class="meta">📅 ${it.date} | Réf: ${it.title}</div>
+            <a href="${url}" target="_blank">${it.description || it.title}</a>
+            <div class="meta">Ref: ${it.title} | Date: ${it.date}</div>
         </div>`;
         if(isPdf) pL.innerHTML += html; else wL.innerHTML += html;
     });
-    document.getElementById('counter').innerText = filtered.length + " doc(s)";
+    document.getElementById('counter').innerText = filtered.length + " résultats";
 }
 document.getElementById('search-input').oninput = render;
 window.onload = start;
