@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bibliothèque numérique - Patrice Salini</title>
+    <style>
+        :root {
+            --bg-color: #f5f5f7;
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --accent-color: #0071e3;
+            --text-color: #1d1d1f;
+            --border-radius: 18px;
+        }
+        body {
+            margin: 0; padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg-color); color: var(--text-color);
+            line-height: 1.5; -webkit-font-smoothing: antialiased;
+        }
+        .wrap { max-width: 1100px; margin: 0 auto; padding: 20px; }
+        .site-header {
+            background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            padding: 50px 0; border-bottom: 1px solid rgba(0,0,0,0.05); text-align: center;
+        }
+        .site-title { font-size: 2.2rem; max-width: 900px; margin: 0 auto 15px auto; font-weight: 700; letter-spacing: -0.02em; }
+        .site-subtitle { font-size: 1.15rem; margin-bottom: 15px; color: #333; }
+        .site-link { margin: 5px 0; font-size: 1.05rem; }
+        .search-section { margin: -35px auto 30px; max-width: 800px; text-align: center; }
+        #search-input {
+            width: 100%; padding: 22px 30px; border-radius: var(--border-radius);
+            border: 1px solid rgba(0,0,0,0.1); font-size: 1.35rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.06); outline: none; background: #ffffff; box-sizing: border-box;
+        }
+        .toolbar {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 20px; padding: 12px 20px; background: var(--glass-bg);
+            border-radius: 12px; border: 1px solid rgba(0,0,0,0.03);
+        }
+        .results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 40px; }
+        .results-column h2 { font-size: 1.3rem; border-bottom: 2px solid var(--accent-color); padding-bottom: 10px; margin-bottom: 20px; }
+        .result-item {
+            background: #ffffff; padding: 22px; border-radius: var(--border-radius);
+            margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            border: 1px solid rgba(0,0,0,0.02); transition: transform 0.2s ease;
+        }
+        .result-item:hover { transform: translateY(-4px); }
+        .result-title a { font-size: 1.15rem; font-weight: 600; color: var(--accent-color); text-decoration: none; }
+        .toggle-button {
+            background: var(--text-color); color: white; padding: 8px 16px;
+            border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 0.9rem;
+        }
+        @media (max-width: 850px) { .results-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="wrap">
+            <h1 class="site-title">Bibliothèque numérique des articles et études publiques de Patrice Salini</h1>
+            <p class="site-subtitle">Articles, documents et études publiques sur les transports et la socioéconomie</p>
+            <p class="site-link"><a href="https://pensertransports.simdif.com" target="_blank" style="color:#0066cc; font-weight:bold; text-decoration:none;">Penser Transport — site partagé avec Christian Reynaud</a></p>
+            <p class="site-link"><a href="https://www.editions-harmattan.fr/catalogue/auteur/patrice-salini/15031" target="_blank" style="color:#0066cc; font-weight:bold; text-decoration:none;">Publications chez L’Harmattan — page auteur</a></p>
+        </div>
+    </header>
+
+    <main class="wrap">
+        <section class="search-section">
+            <input type="text" id="search-input" placeholder="Rechercher (ex: rail, fret, 2025...)" autocomplete="off">
+            <div class="toolbar">
+                <span id="result-count" style="font-weight:bold;">Chargement...</span>
+                <div>Trié par : <button id="toggleSortDate" class="toggle-button">📅 Plus récents</button></div>
+            </div>
+        </section>
+
+        <div class="results-grid">
+            <section class="results-column">
+                <h2>📄 Articles ou Études (PDF)</h2>
+                <div id="results-pdf"></div>
+            </section>
+            <section class="results-column">
+                <h2>🌐 Extraits de Penser les Transports (Web)</h2>
+                <div id="results-simdif"></div>
+            </section>
+        </div>
+    </main>
+
+   <script>
+let DATA = [];
+let SORT_MODE = "recent";
+
+const GLOSSAIRE = {
+    "rail": ["ferroviaire", "train", "sncf", "ferré", "chemin de fer"],
+    "ferroviaire": ["rail", "train", "ferré", "chemin de fer"],
+    "fret": ["marchandises", "logistique", "cargo", "transport de marchandises"],
+    "routier": ["route", "camion", "poids lourd"],
+    "aerien": ["avion", "vol", "aéroport"]
+};
+
+// --- LA VERSION FLEXIBLE (Gère Majuscules et Minuscules) ---
+function normalizePath(p, it) {
+    if (!p) return "#";
+    p = p.trim();
+    if (p.startsWith('http')) return p;
+    // Si le titre est un code (A0065), on force le lien vers "A0065.pdf" en majuscules
+    if (it && it.title && it.title.match(/^[A-Z]\d+/i)) {
+        return it.title.toUpperCase() + ".pdf";
+    }
+    return p.replace(/^\//, '');
+}
+
+function parseDateForSort(d) {
+    if (!d) return 0;
+    const s = String(d).trim();
+    const m = s.match(/(\d{2})\.(\d{2})\.(\d{4})/);
+    if (m) return parseInt(m[3] + m[2] + m[1]);
+    const y = s.match(/(\d{4})/);
+    return y ? parseInt(y[1] + "0000") : 0;
+}
+
+async function init() {
+    try {
+        const r = await fetch("index.json?v=" + Date.now());
+        DATA = await r.json();
+        document.getElementById("search-input").oninput = update;
+        document.getElementById("toggleSortDate").onclick = function() {
+            SORT_MODE = (SORT_MODE === "recent") ? "old" : "recent";
+            this.innerText = SORT_MODE === "recent" ? "📅 Plus récents" : "📅 Plus anciens";
+            update();
+        };
+        update();
+    } catch (e) { 
+        document.getElementById("result-count").innerText = "Erreur de chargement JSON"; 
+    }
+}
+
+function update() {
+    const query = document.getElementById("search-input").value.toLowerCase().trim();
+    const searchTerms = query.split(/\s+/).filter(t => t.length > 0);
+
+    const res = DATA.filter(it => {
+        if (searchTerms.length === 0) return true;
+        const docText = (it.title + " " + it.description + " " + (it.keywords || []).join(" ")).toLowerCase();
+        return searchTerms.every(term => {
+            if (docText.includes(term)) return true;
+            if (GLOSSAIRE[term]) {
+                return GLOSSAIRE[term].some(syn => docText.includes(syn));
+            }
+            return false;
+        });
+    });
+
+    res.sort((a, b) => {
+        const vA = parseDateForSort(a.date);
+        const vB = parseDateForSort(b.date);
+        return SORT_MODE === "recent" ? vB - vA : vA - vB;
+    });
+
+    render(res);
+}
+
+function render(arr) {
+    const pdf = document.getElementById("results-pdf");
+    const web = document.getElementById("results-simdif");
+    pdf.innerHTML = ""; web.innerHTML = "";
+    document.getElementById("result-count").innerText = arr.length + " résultat(s)";
+
+    arr.forEach(it => {
+        const path = it.path || "";
+        const isWeb = path.includes('http') || path.includes('simdif');
+        
+        let titrePrincipal = it.title || "Document sans titre";
+        let descriptionLongue = it.description || "";
+
+        if (titrePrincipal.match(/^[A-Z]\d+/i) && descriptionLongue.length > 10) {
+            titrePrincipal = descriptionLongue.substring(0, 110) + "...";
+        }
+
+        const html = '<div class="result-item">' +
+            '<div class="result-title">' +
+                // Note : on passe 'it' à normalizePath ici
+                '<a href="' + normalizePath(path, it) + '" target="_blank">' + titrePrincipal + '</a>' +
+            '</div>' +
+            '<p style="font-size:0.95rem; color:#444; margin:10px 0;">' + descriptionLongue + '</p>' +
+            '<div style="font-size:0.85rem; color:#86868b;">' + 
+                '📅 ' + (it.date || "N/A") + 
+                ' | ' + (it.type_doc || "Article") + 
+                ' | 📂 ' + (it.title || "") + 
+            '</div>' +
+            '</div>';
+
+        if (isWeb) web.innerHTML += html;
+        else pdf.innerHTML += html;
+    });
+}
+
+window.onload = init;
+</script>
+</body>
+</html>
