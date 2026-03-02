@@ -59,18 +59,17 @@ function getScore(it) {
     let title = (it.title || "").toLowerCase();
     let dateStr = (it.date || "").toLowerCase();
     
-    // Priorité absolue
+    // Priorité maximale : 2026 (Note de synthèse)
     if (title.includes("a0003")) return 20260302;
     
-    // Détection des fichiers récents par mots clés ou dates
-    if (title.includes("key26") || title.includes("2026")) return 20260000;
+    // Priorité haute : Tout ce qui contient 2025 ou 2026 ou key26
+    if (title.includes("2026") || title.includes("key26")) return 20260000;
     if (title.includes("2025") || dateStr.includes("2025")) return 20250000;
     
-    // Extraction classique d'année
+    // Extraction d'année classique
     let m = (dateStr + title).match(/\d{4}/);
     if (m) return parseInt(m[0]) * 10000;
     
-    // Par défaut, vieux documents
     return 19000000;
 }
 
@@ -103,12 +102,15 @@ function update() {
 
     filtered.forEach(it => {
         let url = it.url || it.path || "";
-        // Réparation des liens : on pointe vers le fichier à la racine
+        
+        // --- RÉPARATION MAJUSCULES ET RACINE ---
+        // On ne garde que le nom du fichier du JSON tel quel (respecte A0003.pdf)
         let fileName = url.split('/').pop(); 
         
         const isPdf = fileName.toLowerCase().endsWith('.pdf');
         
         let displayTitle = it.title;
+        // Si le titre est un code (A0003, A0231, key...), on affiche la description
         if ((it.title.match(/^[a-z]\d{4}$/i) || it.title.includes('key')) && it.description) {
             displayTitle = it.description.split('.')[0].substring(0, 100);
         }
@@ -120,7 +122,7 @@ function update() {
         
         if(isPdf) pL.innerHTML += html; else wL.innerHTML += html;
     });
-    document.getElementById('counter').innerText = filtered.length + " doc(s)";
+    document.getElementById('counter').innerText = filtered.length + " document(s)";
 }
 
 document.getElementById('search-input').oninput = update;
