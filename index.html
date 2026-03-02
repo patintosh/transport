@@ -47,23 +47,14 @@
 let DATA = [];
 let RECENT = true;
 
-const GLOSSAIRE = {
-    "fret": ["marchandises", "logistique"], "marchandises": ["fret"],
-    "rail": ["ferroviaire", "sncf", "train"], "ferroviaire": ["rail", "sncf"]
-};
-
 function getScore(it) {
     let t = (it.title || "").toUpperCase();
     let d = (it.date || "");
-    let desc = (it.description || "");
-
-    // 1. Priorité absolue : Mars 2026 (A0003)
+    // Priorité absolue à A0003 (Mars 2026)
     if (t.includes("A0003")) return 20260302;
-    
-    // 2. Règle des Années (Cherche 2026, 2025, 2024...)
-    let m = (t + d + desc).match(/(20\d{2}|19\d{2})/);
+    // Extraction d'année stricte (4 chiffres commençant par 19 ou 20)
+    let m = (t + d + (it.description||"")).match(/(20\d{2}|19\d{2})/);
     if (m) return parseInt(m[0]) * 10000;
-
     return 19000000;
 }
 
@@ -75,17 +66,9 @@ async function start() {
 
 function update() {
     const q = document.getElementById('search-input').value.toLowerCase().trim();
-    let terms = [q];
-    for (let key in GLOSSAIRE) {
-        if (q.includes(key) || GLOSSAIRE[key].some(a => q.includes(a))) {
-            terms = [...new Set([...terms, key, ...GLOSSAIRE[key]])];
-        }
-    }
-
     let filtered = DATA.filter(it => {
         if (!q) return true;
-        const txt = (it.title + " " + (it.description || "")).toLowerCase();
-        return terms.some(t => txt.includes(t));
+        return (it.title + " " + (it.description || "")).toLowerCase().includes(q);
     });
 
     filtered.sort((a,b) => RECENT ? getScore(b) - getScore(a) : getScore(a) - getScore(b));
@@ -96,18 +79,18 @@ function update() {
 
     filtered.forEach(it => {
         let url = it.url || it.path || "";
+        // RÉPARATION MAJUSCULES : On prend le nom exact défini dans le JSON
         let fileName = url.split('/').pop(); 
+        
         const isPdf = fileName.toLowerCase().endsWith('.pdf');
-        
-        // --- TRADUCTION DES TITRES ---
         let displayTitle = it.title;
-        // Remplacement TIH et TM
-        displayTitle = displayTitle.replace(/TIH\s?/gi, "Transport Info Hebdo n°");
-        displayTitle = displayTitle.replace(/TM\s?/gi, "Transport Magazine n°");
-        
-        // Si c'est un code (A0003, A0231...) on met la description
-        if ((it.title.match(/^[A-Za-z]\d{4}$/) || it.title.includes('key')) && it.description) {
-            displayTitle = it.description.split('.')[0].substring(0, 110);
+
+        // Traduction TIH / TM
+        displayTitle = displayTitle.replace(/TIH/gi, "Transport Info Hebdo").replace(/TM/gi, "Transport Magazine");
+
+        // Utiliser la description pour les codes type A0003
+        if (it.title.match(/^[A-Za-z]\d{4}$/) && it.description) {
+            displayTitle = it.description.split('.')[0].substring(0, 100);
         }
 
         const html = `<div class="card ${isPdf?'is-pdf':'is-web'}">
