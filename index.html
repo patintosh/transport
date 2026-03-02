@@ -43,20 +43,28 @@
 let DATA = [];
 let RECENT_FIRST = true;
 
-// Fonction magique pour transformer n'importe quel format de date en nombre triable
-function parseToNumericDate(dateStr) {
-    if (!dateStr || dateStr === "N/A" || dateStr === "Archive") return 0;
+function parseToNumericDate(it) {
+    const dateStr = it.date;
+    const titleStr = it.title;
+    
+    if (!dateStr || dateStr === "N/A" || dateStr === "Archive") {
+        // Si pas de date, on essaie de deviner via le titre (ex: TM92 -> 1992)
+        const yearInTitle = titleStr.match(/\d{2}/);
+        if (yearInTitle) {
+            let y = parseInt(yearInTitle[0]);
+            return (y > 50 ? 1900 + y : 2000 + y) * 100;
+        }
+        return 0;
+    }
     
     const s = dateStr.toString();
     let year = 0;
     let month = 0;
 
-    // 1. Chercher une année à 4 chiffres (ex: 2026, 1995)
     const year4 = s.match(/\b(19|20)\d{2}\b/);
     if (year4) {
         year = parseInt(year4[0]);
     } else {
-        // 2. Chercher une année à 2 chiffres (ex: 92, 04)
         const year2 = s.match(/\b\d{2}\b/g);
         if (year2) {
             let last = parseInt(year2[year2.length - 1]);
@@ -64,24 +72,25 @@ function parseToNumericDate(dateStr) {
         }
     }
 
-    // 3. Chercher un mois (1 à 12)
     const monthMatch = s.match(/\b(0?[1-9]|1[0-2])\b/);
     if (monthMatch) month = parseInt(monthMatch[0]);
 
-    return (year * 100) + month; // Retourne un nombre comme 199205 pour Mai 1992
+    return (year * 100) + month;
 }
 
 async function start() {
-    const r = await fetch('index.json?v=' + Date.now());
-    DATA = await r.json();
-    
-    document.getElementById('search-input').oninput = update;
-    document.getElementById('btnSort').onclick = () => {
-        RECENT_FIRST = !RECENT_FIRST;
-        document.getElementById('btnSort').innerText = RECENT_FIRST ? "📅 Voir les plus récents" : "📅 Voir les plus anciens";
+    try {
+        const r = await fetch('index.json?v=' + Date.now());
+        DATA = await r.json();
+        
+        document.getElementById('search-input').oninput = update;
+        document.getElementById('btnSort').onclick = () => {
+            RECENT_FIRST = !RECENT_FIRST;
+            document.getElementById('btnSort').innerText = RECENT_FIRST ? "📅 Voir les plus récents en premier" : "📅 Voir les plus anciens en premier";
+            update();
+        };
         update();
-    };
-    update();
+    } catch(e) { console.error(e); }
 }
 
 function update() {
@@ -92,10 +101,9 @@ function update() {
         return content.includes(q);
     });
 
-    // Tri intelligent
     filtered.sort((a, b) => {
-        const valA = parseToNumericDate(a.date);
-        const valB = parseToNumericDate(b.date);
+        const valA = parseToNumericDate(a);
+        const valB = parseToNumericDate(b);
         return RECENT_FIRST ? (valB - valA) : (valA - valB);
     });
 
@@ -106,15 +114,19 @@ function render(list) {
     const container = document.getElementById('results-list');
     document.getElementById('counter').innerText = `${list.length} document(s)`;
     
-    container.innerHTML = list.map(it => `
+    container.innerHTML = list.map(it => {
+        // Sécurité pour l'URL
+        const finalUrl = it.url || (it.path ? it.path : "#");
+        
+        return `
         <div class="result-item">
             <div class="result-title">
-                <a href="${it.url}" target="_blank">${it.title}</a>
+                <a href="${finalUrl}" target="_blank">${it.title}</a>
             </div>
             <p style="margin:10px 0; font-size:0.95rem;">${it.description}</p>
-            <div class="meta">📅 Date: ${it.date} | 📂 Réf: ${it.title.split('.')[0]}</div>
+            <div class="meta">📅 Date: ${it.date || 'Non daté'} | 📂 Réf: ${it.title}</div>
         </div>
-    `).join('');
+    `}).join('');
 }
 
 window.onload = start;
