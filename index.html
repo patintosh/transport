@@ -5,34 +5,33 @@
     <title>Bibliothèque Patrice Salini</title>
     <style>
         :root { --pdf: #d93025; --web: #1a73e8; }
-        body { font-family: -apple-system, sans-serif; background: #f5f5f7; margin: 0; padding: 0; }
-        .header { background: #1d1d1f; color: white; padding: 30px; text-align: center; }
+        body { font-family: -apple-system, sans-serif; background: #f5f5f7; margin: 0; }
+        .header { background: #1d1d1f; color: white; padding: 25px; text-align: center; }
         .wrap { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
-        .search-area { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; gap: 10px; }
-        #search-input { flex-grow: 1; padding: 12px; font-size: 1.1rem; border: 1px solid #ccc; border-radius: 6px; }
-        .btn-search { background: #0071e3; color: white; border: none; padding: 0 25px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 1rem; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px; }
-        .card { background: white; padding: 15px; border-radius: 8px; border-left: 5px solid #ccc; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .controls { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; gap: 15px; align-items: center; }
+        #search-input { flex-grow: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        select { padding: 10px; border-radius: 4px; border: 1px solid #ccc; cursor: pointer; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px; }
+        .card { background: white; padding: 15px; border-radius: 8px; border-left: 5px solid #ccc; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .is-pdf { border-left-color: var(--pdf); }
         .is-web { border-left-color: var(--web); }
-        .card a { color: #0071e3; text-decoration: none; font-weight: bold; display: block; margin-bottom: 5px; }
-        .meta { font-size: 0.85rem; color: #666; }
-        h2 { font-size: 1.4rem; border-bottom: 2px solid #333; padding-bottom: 8px; }
+        .card a { color: #0071e3; text-decoration: none; font-weight: bold; }
+        .meta { font-size: 0.8rem; color: #666; margin-top: 5px; }
     </style>
 </head>
 <body>
-<div class="header">
-    <h1>Bibliothèque Patrice Salini</h1>
-    <p>Économie et Politiques de Transport</p>
-</div>
+<div class="header"><h1>Bibliothèque Patrice Salini</h1></div>
 <div class="wrap">
-    <div class="search-area">
-        <input type="text" id="search-input" placeholder="Recherche (ex: rail, tko, 2026...)">
-        <button class="btn-search" onclick="render()">RECHERCHER</button>
+    <div class="controls">
+        <input type="text" id="search-input" placeholder="Rechercher (ex: rail, 2026...)">
+        <select id="sort-order" onchange="render()">
+            <option value="desc">Plus récents d'abord</option>
+            <option value="asc">Plus anciens d'abord</option>
+        </select>
     </div>
-    <p id="counter" style="margin-top:15px; font-weight:bold; color:#0071e3;"></p>
+    <p id="counter" style="margin: 15px 0; font-weight: bold; color: #0071e3;"></p>
     <div class="grid">
-        <section><h2>📄 PDF & Archives</h2><div id="pdf-list"></div></section>
+        <section><h2>📄 PDF</h2><div id="pdf-list"></div></section>
         <section><h2>🌐 Liens Web & Éditeur</h2><div id="web-list"></div></section>
     </div>
 </div>
@@ -48,23 +47,28 @@ async function init() {
 }
 function render() {
     const q = document.getElementById('search-input').value.toLowerCase().trim();
+    const order = document.getElementById('sort-order').value;
     const pL = document.getElementById('pdf-list'); const wL = document.getElementById('web-list');
     pL.innerHTML = ""; wL.innerHTML = "";
     
-    let queryTerms = [q];
-    if (q && GLOSSAIRE[q]) queryTerms = [...queryTerms, ...GLOSSAIRE[q]];
+    let terms = [q];
+    if (q && GLOSSAIRE[q]) terms = [...terms, ...GLOSSAIRE[q]];
 
-    const filtered = DATA.filter(it => {
+    let filtered = DATA.filter(it => {
         if (!q) return true;
-        const searchZone = (it.title + " " + it.url).toLowerCase();
-        return queryTerms.some(t => searchZone.includes(t));
+        const target = (it.title + " " + it.url).toLowerCase();
+        return terms.some(t => target.includes(t));
+    });
+
+    filtered.sort((a, b) => {
+        return order === 'desc' ? b.date.localeCompare(a.date) : a.date.localeCompare(b.date);
     });
 
     filtered.forEach(it => {
         const isPdf = it.url.toLowerCase().endsWith('.pdf');
         const html = `<div class="card ${isPdf?'is-pdf':'is-web'}">
             <a href="${it.url}" target="_blank">${it.title}</a>
-            <div class="meta">Réf: ${it.url} | Date: ${it.date}</div>
+            <div class="meta">Date: ${it.date} | Réf: ${it.url}</div>
         </div>`;
         if(isPdf) pL.insertAdjacentHTML('beforeend', html);
         else wL.insertAdjacentHTML('beforeend', html);
