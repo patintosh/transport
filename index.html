@@ -8,19 +8,18 @@
         :root { --bg-color: #f5f5f7; --accent: #0071e3; --text: #1d1d1f; }
         body { margin: 0; font-family: -apple-system, sans-serif; background: var(--bg-color); color: var(--text); }
         .wrap { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        .site-header { padding: 40px 0; text-align: center; background: white; border-bottom: 1px solid #ddd; }
-        .links-ref { margin-top: 15px; font-size: 1rem; }
-        .links-ref a { color: var(--accent); text-decoration: none; margin: 0 12px; font-weight: 500; }
+        .site-header { padding: 30px 0; text-align: center; background: white; border-bottom: 1px solid #ddd; }
+        .links-ref { margin-top: 10px; font-size: 0.9rem; }
+        .links-ref a { color: var(--accent); text-decoration: none; margin: 0 10px; }
         .search-area { position: sticky; top: 0; background: rgba(245,245,247,0.95); backdrop-filter: blur(10px); padding: 20px 0; z-index: 100; border-bottom: 1px solid #eee; }
         #search-input { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #d2d2d7; font-size: 1.1rem; box-sizing: border-box; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px; }
-        .result-item { background: white; padding: 20px; border-radius: 14px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid transparent; }
-        .result-item:hover { border-color: #0071e3; }
+        .result-item { background: white; padding: 18px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .result-title a { color: var(--accent); text-decoration: none; font-weight: 600; font-size: 1.1rem; }
-        .result-desc { font-size: 0.95rem; color: #444; margin: 10px 0; line-height: 1.5; }
-        .meta { font-size: 0.8rem; color: #86868b; border-top: 1px dotted #eee; padding-top: 10px; margin-top: 10px; }
-        .btn-sort { background: #1d1d1f; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; }
-        h2 { font-size: 1.5rem; color: #333; margin-bottom: 20px; }
+        .result-desc { font-size: 0.9rem; color: #444; margin: 8px 0; line-height: 1.4; }
+        .meta { font-size: 0.8rem; color: #86868b; border-top: 1px dotted #eee; padding-top: 8px; margin-top: 8px; }
+        .btn-sort { background: #1d1d1f; color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; }
+        h2 { font-size: 1.3rem; border-bottom: 2px solid #333; padding-bottom: 5px; }
         @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -29,20 +28,20 @@
 <header class="site-header">
     <div class="wrap">
         <h1>Bibliothèque numérique</h1>
-        <p style="font-size: 1.3rem; margin: 10px 0; color: #555;">Patrice Salini - Transports & Mobilités</p>
+        <p>Patrice Salini - Transports & Mobilités</p>
         <div class="links-ref">
-            <a href="https://pensertransports.simdif.com" target="_blank">🌐 Penser les transports (C. Reynaud & P. Salini)</a> | 
-            <a href="https://www.editions-harmattan.fr/catalogue/auteur/patrice-salini/15031" target="_blank">📚 Catalogue L'Harmattan</a>
+            <a href="https://pensertransports.simdif.com" target="_blank">🌐 Penser les transports</a> | 
+            <a href="https://www.editions-harmattan.fr/catalogue/auteur/patrice-salini/15031" target="_blank">📚 L'Harmattan</a>
         </div>
     </div>
 </header>
 
 <div class="wrap">
     <div class="search-area">
-        <input type="text" id="search-input" placeholder="Rechercher par mot-clé (ex: rail, fret, maritime, 1998...)" autofocus>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:15px;">
-            <span id="counter" style="font-weight: 600;">Chargement...</span>
-            <button id="sortBtn" class="btn-sort">📅 Trier : Plus récents</button>
+        <input type="text" id="search-input" placeholder="Recherche (rail, fret, maritime, 2025...)" autofocus>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+            <span id="counter" style="font-weight:bold;">Chargement...</span>
+            <button id="sortBtn" class="btn-sort">📅 Voir les plus récents</button>
         </div>
     </div>
 
@@ -52,7 +51,7 @@
             <div id="results-pdf"></div>
         </section>
         <section>
-            <h2>🌐 Articles & Liens Web</h2>
+            <h2>🌐 Liens Web & HTML</h2>
             <div id="results-web"></div>
         </section>
     </div>
@@ -61,17 +60,24 @@
 <script>
 let DATA = [];
 let RECENT_FIRST = true;
+const GLOSSARY = { "rail": "ferroviaire", "ferroviaire": "rail", "fret": "marchandises" };
 
-const GLOSSARY = { "rail": "ferroviaire", "ferroviaire": "rail", "fret": "marchandises", "maritime": "mer" };
-
-function getNumericDate(it) {
+function getYear(it) {
+    // Cas spécial pour votre document phare
     if (it.title && it.title.includes("a0003")) return 20260302;
-    const s = (it.date || "").toString();
-    const m = s.match(/\b(19|20)\d{2}\b/);
-    let year = m ? parseInt(m[0]) : 1900;
-    const full = s.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-    if (full) return parseInt(full[3] + full[2] + full[1]);
-    return year * 10000;
+    
+    const dateStr = (it.date || "").toString();
+    const titleStr = (it.title || "").toString();
+    
+    // 1. Chercher une date complète JJ/MM/AAAA
+    const fullDate = dateStr.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+    if (fullDate) return parseInt(fullDate[3] + fullDate[2] + fullDate[1]);
+
+    // 2. Chercher une année 4 chiffres (19XX ou 20XX)
+    const yearMatch = (dateStr + " " + titleStr).match(/\b(19|20)\d{2}\b/);
+    if (yearMatch) return parseInt(yearMatch[0]) * 10000;
+
+    return 19000000; // Par défaut, très vieux pour finir en bas
 }
 
 async function start() {
@@ -81,66 +87,62 @@ async function start() {
         document.getElementById('search-input').oninput = update;
         document.getElementById('sortBtn').onclick = () => {
             RECENT_FIRST = !RECENT_FIRST;
-            document.getElementById('sortBtn').innerText = RECENT_FIRST ? "📅 Trier : Plus récents" : "📅 Trier : Plus anciens";
+            document.getElementById('sortBtn').innerText = RECENT_FIRST ? "📅 Voir les plus récents" : "📅 Voir les plus anciens";
             update();
         };
         update();
-    } catch(e) { document.getElementById('counter').innerText = "Erreur de chargement de l'index."; }
+    } catch(e) { document.getElementById('counter').innerText = "Erreur index."; }
 }
 
 function update() {
     const q = document.getElementById('search-input').value.toLowerCase().trim();
     const syn = GLOSSARY[q] || "";
 
-    let res = DATA.map(it => {
-        const title = (it.title || "").toLowerCase();
-        const desc = (it.description || "").toLowerCase();
-        const keywords = (it.keywords || []).join(" ").toLowerCase();
-        const content = title + " " + desc + " " + keywords;
-        
+    let filtered = DATA.map(it => {
+        const text = (it.title + " " + (it.description || "")).toLowerCase();
         let score = 0;
         if (!q) score = 1;
-        else if (content.includes(q) || (syn && content.includes(syn))) {
-            score = content.includes(q) ? 100 : 50;
-            if (title.includes(q)) score += 50;
+        else if (text.includes(q) || (syn && text.includes(syn))) {
+            score = text.includes(q) ? 100 : 50;
+            if (it.title.toLowerCase().includes(q)) score += 50;
         }
-        return { ...it, score, dVal: getNumericDate(it) };
+        return { ...it, score, val: getYear(it) };
     }).filter(it => it.score > 0);
 
-    res.sort((a, b) => q ? (b.score - a.score || b.dVal - a.dVal) : (RECENT_FIRST ? b.dVal - a.dVal : a.dVal - b.dVal));
-    render(res);
+    // TRI : Si recherche, priorité au score puis à la date. Si vide, date pure.
+    filtered.sort((a, b) => {
+        if (q) return (b.score - a.score) || (b.val - a.val);
+        return RECENT_FIRST ? (b.val - a.val) : (a.val - b.val);
+    });
+
+    render(filtered);
 }
 
 function render(list) {
-    const pdfDiv = document.getElementById('results-pdf');
-    const webDiv = document.getElementById('results-web');
-    pdfDiv.innerHTML = ""; webDiv.innerHTML = "";
-    document.getElementById('counter').innerText = list.length + " document(s) trouvé(s)";
+    const pdf = document.getElementById('results-pdf');
+    const web = document.getElementById('results-web');
+    pdf.innerHTML = ""; web.innerHTML = "";
+    document.getElementById('counter').innerText = list.length + " doc(s)";
 
     list.forEach(it => {
-        // Détermination du lien (priorité à url, puis path, puis fallback automatique)
-        let finalLink = it.url || it.path || "";
-        if (!finalLink.startsWith('http') && finalLink !== "") {
-            finalLink = "pdf/" + (it.title.endsWith('.pdf') ? it.title : it.title + ".pdf");
-        }
-        
-        const isWeb = finalLink.includes('http') || finalLink.includes('simdif');
-        
-        // Titre d'affichage
-        let displayTitle = it.title || "Sans titre";
-        if (it.description && (displayTitle.length < 8 || displayTitle.match(/^[a-z]\d/i))) {
-            displayTitle = it.description.substring(0, 110) + "...";
+        const path = it.url || it.path || "";
+        // Détection robuste : si http -> Web, sinon -> PDF
+        const isWeb = path.includes('http');
+        const finalLink = isWeb ? path : ("pdf/" + (it.title.endsWith('.pdf') ? it.title : it.title + ".pdf"));
+
+        let titre = it.title;
+        if (it.description && (titre.length < 8 || titre.match(/^[a-z]\d/i))) {
+            titre = it.description.substring(0, 100) + "...";
         }
 
         const html = `
             <div class="result-item">
-                <div class="result-title"><a href="${finalLink}" target="_blank">${displayTitle}</a></div>
-                <div class="result-desc">${(it.description || "Consulter le document.").substring(0, 280)}</div>
+                <div class="result-title"><a href="${finalLink}" target="_blank">${titre}</a></div>
+                <div class="result-desc">${(it.description || "").substring(0, 200)}</div>
                 <div class="meta">📅 ${it.date || 'Archive'} | Réf: ${it.title}</div>
             </div>`;
         
-        if (isWeb) webDiv.innerHTML += html;
-        else pdfDiv.innerHTML += html;
+        if (isWeb) web.innerHTML += html; else pdf.innerHTML += html;
     });
 }
 window.onload = start;
