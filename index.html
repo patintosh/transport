@@ -11,14 +11,14 @@
         .links-ref { margin-top: 15px; }
         .links-ref a { color: var(--accent); text-decoration: none; margin: 0 15px; font-weight: bold; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px; }
-        .card { background: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-left: 5px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .card { background: white; padding: 18px; border-radius: 12px; margin-bottom: 15px; border-left: 6px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .is-pdf { border-left-color: var(--pdf); }
         .is-web { border-left-color: var(--web); }
-        .card a { color: var(--accent); text-decoration: none; font-weight: bold; font-size: 1.05rem; display: block; }
-        .meta { font-size: 0.85rem; color: #666; margin-top: 8px; }
-        .search-area { position: sticky; top: 0; background: rgba(255,255,255,0.95); padding: 20px; z-index: 100; border-bottom: 1px solid #eee; }
+        .card a { color: var(--accent); text-decoration: none; font-weight: bold; font-size: 1.1rem; display: block; margin-bottom: 5px; }
+        .meta { font-size: 0.85rem; color: #666; margin-top: 10px; border-top: 1px solid #eee; padding-top: 8px; }
+        .search-area { position: sticky; top: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 20px; z-index: 100; border-bottom: 1px solid #eee; }
         #search-input { width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #ccc; font-size: 1.1rem; }
-        .btn-sort { padding: 8px 15px; cursor: pointer; background: #333; color: white; border: none; border-radius: 5px; margin-top: 10px; }
+        .btn-sort { padding: 10px 20px; cursor: pointer; background: #1d1d1f; color: white; border: none; border-radius: 8px; margin-top: 10px; }
         @media (max-width: 850px) { .grid { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -39,8 +39,8 @@
         </div>
     </div>
     <div class="grid">
-        <section><h2>📄 Archives PDF</h2><div id="pdf-list"></div></section>
-        <section><h2>🌐 Articles WEB</h2><div id="web-list"></div></section>
+        <section><h2>📄 Archives & Notes (PDF)</h2><div id="pdf-list"></div></section>
+        <section><h2>🌐 Articles thématiques (Web)</h2><div id="web-list"></div></section>
     </div>
 </div>
 <script>
@@ -51,14 +51,12 @@ const GLOSSAIRE = {
     "fret": ["marchandises", "logistique"], "marchandises": ["fret"],
     "rail": ["ferroviaire", "sncf", "train"], "ferroviaire": ["rail", "sncf"],
     "fluvial": ["canal", "canaux", "voie d'eau", "vn"],
-    "sss": ["cabotage", "short-sea", "maritime"],
-    "oest": ["observatoire", "statistiques"],
-    "plan": ["planification", "stratégie"]
+    "sss": ["cabotage", "short-sea", "maritime"], "oest": ["observatoire", "statistiques"]
 };
 
 function getVal(it) {
-    if (it.title.includes("a0003")) return 20260302;
-    let m = it.date.match(/\d{4}/);
+    if (it.title.toLowerCase().includes("a0003")) return 20260302;
+    let m = (it.date || "").match(/\d{4}/);
     return m ? parseInt(m[0]) * 10000 : 19000000;
 }
 
@@ -92,10 +90,18 @@ function update() {
     filtered.forEach(it => {
         const url = it.url || it.path || "";
         const isPdf = url.toLowerCase().includes('.pdf');
+        
+        // TITRE INTELLIGENT : Si le titre est un code "a0003", on prend la description
+        let displayTitle = it.title;
+        if (it.title.match(/^[a-z]\d{4}$/i) && it.description) {
+            displayTitle = it.description.split('.')[0]; // On prend la première phrase
+        }
+
         const html = `<div class="card ${isPdf?'is-pdf':'is-web'}">
-            <a href="${url}" target="_blank">${it.title}</a>
-            <div class="meta">📅 ${it.date} | Réf: ${it.title}</div>
+            <a href="${encodeURI(url)}" target="_blank">${displayTitle}</a>
+            <div class="meta">📅 ${it.date || 'Archive'} | <small>Réf: ${it.title}</small></div>
         </div>`;
+        
         if(isPdf) pL.innerHTML += html; else wL.innerHTML += html;
     });
     document.getElementById('counter').innerText = filtered.length + " document(s)";
