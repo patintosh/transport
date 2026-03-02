@@ -5,25 +5,38 @@
     <title>Bibliothèque Patrice Salini</title>
     <style>
         :root { --accent: #0071e3; --pdf: #d93025; --web: #1a73e8; }
-        body { font-family: -apple-system, sans-serif; background: #f5f5f7; margin: 0; }
+        body { font-family: -apple-system, sans-serif; background: #f5f5f7; margin: 0; color: #1d1d1f; }
         .wrap { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        header { text-align: center; padding: 30px; background: white; border-bottom: 1px solid #ddd; }
+        header { text-align: center; padding: 25px; background: white; border-bottom: 1px solid #ddd; }
+        .links-ref { margin-top: 15px; }
+        .links-ref a { color: var(--accent); text-decoration: none; margin: 0 15px; font-weight: bold; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px; }
         .card { background: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-left: 5px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .is-pdf { border-left-color: var(--pdf); }
         .is-web { border-left-color: var(--web); }
-        .card a { color: var(--accent); text-decoration: none; font-weight: bold; }
+        .card a { color: var(--accent); text-decoration: none; font-weight: bold; font-size: 1.05rem; display: block; }
         .meta { font-size: 0.85rem; color: #666; margin-top: 8px; }
         .search-area { position: sticky; top: 0; background: rgba(255,255,255,0.95); padding: 20px; z-index: 100; border-bottom: 1px solid #eee; }
         #search-input { width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #ccc; font-size: 1.1rem; }
+        .btn-sort { padding: 8px 15px; cursor: pointer; background: #333; color: white; border: none; border-radius: 5px; margin-top: 10px; }
+        @media (max-width: 850px) { .grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
-<header><h1>Ma Bibliothèque Numérique</h1><p>Patrice Salini</p></header>
+<header>
+    <h1>Ma Bibliothèque Numérique</h1>
+    <div class="links-ref">
+        <a href="https://pensertransports.simdif.com" target="_blank">🌐 Penser les transports</a>
+        <a href="https://www.editions-harmattan.fr/catalogue/auteur/patrice-salini/15031" target="_blank">📚 Mes Livres</a>
+    </div>
+</header>
 <div class="wrap">
     <div class="search-area">
-        <input type="text" id="search-input" placeholder="Rechercher un concept (ex: SSS, Fret, OEST...)">
-        <p id="counter" style="font-weight:bold; margin-top:10px;">Chargement...</p>
+        <input type="text" id="search-input" placeholder="Rechercher (ex: rail, fret, SSS, oest...)">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <p id="counter" style="font-weight:bold;">Chargement...</p>
+            <button id="sortBtn" class="btn-sort">📅 Inverser l'ordre</button>
+        </div>
     </div>
     <div class="grid">
         <section><h2>📄 Archives PDF</h2><div id="pdf-list"></div></section>
@@ -32,14 +45,22 @@
 </div>
 <script>
 let DATA = [];
+let RECENT = true;
+
 const GLOSSAIRE = {
     "fret": ["marchandises", "logistique"], "marchandises": ["fret"],
     "rail": ["ferroviaire", "sncf", "train"], "ferroviaire": ["rail", "sncf"],
     "fluvial": ["canal", "canaux", "voie d'eau", "vn"],
-    "sss": ["cabotage", "short-sea", "maritime"], "cabotage": ["sss"],
+    "sss": ["cabotage", "short-sea", "maritime"],
     "oest": ["observatoire", "statistiques"],
-    "plan": ["planification", "stratégie", "commissariat"]
+    "plan": ["planification", "stratégie"]
 };
+
+function getVal(it) {
+    if (it.title.includes("a0003")) return 20260302;
+    let m = it.date.match(/\d{4}/);
+    return m ? parseInt(m[0]) * 10000 : 19000000;
+}
 
 async function start() {
     const r = await fetch('index.json?v=' + Date.now());
@@ -62,22 +83,26 @@ function update() {
         return terms.some(t => txt.includes(t));
     });
 
+    filtered.sort((a,b) => RECENT ? getVal(b) - getVal(a) : getVal(a) - getVal(b));
+
     const pL = document.getElementById('pdf-list');
     const wL = document.getElementById('web-list');
     pL.innerHTML = ""; wL.innerHTML = "";
 
     filtered.forEach(it => {
-        const url = (it.url || it.path || "");
+        const url = it.url || it.path || "";
         const isPdf = url.toLowerCase().includes('.pdf');
         const html = `<div class="card ${isPdf?'is-pdf':'is-web'}">
             <a href="${url}" target="_blank">${it.title}</a>
-            <div class="meta">📅 ${it.date}</div>
+            <div class="meta">📅 ${it.date} | Réf: ${it.title}</div>
         </div>`;
         if(isPdf) pL.innerHTML += html; else wL.innerHTML += html;
     });
-    document.getElementById('counter').innerText = filtered.length + " doc(s)";
+    document.getElementById('counter').innerText = filtered.length + " document(s)";
 }
+
 document.getElementById('search-input').oninput = update;
+document.getElementById('sortBtn').onclick = () => { RECENT = !RECENT; update(); };
 window.onload = start;
 </script>
 </body>
