@@ -6,11 +6,11 @@
     <style>
         :root { --pdf: #d93025; --web: #1a73e8; }
         body { font-family: -apple-system, sans-serif; background: #f5f5f7; margin: 0; padding: 0; }
-        .header { background: #1d1d1f; color: white; padding: 30px 20px; text-align: center; }
+        .header { background: #1d1d1f; color: white; padding: 30px; text-align: center; }
         .wrap { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
         .search-area { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; gap: 10px; }
         #search-input { flex-grow: 1; padding: 12px; font-size: 1.1rem; border: 1px solid #ccc; border-radius: 6px; }
-        .btn-search { background: #0071e3; color: white; border: none; padding: 0 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-search { background: #0071e3; color: white; border: none; padding: 0 25px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 1rem; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px; }
         .card { background: white; padding: 15px; border-radius: 8px; border-left: 5px solid #ccc; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .is-pdf { border-left-color: var(--pdf); }
@@ -27,13 +27,13 @@
 </div>
 <div class="wrap">
     <div class="search-area">
-        <input type="text" id="search-input" placeholder="Recherche (ex: rail, 2025...)">
-        <button class="btn-search" onclick="render()">Rechercher</button>
+        <input type="text" id="search-input" placeholder="Recherche (ex: rail, tko, 2026...)">
+        <button class="btn-search" onclick="render()">RECHERCHER</button>
     </div>
-    <p id="counter" style="margin-top:15px; font-weight:bold;"></p>
+    <p id="counter" style="margin-top:15px; font-weight:bold; color:#0071e3;"></p>
     <div class="grid">
         <section><h2>📄 PDF & Archives</h2><div id="pdf-list"></div></section>
-        <section><h2>🌐 Liens Web</h2><div id="web-list"></div></section>
+        <section><h2>🌐 Liens Web & Éditeur</h2><div id="web-list"></div></section>
     </div>
 </div>
 <script>
@@ -51,20 +51,20 @@ function render() {
     const pL = document.getElementById('pdf-list'); const wL = document.getElementById('web-list');
     pL.innerHTML = ""; wL.innerHTML = "";
     
-    let terms = [q];
-    if (q && GLOSSAIRE[q]) terms = [...terms, ...GLOSSAIRE[q]];
+    let queryTerms = [q];
+    if (q && GLOSSAIRE[q]) queryTerms = [...queryTerms, ...GLOSSAIRE[q]];
 
     const filtered = DATA.filter(it => {
         if (!q) return true;
-        const target = (it.title + " " + it.url).toLowerCase();
-        return terms.some(t => target.includes(t));
+        const searchZone = (it.title + " " + it.url).toLowerCase();
+        return queryTerms.some(t => searchZone.includes(t));
     });
 
     filtered.forEach(it => {
         const isPdf = it.url.toLowerCase().endsWith('.pdf');
         const html = `<div class="card ${isPdf?'is-pdf':'is-web'}">
             <a href="${it.url}" target="_blank">${it.title}</a>
-            <div class="meta">Date: ${it.date} | Réf: ${it.url}</div>
+            <div class="meta">Réf: ${it.url} | Date: ${it.date}</div>
         </div>`;
         if(isPdf) pL.insertAdjacentHTML('beforeend', html);
         else wL.insertAdjacentHTML('beforeend', html);
