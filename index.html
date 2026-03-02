@@ -1,4 +1,3 @@
-cat << 'EOF' > index.html
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -6,17 +5,18 @@ cat << 'EOF' > index.html
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bibliothèque numérique - Patrice Salini</title>
     <style>
-        :root { --bg-color: #f5f5f7; --accent-color: #0071e3; --text-color: #1d1d1f; --border-radius: 14px; }
+        :root { --bg-color: #f5f5f7; --accent-color: #0071e3; --text-color: #1d1d1f; }
         body { margin: 0; font-family: -apple-system, sans-serif; background: var(--bg-color); color: var(--text-color); }
         .wrap { max-width: 1000px; margin: 0 auto; padding: 20px; }
         .site-header { padding: 40px 0; text-align: center; background: white; border-bottom: 1px solid #e5e5e5; }
         .search-area { margin: 20px 0; position: sticky; top: 0; z-index: 100; background: var(--bg-color); padding: 10px 0; }
-        #search-input { width: 100%; padding: 15px; border-radius: var(--border-radius); border: 1px solid #d2d2d7; font-size: 1.1rem; outline: none; }
-        .controls { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
-        .result-item { background: white; padding: 20px; border-radius: var(--border-radius); margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .result-title a { color: var(--accent-color); text-decoration: none; font-weight: 600; font-size: 1.1rem; }
+        #search-input { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #d2d2d7; font-size: 1.1rem; outline: none; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .controls { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 0.9rem; }
+        .result-item { background: white; padding: 20px; border-radius: 14px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-left: 5px solid transparent; transition: 0.2s; }
+        .result-item:hover { border-left-color: var(--accent-color); }
+        .result-title a { color: var(--accent-color); text-decoration: none; font-weight: 600; font-size: 1.2rem; }
         .meta { font-size: 0.85rem; color: #86868b; margin-top: 8px; }
-        .btn-sort { background: #1d1d1f; color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 0.9rem; }
+        .btn-sort { background: #1d1d1f; color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -24,16 +24,16 @@ cat << 'EOF' > index.html
 <header class="site-header">
     <div class="wrap">
         <h1>Bibliothèque numérique</h1>
-        <p>Patrice Salini - Transports & Mobilités</p>
+        <p>Patrice Salini - Expert Transports</p>
     </div>
 </header>
 
 <div class="wrap">
     <div class="search-area">
-        <input type="text" id="search-input" placeholder="Rechercher (ex: rail, 1992, fret...)" autofocus>
+        <input type="text" id="search-input" placeholder="Rechercher (ex: rail, fret, routier...)" autofocus>
         <div class="controls">
             <span id="counter">Chargement...</span>
-            <button id="btnSort" class="btn-sort">📅 Voir les plus récents en premier</button>
+            <button id="btnSort" class="btn-sort">📅 Tri : Plus récents</button>
         </div>
     </div>
     <div id="results-list"></div>
@@ -43,70 +43,85 @@ cat << 'EOF' > index.html
 let DATA = [];
 let RECENT_FIRST = true;
 
-// Décodeur de dates flexible pour gérer JJ/MM/AAAA, MM/AA, AAAA, etc.
+// 1. LE GLOSSAIRE (Lien entre les concepts)
+const GLOSSARY = {
+    "rail": ["ferroviaire", "sncf", "train", "ter", "infra"],
+    "ferroviaire": ["rail", "train", "sncf"],
+    "fret": ["marchandises", "logistique", "camion", "routier"],
+    "routier": ["camion", "fret", "route", "transport routier"]
+};
+
 function parseToNumericDate(it) {
     const s = (it.date || "").toString();
     const t = (it.title || "").toString();
-    
-    // 1. Chercher une année à 4 chiffres (2024, 1995...)
     let yearMatch = s.match(/\b(19|20)\d{2}\b/);
     let year = yearMatch ? parseInt(yearMatch[0]) : 0;
-
-    // 2. Si pas d'année, chercher 2 chiffres dans le titre (TM92 -> 1992)
     if (year === 0) {
         let year2 = t.match(/\d{2}/);
-        if (year2) {
-            let y = parseInt(year2[0]);
-            year = (y > 50) ? 1900 + y : 2000 + y;
-        }
+        if (year2) { let y = parseInt(year2[0]); year = (y > 50) ? 1900 + y : 2000 + y; }
     }
-
-    // 3. Chercher un mois
-    let monthMatch = s.match(/\b(0?[1-9]|1[0-2])\b/);
-    let month = monthMatch ? parseInt(monthMatch[0]) : 0;
-
-    return (year * 100) + month; // Exemple: 199508 pour Août 1995
+    return (year * 100);
 }
 
 async function start() {
     const r = await fetch('index.json?v=' + Date.now());
     DATA = await r.json();
-    
     document.getElementById('search-input').oninput = update;
     document.getElementById('btnSort').onclick = () => {
         RECENT_FIRST = !RECENT_FIRST;
-        document.getElementById('btnSort').innerText = RECENT_FIRST ? "📅 Voir les plus récents en premier" : "📅 Voir les plus anciens en premier";
+        document.getElementById('btnSort').innerText = RECENT_FIRST ? "📅 Tri : Plus récents" : "📅 Tri : Plus anciens";
         update();
     };
     update();
 }
 
 function update() {
-    const q = document.getElementById('search-input').value.toLowerCase();
-    let filtered = DATA.filter(it => {
-        return `${it.title} ${it.description} ${it.date}`.toLowerCase().includes(q);
+    const query = document.getElementById('search-input').value.toLowerCase().trim();
+    
+    // Extension de la recherche via le glossaire
+    let searchTerms = [query];
+    if (GLOSSARY[query]) searchTerms = searchTerms.concat(GLOSSARY[query]);
+
+    let results = DATA.map(it => {
+        const text = `${it.title} ${it.description}`.toLowerCase();
+        let score = 0;
+        
+        // Calcul de pertinence
+        searchTerms.forEach(term => {
+            if (term.length > 2 && text.includes(term)) {
+                score += (it.title.toLowerCase().includes(term) ? 10 : 2);
+            }
+        });
+        return { ...it, score };
     });
 
-    filtered.sort((a, b) => {
-        const valA = parseToNumericDate(a);
-        const valB = parseToNumericDate(b);
-        return RECENT_FIRST ? (valB - valA) : (valA - valB);
-    });
+    // Filtrage
+    if (query !== "") {
+        results = results.filter(it => it.score > 0);
+        // Si on cherche quelque chose, on trie par SCORE d'abord, puis DATE
+        results.sort((a, b) => b.score - a.score || parseToNumericDate(b) - parseToNumericDate(a));
+    } else {
+        // Si pas de recherche, tri pur par DATE
+        results.sort((a, b) => {
+            const valA = parseToNumericDate(a);
+            const valB = parseToNumericDate(b);
+            return RECENT_FIRST ? (valB - valA) : (valA - valB);
+        });
+    }
 
-    render(filtered);
+    render(results);
 }
 
 function render(list) {
     const container = document.getElementById('results-list');
     document.getElementById('counter').innerText = `${list.length} document(s)`;
-    
     container.innerHTML = list.map(it => `
         <div class="result-item">
             <div class="result-title">
                 <a href="${it.url}" target="_blank">${it.title}</a>
             </div>
-            <p style="margin:10px 0; font-size:0.95rem;">${it.description}</p>
-            <div class="meta">📅 Date: ${it.date || 'Archive'} | 📂 Réf: ${it.title}</div>
+            <p style="margin:10px 0; font-size:0.95rem; line-height:1.4;">${it.description}</p>
+            <div class="meta">📅 ${it.date || 'Archive'} | 📂 Réf: ${it.title}</div>
         </div>
     `).join('');
 }
@@ -114,4 +129,3 @@ window.onload = start;
 </script>
 </body>
 </html>
-EOF
