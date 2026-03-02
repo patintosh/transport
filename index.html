@@ -6,72 +6,60 @@
     <style>
         :root { --accent: #0071e3; --pdf: #d93025; --web: #1a73e8; }
         body { font-family: -apple-system, sans-serif; background: #f5f5f7; margin: 0; color: #1d1d1f; }
-        .wrap { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        header { text-align: center; padding: 25px; background: white; border-bottom: 1px solid #ddd; }
-        .links-ref { margin-top: 15px; }
-        .links-ref a { color: var(--accent); text-decoration: none; margin: 0 15px; font-weight: bold; }
+        .wrap { max-width: 1100px; margin: 0 auto; padding: 20px; }
+        header { text-align: center; padding: 30px; background: white; border-bottom: 1px solid #ddd; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px; }
         .card { background: white; padding: 18px; border-radius: 12px; margin-bottom: 15px; border-left: 6px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .is-pdf { border-left-color: var(--pdf); }
         .is-web { border-left-color: var(--web); }
         .card a { color: var(--accent); text-decoration: none; font-weight: bold; font-size: 1.1rem; display: block; margin-bottom: 5px; }
         .meta { font-size: 0.85rem; color: #666; margin-top: 10px; border-top: 1px solid #eee; padding-top: 8px; }
-        .search-area { position: sticky; top: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 20px; z-index: 100; border-bottom: 1px solid #eee; }
-        #search-input { width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #ccc; font-size: 1.1rem; }
-        .btn-sort { padding: 10px 20px; cursor: pointer; background: #1d1d1f; color: white; border: none; border-radius: 8px; margin-top: 10px; }
-        @media (max-width: 850px) { .grid { grid-template-columns: 1fr; } }
+        .search-area { position: sticky; top: 0; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); padding: 20px; z-index: 100; border-bottom: 1px solid #eee; }
+        #search-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; }
     </style>
 </head>
 <body>
 <header>
     <h1>Ma Bibliothèque Numérique</h1>
-    <div class="links-ref">
-        <a href="https://pensertransports.simdif.com" target="_blank">🌐 Penser les transports (C. Reynaud & P. Salini)</a>
-        <a href="https://www.editions-harmattan.fr/catalogue/auteur/patrice-salini/15031" target="_blank">📚 Mes Livres</a>
-    </div>
+    <p><a href="https://pensertransports.simdif.com" target="_blank">🌐 Penser les transports</a></p>
 </header>
 <div class="wrap">
     <div class="search-area">
-        <input type="text" id="search-input" placeholder="Rechercher (ex: rail, fret, SSS, oest...)">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <p id="counter" style="font-weight:bold;">Chargement...</p>
-            <button id="sortBtn" class="btn-sort">📅 Inverser l'ordre</button>
-        </div>
+        <input type="text" id="search-input" placeholder="Rechercher...">
+        <p id="counter" style="margin-top:10px; font-weight:bold;">Initialisation...</p>
     </div>
     <div class="grid">
-        <section><h2>📄 Archives & Notes (PDF)</h2><div id="pdf-list"></div></section>
-        <section><h2>🌐 Articles Web (SimDif)</h2><div id="web-list"></div></section>
+        <section><h2>📄 PDF (Archives & Notes)</h2><div id="pdf-list"></div></section>
+        <section><h2>🌐 Web (Articles)</h2><div id="web-list"></div></section>
     </div>
 </div>
 <script>
 let DATA = [];
-let RECENT = true;
 
-function getScore(it) {
-    let t = (it.title || "").toUpperCase();
-    let d = (it.date || "");
-    // Priorité absolue à A0003 (Mars 2026)
-    if (t.includes("A0003")) return 20260302;
-    // Extraction d'année stricte (4 chiffres commençant par 19 ou 20)
-    let m = (t + d + (it.description||"")).match(/(20\d{2}|19\d{2})/);
-    if (m) return parseInt(m[0]) * 10000;
-    return 19000000;
+function getYear(it) {
+    // 1. Priorité absolue au document de Mars 2026 (A0003)
+    if (it.title.includes("A0003")) return 202603;
+
+    // 2. Extraction stricte de l'année depuis le JSON (date, title ou description)
+    // On cherche 4 chiffres consécutifs (ex: 2025)
+    let textToScan = (it.date || "") + (it.title || "") + (it.description || "");
+    let match = textToScan.match(/(20|19)\d{2}/);
+    
+    return match ? parseInt(match[0]) : 1900;
 }
 
 async function start() {
     const r = await fetch('index.json?v=' + Date.now());
     DATA = await r.json();
-    update();
+    render();
 }
 
-function update() {
+function render() {
     const q = document.getElementById('search-input').value.toLowerCase().trim();
-    let filtered = DATA.filter(it => {
-        if (!q) return true;
-        return (it.title + " " + (it.description || "")).toLowerCase().includes(q);
-    });
-
-    filtered.sort((a,b) => RECENT ? getScore(b) - getScore(a) : getScore(a) - getScore(b));
+    let filtered = DATA.filter(it => (it.title + " " + (it.description || "")).toLowerCase().includes(q));
+    
+    // Tri par année décroissante
+    filtered.sort((a,b) => getYear(b) - getYear(a));
 
     const pL = document.getElementById('pdf-list');
     const wL = document.getElementById('web-list');
@@ -79,32 +67,23 @@ function update() {
 
     filtered.forEach(it => {
         let url = it.url || it.path || "";
-        // RÉPARATION MAJUSCULES : On prend le nom exact défini dans le JSON
+        // RÉPARATION CRUCIALE : On extrait le nom exact SANS changer la casse (A0003 reste A0003)
         let fileName = url.split('/').pop(); 
-        
         const isPdf = fileName.toLowerCase().endsWith('.pdf');
-        let displayTitle = it.title;
-
-        // Traduction TIH / TM
-        displayTitle = displayTitle.replace(/TIH/gi, "Transport Info Hebdo").replace(/TM/gi, "Transport Magazine");
-
-        // Utiliser la description pour les codes type A0003
-        if (it.title.match(/^[A-Za-z]\d{4}$/) && it.description) {
-            displayTitle = it.description.split('.')[0].substring(0, 100);
-        }
+        
+        // Affichage : Si le titre est court (code), on utilise la description
+        let displayTitle = (it.description && it.title.length < 10) ? it.description.split('.')[0] : it.title;
 
         const html = `<div class="card ${isPdf?'is-pdf':'is-web'}">
             <a href="${isPdf ? fileName : url}" target="_blank">${displayTitle}</a>
-            <div class="meta">📅 ${it.date || 'Archive'} | Réf: ${it.title}</div>
+            <div class="meta">📅 ${it.date || 'Année non précisée'} | Réf: ${it.title}</div>
         </div>`;
-        
         if(isPdf) pL.innerHTML += html; else wL.innerHTML += html;
     });
-    document.getElementById('counter').innerText = filtered.length + " doc(s)";
+    document.getElementById('counter').innerText = filtered.length + " document(s) trouvé(s)";
 }
 
-document.getElementById('search-input').oninput = update;
-document.getElementById('sortBtn').onclick = () => { RECENT = !RECENT; update(); };
+document.getElementById('search-input').oninput = render;
 window.onload = start;
 </script>
 </body>
