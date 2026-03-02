@@ -5,20 +5,21 @@
     <title>Bibliothèque Patrice Salini</title>
     <style>
         :root { --accent: #0071e3; --pdf: #d93025; --web: #1a73e8; }
-        body { font-family: -apple-system, sans-serif; background: #f5f5f7; margin: 0; color: #1d1d1f; }
+        body { font-family: -apple-system, sans-serif; background: #f5f5f7; margin: 0; color: #1d1d1f; line-height: 1.5; }
         .wrap { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        header { text-align: center; padding: 25px; background: white; border-bottom: 1px solid #ddd; }
+        header { text-align: center; padding: 30px; background: white; border-bottom: 1px solid #ddd; }
         .links-ref { margin-top: 15px; }
-        .links-ref a { color: var(--accent); text-decoration: none; margin: 0 15px; font-weight: bold; border-bottom: 2px solid transparent; }
-        .links-ref a:hover { border-bottom-color: var(--accent); }
+        .links-ref a { color: var(--accent); text-decoration: none; margin: 0 15px; font-weight: bold; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px; }
-        .card { background: white; padding: 18px; border-radius: 12px; margin-bottom: 15px; border-left: 6px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .card { background: white; padding: 18px; border-radius: 12px; margin-bottom: 15px; border-left: 6px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: 0.2s; }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .is-pdf { border-left-color: var(--pdf); }
         .is-web { border-left-color: var(--web); }
-        .card a { color: var(--accent); text-decoration: none; font-weight: bold; font-size: 1.1rem; display: block; margin-bottom: 5px; }
-        .meta { font-size: 0.85rem; color: #666; margin-top: 10px; border-top: 1px solid #eee; padding-top: 8px; }
+        .card a { color: var(--accent); text-decoration: none; font-weight: bold; font-size: 1.1rem; display: block; margin-bottom: 8px; }
+        .meta { font-size: 0.85rem; color: #666; border-top: 1px solid #eee; padding-top: 10px; margin-top: 10px; }
         .search-area { position: sticky; top: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 20px; z-index: 100; border-bottom: 1px solid #eee; }
-        #search-input { width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #ccc; font-size: 1.1rem; }
+        #search-input { width: 100%; padding: 15px; border-radius: 10px; border: 2px solid #ddd; font-size: 1.1rem; outline: none; }
+        #search-input:focus { border-color: var(--accent); }
         .btn-sort { padding: 10px 20px; cursor: pointer; background: #1d1d1f; color: white; border: none; border-radius: 8px; margin-top: 10px; font-weight: bold; }
         @media (max-width: 850px) { .grid { grid-template-columns: 1fr; } }
     </style>
@@ -31,12 +32,13 @@
         <a href="https://www.editions-harmattan.fr/catalogue/auteur/patrice-salini/15031" target="_blank">📚 Mes Livres (Ed. Harmattan)</a>
     </div>
 </header>
+
 <div class="wrap">
     <div class="search-area">
-        <input type="text" id="search-input" placeholder="Rechercher (ex: rail, fret, fluvial, combiné...)">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <p id="counter" style="font-weight:bold;">Chargement...</p>
-            <button id="sortBtn" class="btn-sort">📅 Trier par Date</button>
+        <input type="text" id="search-input" placeholder="Rechercher (ex: rail, fret, combiné, SSS, OEST...)">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+            <span id="counter" style="font-weight:bold;">Initialisation...</span>
+            <button id="sortBtn" class="btn-sort">📅 Inverser l'ordre chronologique</button>
         </div>
     </div>
     <div class="grid">
@@ -44,22 +46,24 @@
         <section><h2>🌐 Articles Web (Penser les Transports)</h2><div id="web-list"></div></section>
     </div>
 </div>
+
 <script>
 let DATA = [];
 let RECENT = true;
 
-// Glossaire Inverse issu de ton expertise
+// TON GLOSSAIRE INVERSE COMPLET
 const GLOSSAIRE = {
-    "fret": ["marchandises", "choses", "logistique"],
-    "marchandises": ["fret"],
-    "rail": ["ferroviaire", "sncf", "train", "ferré", "chemin de fer"],
-    "ferroviaire": ["rail", "sncf"],
-    "fluvial": ["canal", "canaux", "voie d'eau", "vn", "vnav", "écluse"],
-    "routier": ["camion", "poids lourd", "pl", "autoroute"],
+    "marchandises": ["fret", "choses"], "fret": ["marchandises"], "choses": ["marchandises"],
+    "voyageurs": ["passagers", "usagers", "personnes"],
+    "rail": ["ferroviaire", "ferré", "chemin de fer", "sncf", "train"],
+    "ferroviaire": ["rail"], "ferré": ["rail"], "chemin de fer": ["rail"],
+    "camion": ["poids lourd", "pl", "routier"], "poids lourd": ["camion", "pl"], "pl": ["camion"],
+    "fluvial": ["canal", "canaux", "voie d'eau", "vn", "péniche"],
     "combiné": ["intermodal", "ferroutage", "multimodal", "rail-route", "piggyback"],
-    "sss": ["cabotage", "short-sea", "maritime"],
+    "intermodal": ["combiné"], "multimodal": ["combiné"], "rail-route": ["combiné"],
+    "sss": ["cabotage", "short-sea", "maritime"], "cabotage": ["sss"],
     "oest": ["observatoire", "statistiques"],
-    "plan": ["planification", "stratégie", "commissariat"]
+    "plan": ["planification", "stratégie", "commissariat", "datar"]
 };
 
 function getVal(it) {
@@ -69,16 +73,17 @@ function getVal(it) {
 }
 
 async function start() {
-    const r = await fetch('index.json?v=' + Date.now());
-    DATA = await r.json();
-    update();
+    try {
+        const r = await fetch('index.json?v=' + Date.now());
+        DATA = await r.json();
+        update();
+    } catch (e) { document.getElementById('counter').innerText = "Erreur JSON"; }
 }
 
 function update() {
     const q = document.getElementById('search-input').value.toLowerCase().trim();
-    
-    // Logique de recherche avec Glossaire
     let terms = [q];
+    
     if (q.length > 2) {
         for (let key in GLOSSAIRE) {
             if (q.includes(key) || GLOSSAIRE[key].some(a => q.includes(a))) {
@@ -89,7 +94,7 @@ function update() {
 
     let filtered = DATA.filter(it => {
         if (!q) return true;
-        const text = (it.title + " " + (it.description || "") + " " + (it.keywords || []).join(" ")).toLowerCase();
+        const text = (it.title + " " + (it.description || "")).toLowerCase();
         return terms.some(t => text.includes(t));
     });
 
@@ -101,27 +106,23 @@ function update() {
 
     filtered.forEach(it => {
         let url = it.url || it.path || "";
-        // Suppression forcée de /pdf/ car tout est à la racine
-        url = url.replace('https://patintosh.github.io/transport/pdf/', '');
-        url = url.replace('/pdf/', '');
-        
+        url = url.replace('/pdf/', '/').replace('https://patintosh.github.io/transport/pdf/', '');
         const isPdf = url.toLowerCase().includes('.pdf');
         
-        let title = it.title;
-        // Si titre = code, on prend la description signifiante
-        if (title.match(/^[a-z]\d{4}$/i) && it.description) {
-            title = it.description.split('.')[0].substring(0, 100);
+        // Titre signifiant : on évite les codes a0003 ou 1646...
+        let displayTitle = it.title;
+        if ((it.title.match(/^[a-z]\d{4}$/i) || it.title.includes('-')) && it.description) {
+            displayTitle = it.description.split('.')[0].substring(0, 110);
         }
 
         const html = `
             <div class="card ${isPdf?'is-pdf':'is-web'}">
-                <a href="${url}" target="_blank">${title}</a>
-                <div class="meta">📅 ${it.date || ''} | <small>Réf: ${it.title}</small></div>
+                <a href="${encodeURI(url)}" target="_blank">${displayTitle}</a>
+                <div class="meta">📅 ${it.date || 'Archive'} | <small>Réf: ${it.title}</small></div>
             </div>`;
-            
         if(isPdf) pL.innerHTML += html; else wL.innerHTML += html;
     });
-    document.getElementById('counter').innerText = filtered.length + " doc(s) trouvé(s)";
+    document.getElementById('counter').innerText = filtered.length + " document(s) trouvé(s)";
 }
 
 document.getElementById('search-input').oninput = update;
