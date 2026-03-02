@@ -4,95 +4,69 @@
     <meta charset="UTF-8">
     <title>Bibliothèque Patrice Salini</title>
     <style>
-        :root { --pdf: #d93025; --web: #1a73e8; --accent: #0071e3; }
-        body { font-family: -apple-system, system-ui, sans-serif; background: #f5f5f7; margin: 0; color: #1d1d1f; }
+        :root { --pdf: #d93025; --web: #1a73e8; }
+        body { font-family: -apple-system, sans-serif; background: #f5f5f7; margin: 0; }
         .wrap { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        header { text-align: center; padding: 40px 20px; background: white; border-bottom: 1px solid #d2d2d7; }
-        .search-area { position: sticky; top: 0; background: rgba(255,255,255,0.8); backdrop-filter: blur(20px); padding: 20px; z-index: 1000; border-bottom: 1px solid #d2d2d7; }
-        #search-input { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #d2d2d7; font-size: 1.1rem; box-sizing: border-box; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px; }
-        .card { background: white; padding: 20px; border-radius: 14px; margin-bottom: 15px; border-left: 6px solid #ccc; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .search-area { position: sticky; top: 0; background: white; padding: 20px; border-bottom: 1px solid #ddd; z-index: 100; }
+        #search-input { width: 100%; padding: 15px; font-size: 1.1rem; border-radius: 10px; border: 1px solid #ccc; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-top: 20px; }
+        .card { background: white; padding: 15px; border-radius: 10px; border-left: 5px solid #ccc; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .is-pdf { border-left-color: var(--pdf); }
         .is-web { border-left-color: var(--web); }
-        .card a { color: var(--accent); text-decoration: none; font-weight: 700; font-size: 1.1rem; display: block; margin-bottom: 8px; }
-        .meta { font-size: 0.85rem; color: #86868b; border-top: 1px solid #f5f5f7; padding-top: 10px; margin-top: 10px; }
-        h2 { font-size: 1.4rem; font-weight: 600; color: #1d1d1f; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 8px;}
+        .card a { color: #0071e3; text-decoration: none; font-weight: bold; font-size: 1.05rem; }
+        .meta { font-size: 0.85rem; color: #666; margin-top: 8px; border-top: 1px solid #eee; padding-top: 5px; }
     </style>
 </head>
 <body>
-<header>
-    <h1>Bibliothèque Numérique</h1>
-    <p><a href="https://pensertransports.simdif.com" target="_blank" style="color:var(--web); font-weight:600; text-decoration:none;">🌐 Accéder au site Penser les transports</a></p>
-</header>
 <div class="wrap">
     <div class="search-area">
-        <input type="text" id="search-input" placeholder="Rechercher un thème, une année, une référence (ex: Rail, 2026, A0003)...">
-        <p id="counter" style="margin-top:10px; font-weight:bold;"></p>
+        <input type="text" id="search-input" placeholder="Rechercher (ex: Rail, Route, Ferroviaire, 2026)...">
+        <p id="counter" style="font-weight:bold; margin-top:10px;"></p>
     </div>
     <div class="grid">
-        <section>
-            <h2>📄 Notes & Archives (PDF)</h2>
-            <div id="pdf-list"></div>
-        </section>
-        <section>
-            <h2>🌐 Articles & Web</h2>
-            <div id="web-list"></div>
-        </section>
+        <section><h2>📄 PDF (Notes & Archives)</h2><div id="pdf-list"></div></section>
+        <section><h2>🌐 WEB (SimDif & Articles)</h2><div id="web-list"></div></section>
     </div>
 </div>
 <script>
 let DATA = [];
-
-// Fonction de tri robuste
-function getSortScore(it) {
-    const d = (it.date || "").toString();
-    const t = (it.title || "").toString();
-    if (t.includes("A0003") || d.includes("2026")) return 202699;
-    const yearMatch = (d + t + (it.description||"")).match(/\b(19|20)\d{2}\b/);
-    return yearMatch ? parseInt(yearMatch[0]) : 0;
-}
-
-async function load() {
+async function start() {
     const r = await fetch('index.json?v=' + Date.now());
     DATA = await r.json();
     render();
 }
-
 function render() {
-    const query = document.getElementById('search-input').value.toLowerCase().trim();
+    const q = document.getElementById('search-input').value.toLowerCase().trim();
     const pL = document.getElementById('pdf-list');
     const wL = document.getElementById('web-list');
     pL.innerHTML = ""; wL.innerHTML = "";
 
-    // Tri par date décroissante
+    // Filtrage sur Titre, Description et URL (pour rattraper les mots-clés manquants)
     const filtered = DATA.filter(it => {
-        const content = (it.title + " " + (it.description || "") + " " + (it.url || "")).toLowerCase();
-        return content.includes(query);
-    }).sort((a, b) => getSortScore(b) - getSortScore(a));
+        const text = (it.title + " " + (it.description || "") + " " + (it.url || "")).toLowerCase();
+        return text.includes(q);
+    });
+
+    // Tri : 2026 en haut, puis par date
+    filtered.sort((a,b) => {
+        const da = a.date || "0000";
+        const db = b.date || "0000";
+        return db.localeCompare(da);
+    });
 
     filtered.forEach(it => {
-        const url = it.url || it.path || "";
+        const url = it.url || "";
         const isPdf = url.toLowerCase().endsWith('.pdf');
-        
-        // Titre intelligent : si le titre est un code court, on affiche la description
-        let displayTitle = (it.description && it.title.length < 10) ? it.description : it.title;
-
-        const html = `
-            <div class="card ${isPdf ? 'is-pdf' : 'is-web'}">
-                <a href="${url}" target="_blank">${displayTitle}</a>
-                <div class="meta">
-                    <strong>Réf:</strong> ${it.title} | <strong>Date:</strong> ${it.date || 'Archive'}
-                </div>
-            </div>`;
-        
-        if (isPdf) pL.insertAdjacentHTML('beforeend', html);
-        else wL.insertAdjacentHTML('beforeend', html);
+        const html = `<div class="card ${isPdf?'is-pdf':'is-web'}">
+            <a href="${url}" target="_blank">${it.description || it.title}</a>
+            <div class="meta">Réf: ${it.title} | Date: ${it.date}</div>
+        </div>`;
+        if(isPdf) pL.innerHTML += html; else wL.innerHTML += html;
     });
-    document.getElementById('counter').innerText = filtered.length + " documents trouvés";
+    document.getElementById('counter').innerText = filtered.length + " document(s) trouvé(s)";
 }
-
 document.getElementById('search-input').oninput = render;
-window.onload = load;
+window.onload = start;
 </script>
 </body>
 </html>
