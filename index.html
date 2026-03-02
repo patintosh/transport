@@ -2,17 +2,23 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Bibliothèque Patrice Salini</title>
+    <title>Bibliothèque Patrice Salini - Maintenance</title>
     <style>
-        :root { --pdf: #d93025; --web: #1a73e8; }
+        :root { --pdf: #d93025; --web: #1a73e8; --warn: #ffcc00; }
         body { font-family: -apple-system, sans-serif; background: #f5f5f7; margin: 0; }
+        
+        /* BANDEAU TRAVAUX */
+        .maintenance-bar { background: var(--warn); color: #000; padding: 10px; text-align: center; font-weight: bold; border-bottom: 2px solid #333; }
+        
         .header { background: #1d1d1f; color: white; padding: 25px; text-align: center; }
-        .wrap { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
+        .intro-box { max-width: 1200px; margin: 20px auto; padding: 15px; background: #eef6ff; border-radius: 8px; border: 1px solid var(--web); }
+        
+        .wrap { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
         .controls { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; gap: 15px; align-items: center; }
         #search-input { flex-grow: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
-        select { padding: 10px; border-radius: 4px; border: 1px solid #ccc; cursor: pointer; }
+        
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px; }
-        .card { background: white; padding: 15px; border-radius: 8px; border-left: 5px solid #ccc; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .card { background: white; padding: 15px; border-radius: 8px; border-left: 5px solid #ccc; margin-bottom: 10px; }
         .is-pdf { border-left-color: var(--pdf); }
         .is-web { border-left-color: var(--web); }
         .card a { color: #0071e3; text-decoration: none; font-weight: bold; }
@@ -20,10 +26,21 @@
     </style>
 </head>
 <body>
-<div class="header"><h1>Bibliothèque Patrice Salini</h1></div>
+
+<div class="maintenance-bar">⚠️ Site en cours d'optimisation technique - Recherche en mode dégradé</div>
+
+<div class="header">
+    <h1>Bibliothèque Patrice Salini</h1>
+</div>
+
+<div class="intro-box">
+    <strong>Portail Penser les Transports :</strong> Prospective, économie et politiques de transport. 
+    Retrouvez également mes ouvrages chez <a href="https://www.editions-harmattan.fr" target="_blank">Mon Éditeur (L'Harmattan)</a>.
+</div>
+
 <div class="wrap">
     <div class="controls">
-        <input type="text" id="search-input" placeholder="Rechercher (ex: rail, 2026...)">
+        <input type="text" id="search-input" placeholder="Rechercher (ex: rail, tko, 2026...)">
         <select id="sort-order" onchange="render()">
             <option value="desc">Plus récents d'abord</option>
             <option value="asc">Plus anciens d'abord</option>
@@ -31,12 +48,14 @@
     </div>
     <p id="counter" style="margin: 15px 0; font-weight: bold; color: #0071e3;"></p>
     <div class="grid">
-        <section><h2>📄 PDF</h2><div id="pdf-list"></div></section>
-        <section><h2>🌐 Liens Web & Éditeur</h2><div id="web-list"></div></section>
+        <section><h2>📄 PDF & Archives</h2><div id="pdf-list"></div></section>
+        <section><h2>🌐 Dossiers SimDif</h2><div id="web-list"></div></section>
     </div>
 </div>
+
 <script>
 let DATA = []; let GLOSSAIRE = {};
+
 async function init() {
     const [resD, resG] = await Promise.all([
         fetch('index.json?v=' + Date.now()).then(r => r.json()),
@@ -45,19 +64,25 @@ async function init() {
     DATA = resD; GLOSSAIRE = resG;
     render();
 }
+
 function render() {
     const q = document.getElementById('search-input').value.toLowerCase().trim();
     const order = document.getElementById('sort-order').value;
     const pL = document.getElementById('pdf-list'); const wL = document.getElementById('web-list');
     pL.innerHTML = ""; wL.innerHTML = "";
     
-    let terms = [q];
-    if (q && GLOSSAIRE[q]) terms = [...terms, ...GLOSSAIRE[q]];
+    // LOGIQUE DE RECHERCHE AMELIOREE
+    let searchTerms = [q];
+    if (q && GLOSSAIRE[q]) {
+        // Si "rail" est tapé, on ajoute "ferroviaire", "fer", etc.
+        searchTerms = [...searchTerms, ...GLOSSAIRE[q]];
+    }
 
     let filtered = DATA.filter(it => {
         if (!q) return true;
-        const target = (it.title + " " + it.url).toLowerCase();
-        return terms.some(t => target.includes(t));
+        const textToSearch = (it.title + " " + (it.url || "")).toLowerCase();
+        // On vérifie si UN des termes du glossaire match
+        return searchTerms.some(term => textToSearch.includes(term.toLowerCase()));
     });
 
     filtered.sort((a, b) => {
@@ -73,8 +98,9 @@ function render() {
         if(isPdf) pL.insertAdjacentHTML('beforeend', html);
         else wL.insertAdjacentHTML('beforeend', html);
     });
-    document.getElementById('counter').innerText = filtered.length + " résultat(s)";
+    document.getElementById('counter').innerText = filtered.length + " document(s) trouvé(s)";
 }
+
 document.getElementById('search-input').oninput = render;
 window.onload = init;
 </script>
