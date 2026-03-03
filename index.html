@@ -2,49 +2,56 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Bibliothèque Patrice Salini - MAINTENANCE</title>
+    <title>Bibliothèque Patrice Salini</title>
     <style>
-        :root { --accent: #0071e3; --pdf: #d93025; --warn: #ffcc00; --gray: #86868b; }
+        :root { --accent: #0071e3; --pdf: #d93025; --warn: #ffcc00; --gray: #6e6e73; }
         body { font-family: -apple-system, sans-serif; background: #f5f5f7; margin: 0; color: #1d1d1f; }
-        .maint-bar { background: var(--warn); padding: 12px; text-align: center; font-weight: 900; border-bottom: 2px solid #000; position: sticky; top: 0; z-index: 1000; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        .header { text-align: center; padding: 20px 0; }
-        .intro-box { background: white; padding: 20px; border-radius: 12px; border: 1px solid #d2d2d7; margin-bottom: 25px; }
-        .search-area { background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); display: flex; gap: 15px; margin-bottom: 30px; }
-        input { flex: 1; padding: 15px; border-radius: 10px; border: 1px solid #ccc; font-size: 1.1rem; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .maint-bar { background: var(--warn); padding: 10px; text-align: center; font-weight: bold; border-bottom: 2px solid #000; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+        
+        /* BANDEAU HEADER */
+        .header-box { background: white; padding: 25px; border-radius: 12px; border: 1px solid #d2d2d7; margin-bottom: 25px; text-align: center; }
+        .header-box h1 { margin: 0 0 10px 0; font-size: 1.8rem; }
+        .header-box p { margin: 5px 0; line-height: 1.5; }
+        .header-box a { color: var(--accent); font-weight: 600; text-decoration: none; }
+        .header-box a:hover { text-decoration: underline; }
+
+        .search-area { background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); display: flex; gap: 15px; margin-bottom: 20px; }
+        input { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 1.1rem; }
+        #count-label { font-weight: bold; margin-bottom: 15px; color: var(--accent); }
+
+        .grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 30px; }
         .card { background: #fff; padding: 20px; border-radius: 12px; border-left: 6px solid #ccc; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .is-pdf { border-left-color: var(--pdf); }
-        .is-web { border-left-color: var(--accent); }
+        .is-html { border-left-color: #28a745; }
         
-        /* Lien sur extrait de description */
-        .card a.desc-link { color: var(--accent); text-decoration: none; font-weight: 700; font-size: 1.1rem; display: block; line-height: 1.3; margin-bottom: 10px; }
-        .card a.desc-link:hover { text-decoration: underline; }
+        /* LIEN SUR DESCRIPTIF */
+        .desc-link { color: var(--accent); text-decoration: none; font-weight: 700; font-size: 1.1rem; display: block; line-height: 1.4; margin-bottom: 8px; }
+        .full-text { font-size: 0.95rem; color: #424245; margin-bottom: 12px; }
+        .date-meta { font-size: 0.8rem; color: var(--gray); }
         
-        .full-desc { font-size: 0.95rem; color: #424245; margin-bottom: 15px; }
-        .date-meta { font-size: 0.75rem; color: var(--gray); font-weight: 500; }
-        .sub-web { font-size: 0.85rem; color: var(--gray); font-style: italic; margin-bottom: 15px; }
-        h2 { font-size: 1.4rem; color: #1d1d1f; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        h2 { font-size: 1.3rem; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+        .sub-title { font-size: 0.85rem; color: var(--gray); font-style: italic; margin-bottom: 15px; }
     </style>
 </head>
 <body>
 
-<div class="maint-bar">⚠️ MAINTENANCE : LIENS SUR DESCRIPTIFS & FILTRAGE WEB STRICT</div>
+<div class="maint-bar">⚠️ MODE TRAVAUX : Tri chronologique et liens onglets prioritaires</div>
 
 <div class="container">
-    <div class="header"><h1>Bibliothèque Patrice Salini</h1></div>
-    
-    <div class="intro-box">
-        <strong>Portail Penser les Transports :</strong> <a href="https://pensertransports.simdif.com" target="_blank" style="color:var(--accent); font-weight:bold;">Accéder au site</a>
+    <div class="header-box">
+        <h1>Patrice Salini</h1>
+        <p>Portail <strong>Penser les Transports</strong> (Christian Reynaud & Patrice Salini) : 
+           <a href="https://pensertransports.simdif.com" target="_blank">Accéder au site</a></p>
+        <p>Retrouvez mes ouvrages chez <strong>Mon Éditeur</strong> : 
+           <a href="https://www.editions-harmattan.fr" target="_blank">L'Harmattan</a></p>
     </div>
 
     <div class="search-area">
-        <input type="text" id="q" placeholder="Rechercher (ex: rail, combiné, politique...)" oninput="runSearch()">
-        <select id="sort" onchange="runSearch()" style="padding:10px; border-radius:10px;">
-            <option value="desc">Plus récents</option>
-            <option value="asc">Plus anciens</option>
-        </select>
+        <input type="text" id="q" placeholder="Rechercher un concept (rail, combiné, politique...)" oninput="executeSearch()">
     </div>
+
+    <div id="count-label"></div>
 
     <div class="grid">
         <section>
@@ -53,7 +60,7 @@
         </section>
         <section>
             <h2>🌐 Liens Web</h2>
-            <div class="sub-web">Analyse exclusive du site Penser les Transports</div>
+            <p class="sub-title">Analyse exclusive du site Penser les Transports</p>
             <div id="web-list"></div>
         </section>
     </div>
@@ -61,11 +68,17 @@
 
 <script>
 let DATA = []; let GLOSSAIRE = {};
-const ONGLETS_SIMDIF = [
-    {description: "Le Rail : Politiques, infrastructures et exploitation ferroviaire.", url: "https://pensertransports.simdif.com/le-rail.html", date: "2025"},
-    {description: "La Route : Économie routière et enjeux de mobilité.", url: "https://pensertransports.simdif.com/la-route.html", date: "2025"},
-    {description: "Le Combiné : Transport multimodal et ferroutage.", url: "https://pensertransports.simdif.com/le-combine.html", date: "2025"},
-    {description: "Prospective : Visions à long terme des systèmes de transport.", url: "https://pensertransports.simdif.com/la-prospective.html", date: "2026"}
+
+// ONGLETS SIMDIF VÉRIFIÉS
+const TABS = [
+    {description: "Le Rail : Politiques, infrastructures et exploitation.", url: "https://pensertransports.simdif.com/le-rail.html", date: "2025"},
+    {description: "La Route : Économie, régulation et enjeux routiers.", url: "https://pensertransports.simdif.com/la-route.html", date: "2025"},
+    {description: "Le Combiné : Transport multimodal et techniques de ferroutage.", url: "https://pensertransports.simdif.com/le-combine.html", date: "2025"},
+    {description: "Les Statistiques : Données TKO et analyses chiffrées.", url: "https://pensertransports.simdif.com/statistiques.html", date: "2025"},
+    {description: "Prospective : Prospective, économie et politiques de transport.", url: "https://pensertransports.simdif.com/la-prospective.html", date: "2026"},
+    {description: "L'Environnement : Impacts climatiques et transition énergétique.", url: "https://pensertransports.simdif.com/l-environnement.html", date: "2025"},
+    {description: "La Logistique : Chaînes de transport et organisation.", url: "https://pensertransports.simdif.com/la-logistique.html", date: "2025"},
+    {description: "Glossaire : Définitions et concepts clés des transports.", url: "https://pensertransports.simdif.com/glossaire.html", date: "2026"}
 ];
 
 async function init() {
@@ -73,49 +86,54 @@ async function init() {
         fetch('index.json?v=' + Date.now()).then(r => r.json()),
         fetch('glossaireinverse.json?v=' + Date.now()).then(r => r.json())
     ]);
+    // On ne garde que les PDF et on s'assure que la date est exploitable
     DATA = resD.filter(it => it.url.toLowerCase().endsWith('.pdf'));
     GLOSSAIRE = resG;
-    runSearch();
+    executeSearch();
 }
 
-function runSearch() {
+function executeSearch() {
     const val = document.getElementById('q').value.toLowerCase().trim();
-    const order = document.getElementById('sort').value;
     const pL = document.getElementById('pdf-list'); const wL = document.getElementById('web-list');
     pL.innerHTML = ""; wL.innerHTML = "";
 
+    // Sémantique : Mots + Synonymes
     let terms = [val];
     if (val && GLOSSAIRE[val]) terms = [...terms, ...GLOSSAIRE[val]];
 
+    // Filtrage PDF
     let filtered = DATA.filter(it => {
         if (!val) return true;
         const searchZone = ((it.title || "") + " " + (it.description || "") + " " + (it.url || "")).toLowerCase();
         return terms.some(t => searchZone.includes(t.toLowerCase()));
     });
 
-    filtered.sort((a,b) => order === 'desc' ? b.date.localeCompare(a.date) : a.date.localeCompare(b.date));
+    // TRI CHRONOLOGIQUE STRICT (Décroissant : 2026 en premier)
+    filtered.sort((a,b) => b.date.localeCompare(a.date));
 
     filtered.forEach(it => {
-        // Détermination du texte du lien : extrait de la description ou nom de fichier par défaut
-        const linkText = it.description ? it.description.substring(0, 90) + "..." : it.url;
-        
+        // En-tête = Extrait du descriptif (ou titre si vide)
+        const headerText = it.description ? (it.description.substring(0, 100) + "...") : (it.title || it.url);
         pL.insertAdjacentHTML('beforeend', `
             <div class="card is-pdf">
-                <a href="${it.url}" target="_blank" class="desc-link">${linkText}</a>
-                <div class="full-desc">${it.description || ""}</div>
-                <div class="date-meta">📅 Date : ${it.date}</div>
+                <a href="${it.url}" target="_blank" class="desc-link">${headerText}</a>
+                <div class="full-text">${it.description || ""}</div>
+                <div class="date-meta">Date : ${it.date}</div>
             </div>`);
     });
 
-    ONGLETS_SIMDIF.forEach(it => {
-        if (!val || it.description.toLowerCase().includes(val)) {
+    // Liens HTML filtrés
+    TABS.forEach(tab => {
+        if (!val || (tab.description).toLowerCase().includes(val)) {
             wL.insertAdjacentHTML('beforeend', `
-                <div class="card is-web">
-                    <a href="${it.url}" target="_blank" class="desc-link">${it.description}</a>
-                    <div class="date-meta">Date : ${it.date}</div>
+                <div class="card is-html">
+                    <a href="${tab.url}" target="_blank" class="desc-link">${tab.description}</a>
+                    <div class="date-meta">Date : ${tab.date}</div>
                 </div>`);
         }
     });
+
+    document.getElementById('count-label').innerText = filtered.length + " document(s) trouvé(s)";
 }
 window.onload = init;
 </script>
