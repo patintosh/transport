@@ -2,82 +2,59 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Bibliothèque Patrice Salini</title>
+    <title>Bibliothèque Patrice Salini - MAINTENANCE</title>
     <style>
-        :root { --glass: rgba(255, 255, 255, 0.85); --accent: #0071e3; --pdf: #d93025; }
-        body { 
-            font-family: -apple-system, sans-serif; background: #f5f5f7; margin: 0; color: #1d1d1f; 
-        }
-        .header { background: #fff; padding: 20px; border-bottom: 1px solid #d2d2d7; text-align: center; }
-        .intro-banner { 
-            background: #eef6ff; padding: 15px; margin: 20px auto; max-width: 1160px; 
-            border-radius: 12px; border: 1px solid #b4d5ff; font-size: 0.95rem; line-height: 1.5;
-        }
-        .intro-banner a { color: var(--accent); font-weight: 600; text-decoration: none; }
-        
+        :root { --accent: #0071e3; --pdf: #d93025; --warn: #ffcc00; }
+        body { font-family: -apple-system, sans-serif; background: #f5f5f7; margin: 0; color: #1d1d1f; }
+        .maint-bar { background: var(--warn); padding: 15px; text-align: center; font-weight: 900; border-bottom: 2px solid #000; position: sticky; top: 0; z-index: 1000; }
+        .header { background: #fff; padding: 25px; border-bottom: 1px solid #d2d2d7; text-align: center; }
+        .intro { background: #fff; padding: 20px; margin: 20px auto; max-width: 1100px; border-radius: 12px; border: 1px solid #d2d2d7; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
-        .search-area { 
-            position: sticky; top: 10px; z-index: 100;
-            background: var(--glass); backdrop-filter: blur(20px);
-            padding: 20px; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.08);
-            display: flex; gap: 15px; margin-bottom: 30px;
-        }
-        input { flex: 1; padding: 14px; border-radius: 10px; border: 1px solid #d2d2d7; font-size: 1.1rem; }
-        select { padding: 10px; border-radius: 10px; border: 1px solid #d2d2d7; }
-
+        .search-area { background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); display: flex; gap: 15px; margin: 20px 0; }
+        input { flex: 1; padding: 15px; border-radius: 10px; border: 1px solid #ccc; font-size: 1.2rem; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
-        .card { 
-            background: #fff; padding: 18px; border-radius: 12px; margin-bottom: 15px;
-            border-left: 6px solid #ccc; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-        }
+        .card { background: #fff; padding: 20px; border-radius: 12px; border-left: 6px solid #ccc; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .is-pdf { border-left-color: var(--pdf); }
         .is-web { border-left-color: var(--accent); }
-        .card a { color: var(--accent); text-decoration: none; font-weight: 600; font-size: 1.05rem; }
-        .meta { font-size: 0.8rem; color: #86868b; margin-top: 8px; }
-        h2 { font-size: 1.3rem; margin-bottom: 20px; color: #424245; }
+        .card a { color: var(--accent); text-decoration: none; font-weight: 700; font-size: 1.1rem; }
+        .desc { font-size: 0.9rem; color: #424245; margin: 8px 0; line-height: 1.4; }
+        .meta { font-size: 0.8rem; color: #86868b; font-family: monospace; }
+        h2 { border-bottom: 2px solid #eee; padding-bottom: 10px; }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <h1>Bibliothèque Patrice Salini</h1>
-</div>
+<div class="maint-bar">⚠️ MAINTENANCE : RECONSTRUCTION DU MOTEUR (TITRE + DESCRIPTIF + FICHIER)</div>
 
-<div class="intro-banner">
-    <strong>Portail Penser les Transports :</strong> Site commun à Christian Reynaud et Patrice Salini 
-    — <a href="https://pensertransports.simdif.com" target="_blank">Accéder au Portail</a>. 
-    Retrouvez également mes ouvrages chez <a href="https://www.editions-harmattan.fr" target="_blank">Mon Éditeur (L'Harmattan)</a>.
+<div class="header"><h1>Bibliothèque Patrice Salini</h1></div>
+
+<div class="intro">
+    <strong>Portail Penser les Transports :</strong> <a href="https://pensertransports.simdif.com" target="_blank">Accéder au Portail</a><br>
+    <strong>Mon Éditeur :</strong> <a href="https://www.editions-harmattan.fr" target="_blank">Éditions L'Harmattan</a>
 </div>
 
 <div class="container">
     <div class="search-area">
-        <input type="text" id="query" placeholder="Saisissez un concept (ex: combiné, ferroutage, politique...)" oninput="render()">
-        <select id="sort" onchange="render()">
+        <input type="text" id="q" placeholder="Rechercher (ex: rail, politique, fret...)" oninput="runSearch()">
+        <select id="sort" onchange="runSearch()" style="padding:10px; border-radius:10px;">
             <option value="desc">Plus récents</option>
             <option value="asc">Plus anciens</option>
         </select>
     </div>
 
-    <div id="status" style="margin-bottom:20px; font-weight:600; color:var(--accent);"></div>
+    <div id="count" style="margin-bottom:20px; font-weight:bold;"></div>
 
     <div class="grid">
-        <section><h2>📄 Travaux (PDF)</h2><div id="pdf-list"></div></section>
-        <section><h2>🌐 Dossiers (Web)</h2><div id="web-list"></div></section>
+        <section><h2>📄 Documents (PDF)</h2><div id="pdf-list"></div></section>
+        <section><h2>🌐 Liens Web</h2><div id="web-list"></div></section>
     </div>
 </div>
 
 <script>
 let DATA = []; let GLOSSAIRE = {};
-
-// URLs SIMDIF OFFICIELLES (CORRIGÉES ET FIXES)
-const LIENS_FIXES = [
-    {title: "Le Rail", url: "https://pensertransports.simdif.com/le-rail.html", date: "2025"},
-    {title: "La Route", url: "https://pensertransports.simdif.com/la-route.html", date: "2025"},
-    {title: "Le Combiné", url: "https://pensertransports.simdif.com/le-combine.html", date: "2025"},
-    {title: "L'Environnement", url: "https://pensertransports.simdif.com/l-environnement.html", date: "2025"},
-    {title: "La Logistique", url: "https://pensertransports.simdif.com/la-logistique.html", date: "2025"},
-    {title: "La Prospective", url: "https://pensertransports.simdif.com/la-prospective.html", date: "2026"},
-    {title: "Le Glossaire", url: "https://pensertransports.simdif.com/glossaire.html", date: "2026"}
+const WEB = [
+    {title: "Portail Penser les Transports", url: "https://pensertransports.simdif.com", date: "2026", desc: "Site commun à Christian Reynaud et Patrice Salini."},
+    {title: "L'Harmattan", url: "https://www.editions-harmattan.fr", date: "2026", desc: "Ouvrages et publications chez mon éditeur."}
 ];
 
 async function init() {
@@ -85,44 +62,53 @@ async function init() {
         fetch('index.json?v=' + Date.now()).then(r => r.json()),
         fetch('glossaireinverse.json?v=' + Date.now()).then(r => r.json())
     ]);
-    // On ne garde que les PDF de l'index.json pour les fusionner proprement aux LIENS_FIXES
-    const pdfOnly = resD.filter(it => it.url.endsWith('.pdf'));
-    DATA = [...LIENS_FIXES, ...pdfOnly];
+    DATA = resD.filter(it => it.url.toLowerCase().endsWith('.pdf'));
     GLOSSAIRE = resG;
-    render();
+    runSearch();
 }
 
-function render() {
-    const q = document.getElementById('query').value.toLowerCase().trim();
+function runSearch() {
+    const val = document.getElementById('q').value.toLowerCase().trim();
     const order = document.getElementById('sort').value;
     const pL = document.getElementById('pdf-list'); const wL = document.getElementById('web-list');
     pL.innerHTML = ""; wL.innerHTML = "";
-    
-    // LOGIQUE DE RECHERCHE AVEC GLOSSAIRE
-    let searchTerms = [q];
-    if (q && GLOSSAIRE[q]) {
-        searchTerms = [...searchTerms, ...GLOSSAIRE[q]];
-    }
 
+    // Sémantique
+    let terms = [val];
+    if (val && GLOSSAIRE[val]) terms = [...terms, ...GLOSSAIRE[val]];
+
+    // FILTRAGE STRICT : Titre OR Descriptif OR URL
     let filtered = DATA.filter(it => {
-        if (!q) return true;
-        // On cherche dans le titre ET dans l'URL (qui contient souvent des indices)
-        const target = (it.title + " " + it.url).toLowerCase();
-        return searchTerms.some(t => target.includes(t.toLowerCase()));
+        if (!val) return true;
+        const searchZone = (
+            (it.title || "") + " " + 
+            (it.description || "") + " " + 
+            (it.url || "")
+        ).toLowerCase();
+        return terms.some(t => searchZone.includes(t.toLowerCase()));
     });
 
     filtered.sort((a,b) => order === 'desc' ? b.date.localeCompare(a.date) : a.date.localeCompare(b.date));
 
     filtered.forEach(it => {
-        const isPdf = it.url.endsWith('.pdf');
-        const html = `<div class="card ${isPdf?'is-pdf':'is-web'}">
-            <a href="${it.url}" target="_blank">${it.title}</a>
-            <div class="meta">Date: ${it.date} | Réf: ${it.url}</div>
-        </div>`;
-        if(isPdf) pL.insertAdjacentHTML('beforeend', html);
-        else wL.insertAdjacentHTML('beforeend', html);
+        pL.insertAdjacentHTML('beforeend', `
+            <div class="card is-pdf">
+                <a href="${it.url}" target="_blank">${it.title || it.url}</a>
+                <div class="desc">${it.description || "Pas de description disponible."}</div>
+                <div class="meta">Date: ${it.date} | Fichier: ${it.url}</div>
+            </div>`);
     });
-    document.getElementById('status').innerText = filtered.length + " résultat(s)";
+
+    WEB.forEach(it => {
+        if (!val || (it.title + it.desc).toLowerCase().includes(val)) {
+            wL.insertAdjacentHTML('beforeend', `
+                <div class="card is-web">
+                    <a href="${it.url}" target="_blank">${it.title}</a>
+                    <div class="desc">${it.desc}</div>
+                </div>`);
+        }
+    });
+    document.getElementById('count').innerText = filtered.length + " document(s) trouvé(s)";
 }
 window.onload = init;
 </script>
