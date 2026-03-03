@@ -4,17 +4,16 @@
     <meta charset="UTF-8">
     <title>Bibliothèque Patrice Salini</title>
     <style>
-        :root { --accent: #0071e3; --pdf: #d93025; --warn: #ffcc00; --gray: #6e6e73; }
+        :root { --accent: #0071e3; --pdf: #d93025; --gray: #6e6e73; }
         body { font-family: -apple-system, sans-serif; background: #f5f5f7; margin: 0; color: #1d1d1f; }
         .header-box { background: white; padding: 25px; text-align: center; border-bottom: 1px solid #d2d2d7; }
         .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
         .search-area { background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); margin-bottom: 20px; }
         input { width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #ccc; font-size: 1.2rem; outline: none; }
         .grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 30px; }
-        .card { background: #fff; padding: 20px; border-radius: 12px; border-left: 6px solid #ccc; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .card { background: #fff; padding: 20px; border-radius: 12px; border-left: 6px solid #ccc; margin-bottom: 15px; }
         .is-pdf { border-left-color: var(--pdf); }
         .is-html { border-left-color: #28a745; }
-        /* Lien sur descriptif ou titre */
         .desc-link { color: var(--accent); text-decoration: none; font-weight: 700; font-size: 1.1rem; display: block; margin-bottom: 10px; }
         .date-meta { font-size: 0.8rem; color: var(--gray); margin-top: 10px; }
         #count { font-weight: bold; color: var(--accent); margin-bottom: 10px; }
@@ -30,18 +29,17 @@
 
 <div class="container">
     <div class="search-area">
-        <input type="text" id="q" placeholder="Recherche sémantique (Glossaire > Nom, Titre, Descriptif)..." oninput="doSearch()">
+        <input type="text" id="q" placeholder="Recherche (Glossaire > Nom du fichier, Titre, Descriptif)" oninput="doSearch()">
     </div>
     <div id="count"></div>
     <div class="grid">
         <section><h2>📄 Documents PDF</h2><div id="pdf-list"></div></section>
-        <section><h2>🌐 Onglets du Portail (HTML)</h2><div id="web-list"></div></section>
+        <section><h2>🌐 Onglets Portail (HTML)</h2><div id="web-list"></div></section>
     </div>
 </div>
 
 <script>
-let DATA_PDF = []; 
-let DATA_HTML = [];
+let RAW_DATA = []; 
 let GLOSSAIRE = {};
 
 async function init() {
@@ -50,12 +48,10 @@ async function init() {
             fetch('index.json?v=' + Date.now()).then(r => r.json()),
             fetch('glossaireinverse.json?v=' + Date.now()).then(r => r.json())
         ]);
-        // Tri strict des données dès le départ
-        DATA_PDF = resD.filter(it => it.url.toLowerCase().endsWith('.pdf'));
-        DATA_HTML = resD.filter(it => it.url.toLowerCase().endsWith('.html'));
+        RAW_DATA = resD;
         GLOSSAIRE = resG;
         doSearch();
-    } catch (e) { console.error("Erreur de chargement", e); }
+    } catch (e) { console.error("Erreur chargement JSON", e); }
 }
 
 function doSearch() {
@@ -63,44 +59,43 @@ function doSearch() {
     const pL = document.getElementById('pdf-list'); const wL = document.getElementById('web-list');
     pL.innerHTML = ""; wL.innerHTML = "";
 
-    // 1. Expansion via Glossaire
+    // 1. Glossaire d'abord
     let terms = [q];
-    if (q && GLOSSAIRE[q]) {
-        terms = [...terms, ...GLOSSAIRE[q]]; 
-    }
+    if (q && GLOSSAIRE[q]) terms = [...terms, ...GLOSSAIRE[q]];
 
-    // 2. Scan des PDF (Nom, Titre, Descriptif)
-    let resPdf = DATA_PDF.filter(it => {
+    // 2. Filtrage & Tri (PDF en haut, 2026 en premier)
+    let filtered = RAW_DATA.filter(it => {
         if (!q) return true;
-        const haystack = (it.url + " " + (it.title || "") + " " + (it.description || "")).toLowerCase();
-        return terms.some(t => haystack.includes(t.toLowerCase()));
-    }).sort((a,b) => b.date.localeCompare(a.date));
+        // SCAN TOTAL : Nom du fichier (URL) + Titre + Description
+        const searchZone = (it.url + " " + (it.title || "") + " " + (it.description || "")).toLowerCase();
+        return terms.some(t => searchZone.includes(t));
+    });
 
-    resPdf.forEach(it => {
-        const linkText = (it.description && it.description.length > 5) ? it.description.substring(0, 100) + "..." : "Fichier : " + it.url;
-        pL.insertAdjacentHTML('beforeend', `
-            <div class="card is-pdf">
-                <a href="${it.url}" target="_blank" class="desc-link">${linkText}</a>
+    // Tri chronologique descendant
+    filtered.sort((a,b) => b.date.localeCompare(a.date));
+
+    let pdfCount = 0;
+    filtered.forEach(it => {
+        const isPdf = it.url.toLowerCase().endsWith('.pdf');
+        
+        // Titre cliquable : Extrait description ou Nom du fichier si vide
+        const label = (it.description && it.description.length > 5) ? it.description.substring(0, 100) + "..." : it.url;
+
+        const html = `
+            <div class="card ${isPdf ? 'is-pdf' : 'is-html'}">
+                <a href="${it.url}" target="_blank" class="desc-link">${label}</a>
                 <div class="date-meta">📅 Date : ${it.date} | Source : ${it.url}</div>
-            </div>`);
+            </div>`;
+
+        if (isPdf) { 
+            pL.insertAdjacentHTML('beforeend', html); 
+            pdfCount++; 
+        } else { 
+            wL.insertAdjacentHTML('beforeend', html); 
+        }
     });
 
-    // 3. Scan des 14 Onglets HTML (Sémantique appliquée)
-    let resHtml = DATA_HTML.filter(it => {
-        if (!q) return true;
-        const haystack = (it.url + " " + (it.title || "") + " " + (it.description || "")).toLowerCase();
-        return terms.some(t => haystack.includes(t.toLowerCase()));
-    });
-
-    resHtml.forEach(it => {
-        wL.insertAdjacentHTML('beforeend', `
-            <div class="card is-html">
-                <a href="${it.url}" target="_blank" class="desc-link">${it.title || it.description || "Onglet Portail"}</a>
-                <div class="date-meta">Lien direct vers l'onglet</div>
-            </div>`);
-    });
-
-    document.getElementById('count').innerText = resPdf.length + " document(s) trouvé(s)";
+    document.getElementById('count').innerText = pdfCount + " document(s) PDF trouvé(s)";
 }
 window.onload = init;
 </script>
