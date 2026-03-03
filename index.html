@@ -4,57 +4,68 @@
     <meta charset="UTF-8">
     <title>Bibliothèque Patrice Salini - MAINTENANCE</title>
     <style>
-        :root { --accent: #0071e3; --pdf: #d93025; --warn: #ffcc00; }
+        :root { --accent: #0071e3; --pdf: #d93025; --warn: #ffcc00; --gray: #86868b; }
         body { font-family: -apple-system, sans-serif; background: #f5f5f7; margin: 0; color: #1d1d1f; }
-        .maint-bar { background: var(--warn); padding: 15px; text-align: center; font-weight: 900; border-bottom: 2px solid #000; position: sticky; top: 0; z-index: 1000; }
-        .header { background: #fff; padding: 25px; border-bottom: 1px solid #d2d2d7; text-align: center; }
-        .intro { background: #fff; padding: 20px; margin: 20px auto; max-width: 1100px; border-radius: 12px; border: 1px solid #d2d2d7; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
-        .search-area { background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); display: flex; gap: 15px; margin: 20px 0; }
-        input { flex: 1; padding: 15px; border-radius: 10px; border: 1px solid #ccc; font-size: 1.2rem; }
+        .maint-bar { background: var(--warn); padding: 12px; text-align: center; font-weight: 900; border-bottom: 2px solid #000; position: sticky; top: 0; z-index: 1000; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; padding: 20px 0; }
+        .intro-box { background: white; padding: 20px; border-radius: 12px; border: 1px solid #d2d2d7; margin-bottom: 25px; }
+        .search-area { background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); display: flex; gap: 15px; margin-bottom: 30px; }
+        input { flex: 1; padding: 15px; border-radius: 10px; border: 1px solid #ccc; font-size: 1.1rem; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
         .card { background: #fff; padding: 20px; border-radius: 12px; border-left: 6px solid #ccc; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .is-pdf { border-left-color: var(--pdf); }
         .is-web { border-left-color: var(--accent); }
-        .card a { color: var(--accent); text-decoration: none; font-weight: 700; font-size: 1.1rem; }
-        .desc { font-size: 0.9rem; color: #424245; margin: 8px 0; line-height: 1.4; }
-        .meta { font-size: 0.8rem; color: #86868b; font-family: monospace; }
-        h2 { border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        
+        /* Lien sur extrait de description */
+        .card a.desc-link { color: var(--accent); text-decoration: none; font-weight: 700; font-size: 1.1rem; display: block; line-height: 1.3; margin-bottom: 10px; }
+        .card a.desc-link:hover { text-decoration: underline; }
+        
+        .full-desc { font-size: 0.95rem; color: #424245; margin-bottom: 15px; }
+        .date-meta { font-size: 0.75rem; color: var(--gray); font-weight: 500; }
+        .sub-web { font-size: 0.85rem; color: var(--gray); font-style: italic; margin-bottom: 15px; }
+        h2 { font-size: 1.4rem; color: #1d1d1f; border-bottom: 1px solid #eee; padding-bottom: 10px; }
     </style>
 </head>
 <body>
 
-<div class="maint-bar">⚠️ MAINTENANCE : RECONSTRUCTION DU MOTEUR (TITRE + DESCRIPTIF + FICHIER)</div>
-
-<div class="header"><h1>Bibliothèque Patrice Salini</h1></div>
-
-<div class="intro">
-    <strong>Portail Penser les Transports :</strong> <a href="https://pensertransports.simdif.com" target="_blank">Accéder au Portail</a><br>
-    <strong>Mon Éditeur :</strong> <a href="https://www.editions-harmattan.fr" target="_blank">Éditions L'Harmattan</a>
-</div>
+<div class="maint-bar">⚠️ MAINTENANCE : LIENS SUR DESCRIPTIFS & FILTRAGE WEB STRICT</div>
 
 <div class="container">
+    <div class="header"><h1>Bibliothèque Patrice Salini</h1></div>
+    
+    <div class="intro-box">
+        <strong>Portail Penser les Transports :</strong> <a href="https://pensertransports.simdif.com" target="_blank" style="color:var(--accent); font-weight:bold;">Accéder au site</a>
+    </div>
+
     <div class="search-area">
-        <input type="text" id="q" placeholder="Rechercher (ex: rail, politique, fret...)" oninput="runSearch()">
+        <input type="text" id="q" placeholder="Rechercher (ex: rail, combiné, politique...)" oninput="runSearch()">
         <select id="sort" onchange="runSearch()" style="padding:10px; border-radius:10px;">
             <option value="desc">Plus récents</option>
             <option value="asc">Plus anciens</option>
         </select>
     </div>
 
-    <div id="count" style="margin-bottom:20px; font-weight:bold;"></div>
-
     <div class="grid">
-        <section><h2>📄 Documents (PDF)</h2><div id="pdf-list"></div></section>
-        <section><h2>🌐 Liens Web</h2><div id="web-list"></div></section>
+        <section>
+            <h2>📄 Travaux (PDF)</h2>
+            <div id="pdf-list"></div>
+        </section>
+        <section>
+            <h2>🌐 Liens Web</h2>
+            <div class="sub-web">Analyse exclusive du site Penser les Transports</div>
+            <div id="web-list"></div>
+        </section>
     </div>
 </div>
 
 <script>
 let DATA = []; let GLOSSAIRE = {};
-const WEB = [
-    {title: "Portail Penser les Transports", url: "https://pensertransports.simdif.com", date: "2026", desc: "Site commun à Christian Reynaud et Patrice Salini."},
-    {title: "L'Harmattan", url: "https://www.editions-harmattan.fr", date: "2026", desc: "Ouvrages et publications chez mon éditeur."}
+const ONGLETS_SIMDIF = [
+    {description: "Le Rail : Politiques, infrastructures et exploitation ferroviaire.", url: "https://pensertransports.simdif.com/le-rail.html", date: "2025"},
+    {description: "La Route : Économie routière et enjeux de mobilité.", url: "https://pensertransports.simdif.com/la-route.html", date: "2025"},
+    {description: "Le Combiné : Transport multimodal et ferroutage.", url: "https://pensertransports.simdif.com/le-combine.html", date: "2025"},
+    {description: "Prospective : Visions à long terme des systèmes de transport.", url: "https://pensertransports.simdif.com/la-prospective.html", date: "2026"}
 ];
 
 async function init() {
@@ -73,42 +84,38 @@ function runSearch() {
     const pL = document.getElementById('pdf-list'); const wL = document.getElementById('web-list');
     pL.innerHTML = ""; wL.innerHTML = "";
 
-    // Sémantique
     let terms = [val];
     if (val && GLOSSAIRE[val]) terms = [...terms, ...GLOSSAIRE[val]];
 
-    // FILTRAGE STRICT : Titre OR Descriptif OR URL
     let filtered = DATA.filter(it => {
         if (!val) return true;
-        const searchZone = (
-            (it.title || "") + " " + 
-            (it.description || "") + " " + 
-            (it.url || "")
-        ).toLowerCase();
+        const searchZone = ((it.title || "") + " " + (it.description || "") + " " + (it.url || "")).toLowerCase();
         return terms.some(t => searchZone.includes(t.toLowerCase()));
     });
 
     filtered.sort((a,b) => order === 'desc' ? b.date.localeCompare(a.date) : a.date.localeCompare(b.date));
 
     filtered.forEach(it => {
+        // Détermination du texte du lien : extrait de la description ou nom de fichier par défaut
+        const linkText = it.description ? it.description.substring(0, 90) + "..." : it.url;
+        
         pL.insertAdjacentHTML('beforeend', `
             <div class="card is-pdf">
-                <a href="${it.url}" target="_blank">${it.title || it.url}</a>
-                <div class="desc">${it.description || "Pas de description disponible."}</div>
-                <div class="meta">Date: ${it.date} | Fichier: ${it.url}</div>
+                <a href="${it.url}" target="_blank" class="desc-link">${linkText}</a>
+                <div class="full-desc">${it.description || ""}</div>
+                <div class="date-meta">📅 Date : ${it.date}</div>
             </div>`);
     });
 
-    WEB.forEach(it => {
-        if (!val || (it.title + it.desc).toLowerCase().includes(val)) {
+    ONGLETS_SIMDIF.forEach(it => {
+        if (!val || it.description.toLowerCase().includes(val)) {
             wL.insertAdjacentHTML('beforeend', `
                 <div class="card is-web">
-                    <a href="${it.url}" target="_blank">${it.title}</a>
-                    <div class="desc">${it.desc}</div>
+                    <a href="${it.url}" target="_blank" class="desc-link">${it.description}</a>
+                    <div class="date-meta">Date : ${it.date}</div>
                 </div>`);
         }
     });
-    document.getElementById('count').innerText = filtered.length + " document(s) trouvé(s)";
 }
 window.onload = init;
 </script>
