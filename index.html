@@ -9,9 +9,9 @@
         .header-box { background: white; padding: 25px; text-align: center; border-bottom: 1px solid #d2d2d7; }
         .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
         .search-area { background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        input { width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #ccc; font-size: 1.2rem; box-sizing: border-box; }
+        input { width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #ccc; font-size: 1.2rem; outline: none; }
         .grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 30px; }
-        .card { background: #fff; padding: 20px; border-radius: 12px; border-left: 6px solid #ccc; margin-bottom: 15px; }
+        .card { background: #fff; padding: 20px; border-radius: 12px; border-left: 6px solid #ccc; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .is-pdf { border-left-color: var(--pdf); }
         .is-html { border-left-color: #28a745; }
         .desc-link { color: var(--accent); text-decoration: none; font-weight: 700; font-size: 1.1rem; display: block; margin-bottom: 10px; }
@@ -23,35 +23,42 @@
 
 <div class="header-box">
     <h1>Bibliothèque Patrice Salini</h1>
-    <p>Portail <strong>Penser les Transports</strong> (Christian Reynaud & Patrice Salini) : 
-       <a href="https://pensertransports.simdif.com" target="_blank">Visiter le site</a></p>
-    <p>Éditeur : <a href="https://www.editions-harmattan.fr" target="_blank">L'Harmattan</a></p>
+    <p>Portail <strong>Penser les Transports</strong> (Christian Reynaud & Patrice Salini)</p>
+    <p><a href="https://pensertransports.simdif.com" target="_blank">Site Principal</a> | <a href="https://www.editions-harmattan.fr" target="_blank">L'Harmattan</a></p>
 </div>
 
 <div class="container">
     <div class="search-area">
-        <input type="text" id="q" placeholder="Tapez votre recherche ici..." oninput="doSearch()">
+        <input type="text" id="q" placeholder="Recherche par glossaire, nom, titre et descriptif..." oninput="doSearch()">
     </div>
     <div id="count"></div>
     <div class="grid">
         <section><h2>📄 Documents PDF</h2><div id="pdf-list"></div></section>
-        <section><h2>🌐 Onglets Web</h2><div id="web-list"></div></section>
+        <section><h2>🌐 Onglets Spécifiques</h2><div id="web-list"></div></section>
     </div>
 </div>
 
 <script>
 let DATA = []; 
+let GLOSSAIRE = {};
+
 const TABS = [
-    {d: "Le Rail : Politiques et infrastructures ferroviaires", u: "https://pensertransports.simdif.com/la-prospective.html"},
-    {d: "La Route : Économie et régulation", u: "https://pensertransports.simdif.com/la-route.html"},
-    {d: "Le Combiné : Multimodalité et ferroutage", u: "https://pensertransports.simdif.com/le-combine.html"},
-    {d: "La Prospective : Évolutions et politiques", u: "https://pensertransports.simdif.com/la-prospective.html"}
+    {d: "Le Fret Ferroviaire", u: "https://pensertransports.simdif.com/le_fret_ferroviaire.html"},
+    {d: "La Tarification des Infrastructures", u: "https://pensertransports.simdif.com/la_tarification_des_infrastructures.html"},
+    {d: "Le Grand Projet Lyon-Turin", u: "https://pensertransports.simdif.com/le_grand_projet_lyon-turin.html"},
+    {d: "Projet Lyon-Turin (Chapitre 2)", u: "https://pensertransports.simdif.com/le_projet_lyon_turin_chapitrre_2.html"}
 ];
 
 async function init() {
-    const res = await fetch('index.json?v=' + Date.now()).then(r => r.json());
-    DATA = res.filter(it => it.url.toLowerCase().endsWith('.pdf'));
-    doSearch();
+    try {
+        const [resD, resG] = await Promise.all([
+            fetch('index.json?v=' + Date.now()).then(r => r.json()),
+            fetch('glossaireinverse.json?v=' + Date.now()).then(r => r.json())
+        ]);
+        DATA = resD.filter(it => it.url.toLowerCase().endsWith('.pdf'));
+        GLOSSAIRE = resG;
+        doSearch();
+    } catch (e) { console.error("Erreur chargement", e); }
 }
 
 function doSearch() {
@@ -59,31 +66,40 @@ function doSearch() {
     const pL = document.getElementById('pdf-list'); const wL = document.getElementById('web-list');
     pL.innerHTML = ""; wL.innerHTML = "";
 
-    // RECHERCHE PDF : ON SCANNE TOUT LE CONTENU DISPONIBLE
+    // 1. ÉTAPE GLOSSAIRE (PRÉALABLE)
+    let terms = [q];
+    if (q && GLOSSAIRE[q]) {
+        terms = [...terms, ...GLOSSAIRE[q]]; 
+    }
+
+    // 2. ÉTAPE SCAN (NOM, TITRE, DESCRIPTIF)
     let resPdf = DATA.filter(it => {
-        const fullContent = (it.title + " " + it.description + " " + it.url).toLowerCase();
-        return !q || fullContent.includes(q);
+        if (!q) return true;
+        const searchZone = (it.url + " " + (it.title || "") + " " + (it.description || "")).toLowerCase();
+        // Vérifie si l'un des termes du glossaire ou le mot lui-même est présent
+        return terms.some(t => searchZone.includes(t.toLowerCase()));
     }).sort((a,b) => b.date.localeCompare(a.date));
 
     resPdf.forEach(it => {
-        // Si pas de description, on met un extrait du nom de fichier
-        const linkText = it.description && it.description.length > 5 ? it.description.substring(0, 100) : "Document : " + it.url;
+        const linkText = (it.description && it.description.length > 5) ? it.description.substring(0, 100) + "..." : "Fichier : " + it.url;
         pL.insertAdjacentHTML('beforeend', `
             <div class="card is-pdf">
                 <a href="${it.url}" target="_blank" class="desc-link">${linkText}</a>
-                <div class="date-meta">Date : ${it.date} | Fichier : ${it.url}</div>
+                <div class="date-meta">📅 Date : ${it.date} | Source : ${it.url}</div>
             </div>`);
     });
 
-    // RECHERCHE WEB
+    // 3. ÉTAPE WEB (ONGLETS)
     TABS.forEach(t => {
-        if (!q || t.d.toLowerCase().includes(q)) {
+        const tabZone = (t.d + " " + t.u).toLowerCase();
+        if (!q || terms.some(trm => tabZone.includes(trm.toLowerCase()))) {
             wL.insertAdjacentHTML('beforeend', `
                 <div class="card is-html">
                     <a href="${t.u}" target="_blank" class="desc-link">${t.d}</a>
                 </div>`);
         }
     });
+
     document.getElementById('count').innerText = resPdf.length + " document(s) trouvé(s)";
 }
 window.onload = init;
