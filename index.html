@@ -2,95 +2,119 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Bibliothèque Patrice Salini - Maintenance</title>
+    <title>Bibliothèque Patrice Salini</title>
     <style>
-        :root { --pdf: #d93025; --web: #1a73e8; --warn: #ffcc00; }
-        body { font-family: -apple-system, sans-serif; background: #f5f5f7; margin: 0; }
+        :root { --glass: rgba(255, 255, 255, 0.85); --accent: #0071e3; --pdf: #d93025; }
+        body { 
+            font-family: -apple-system, sans-serif; background: #f5f5f7; margin: 0; color: #1d1d1f; 
+        }
+        .header { background: #fff; padding: 20px; border-bottom: 1px solid #d2d2d7; text-align: center; }
+        .intro-banner { 
+            background: #eef6ff; padding: 15px; margin: 20px auto; max-width: 1160px; 
+            border-radius: 12px; border: 1px solid #b4d5ff; font-size: 0.95rem; line-height: 1.5;
+        }
+        .intro-banner a { color: var(--accent); font-weight: 600; text-decoration: none; }
         
-        /* BANDEAU TRAVAUX */
-        .maintenance-bar { background: var(--warn); color: #000; padding: 10px; text-align: center; font-weight: bold; border-bottom: 2px solid #333; }
-        
-        .header { background: #1d1d1f; color: white; padding: 25px; text-align: center; }
-        .intro-box { max-width: 1200px; margin: 20px auto; padding: 15px; background: #eef6ff; border-radius: 8px; border: 1px solid var(--web); }
-        
-        .wrap { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
-        .controls { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; gap: 15px; align-items: center; }
-        #search-input { flex-grow: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
-        
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px; }
-        .card { background: white; padding: 15px; border-radius: 8px; border-left: 5px solid #ccc; margin-bottom: 10px; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        .search-area { 
+            position: sticky; top: 10px; z-index: 100;
+            background: var(--glass); backdrop-filter: blur(20px);
+            padding: 20px; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+            display: flex; gap: 15px; margin-bottom: 30px;
+        }
+        input { flex: 1; padding: 14px; border-radius: 10px; border: 1px solid #d2d2d7; font-size: 1.1rem; }
+        select { padding: 10px; border-radius: 10px; border: 1px solid #d2d2d7; }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .card { 
+            background: #fff; padding: 18px; border-radius: 12px; margin-bottom: 15px;
+            border-left: 6px solid #ccc; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
         .is-pdf { border-left-color: var(--pdf); }
-        .is-web { border-left-color: var(--web); }
-        .card a { color: #0071e3; text-decoration: none; font-weight: bold; }
-        .meta { font-size: 0.8rem; color: #666; margin-top: 5px; }
+        .is-web { border-left-color: var(--accent); }
+        .card a { color: var(--accent); text-decoration: none; font-weight: 600; font-size: 1.05rem; }
+        .meta { font-size: 0.8rem; color: #86868b; margin-top: 8px; }
+        h2 { font-size: 1.3rem; margin-bottom: 20px; color: #424245; }
     </style>
 </head>
 <body>
-
-<div class="maintenance-bar">⚠️ Site en cours d'optimisation technique - Recherche en mode dégradé</div>
 
 <div class="header">
     <h1>Bibliothèque Patrice Salini</h1>
 </div>
 
-<div class="intro-box">
-    <strong>Portail Penser les Transports :</strong> Prospective, économie et politiques de transport. 
+<div class="intro-banner">
+    <strong>Portail Penser les Transports :</strong> Site commun à Christian Reynaud et Patrice Salini 
+    — <a href="https://pensertransports.simdif.com" target="_blank">Accéder au Portail</a>. 
     Retrouvez également mes ouvrages chez <a href="https://www.editions-harmattan.fr" target="_blank">Mon Éditeur (L'Harmattan)</a>.
 </div>
 
-<div class="wrap">
-    <div class="controls">
-        <input type="text" id="search-input" placeholder="Rechercher (ex: rail, tko, 2026...)">
-        <select id="sort-order" onchange="render()">
-            <option value="desc">Plus récents d'abord</option>
-            <option value="asc">Plus anciens d'abord</option>
+<div class="container">
+    <div class="search-area">
+        <input type="text" id="query" placeholder="Saisissez un concept (ex: combiné, ferroutage, politique...)" oninput="render()">
+        <select id="sort" onchange="render()">
+            <option value="desc">Plus récents</option>
+            <option value="asc">Plus anciens</option>
         </select>
     </div>
-    <p id="counter" style="margin: 15px 0; font-weight: bold; color: #0071e3;"></p>
+
+    <div id="status" style="margin-bottom:20px; font-weight:600; color:var(--accent);"></div>
+
     <div class="grid">
-        <section><h2>📄 PDF & Archives</h2><div id="pdf-list"></div></section>
-        <section><h2>🌐 Dossiers SimDif</h2><div id="web-list"></div></section>
+        <section><h2>📄 Travaux (PDF)</h2><div id="pdf-list"></div></section>
+        <section><h2>🌐 Dossiers (Web)</h2><div id="web-list"></div></section>
     </div>
 </div>
 
 <script>
 let DATA = []; let GLOSSAIRE = {};
 
+// URLs SIMDIF OFFICIELLES (CORRIGÉES ET FIXES)
+const LIENS_FIXES = [
+    {title: "Le Rail", url: "https://pensertransports.simdif.com/le-rail.html", date: "2025"},
+    {title: "La Route", url: "https://pensertransports.simdif.com/la-route.html", date: "2025"},
+    {title: "Le Combiné", url: "https://pensertransports.simdif.com/le-combine.html", date: "2025"},
+    {title: "L'Environnement", url: "https://pensertransports.simdif.com/l-environnement.html", date: "2025"},
+    {title: "La Logistique", url: "https://pensertransports.simdif.com/la-logistique.html", date: "2025"},
+    {title: "La Prospective", url: "https://pensertransports.simdif.com/la-prospective.html", date: "2026"},
+    {title: "Le Glossaire", url: "https://pensertransports.simdif.com/glossaire.html", date: "2026"}
+];
+
 async function init() {
     const [resD, resG] = await Promise.all([
         fetch('index.json?v=' + Date.now()).then(r => r.json()),
         fetch('glossaireinverse.json?v=' + Date.now()).then(r => r.json())
     ]);
-    DATA = resD; GLOSSAIRE = resG;
+    // On ne garde que les PDF de l'index.json pour les fusionner proprement aux LIENS_FIXES
+    const pdfOnly = resD.filter(it => it.url.endsWith('.pdf'));
+    DATA = [...LIENS_FIXES, ...pdfOnly];
+    GLOSSAIRE = resG;
     render();
 }
 
 function render() {
-    const q = document.getElementById('search-input').value.toLowerCase().trim();
-    const order = document.getElementById('sort-order').value;
+    const q = document.getElementById('query').value.toLowerCase().trim();
+    const order = document.getElementById('sort').value;
     const pL = document.getElementById('pdf-list'); const wL = document.getElementById('web-list');
     pL.innerHTML = ""; wL.innerHTML = "";
     
-    // LOGIQUE DE RECHERCHE AMELIOREE
+    // LOGIQUE DE RECHERCHE AVEC GLOSSAIRE
     let searchTerms = [q];
     if (q && GLOSSAIRE[q]) {
-        // Si "rail" est tapé, on ajoute "ferroviaire", "fer", etc.
         searchTerms = [...searchTerms, ...GLOSSAIRE[q]];
     }
 
     let filtered = DATA.filter(it => {
         if (!q) return true;
-        const textToSearch = (it.title + " " + (it.url || "")).toLowerCase();
-        // On vérifie si UN des termes du glossaire match
-        return searchTerms.some(term => textToSearch.includes(term.toLowerCase()));
+        // On cherche dans le titre ET dans l'URL (qui contient souvent des indices)
+        const target = (it.title + " " + it.url).toLowerCase();
+        return searchTerms.some(t => target.includes(t.toLowerCase()));
     });
 
-    filtered.sort((a, b) => {
-        return order === 'desc' ? b.date.localeCompare(a.date) : a.date.localeCompare(b.date);
-    });
+    filtered.sort((a,b) => order === 'desc' ? b.date.localeCompare(a.date) : a.date.localeCompare(b.date));
 
     filtered.forEach(it => {
-        const isPdf = it.url.toLowerCase().endsWith('.pdf');
+        const isPdf = it.url.endsWith('.pdf');
         const html = `<div class="card ${isPdf?'is-pdf':'is-web'}">
             <a href="${it.url}" target="_blank">${it.title}</a>
             <div class="meta">Date: ${it.date} | Réf: ${it.url}</div>
@@ -98,10 +122,8 @@ function render() {
         if(isPdf) pL.insertAdjacentHTML('beforeend', html);
         else wL.insertAdjacentHTML('beforeend', html);
     });
-    document.getElementById('counter').innerText = filtered.length + " document(s) trouvé(s)";
+    document.getElementById('status').innerText = filtered.length + " résultat(s)";
 }
-
-document.getElementById('search-input').oninput = render;
 window.onload = init;
 </script>
 </body>
