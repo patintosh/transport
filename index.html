@@ -14,6 +14,7 @@
         .card { background: #fff; padding: 20px; border-radius: 12px; border-left: 6px solid #ccc; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .is-pdf { border-left-color: var(--pdf); }
         .is-html { border-left-color: #28a745; }
+        /* Lien sur descriptif ou titre */
         .desc-link { color: var(--accent); text-decoration: none; font-weight: 700; font-size: 1.1rem; display: block; margin-bottom: 10px; }
         .date-meta { font-size: 0.8rem; color: var(--gray); margin-top: 10px; }
         #count { font-weight: bold; color: var(--accent); margin-bottom: 10px; }
@@ -29,25 +30,19 @@
 
 <div class="container">
     <div class="search-area">
-        <input type="text" id="q" placeholder="Recherche par glossaire, nom, titre et descriptif..." oninput="doSearch()">
+        <input type="text" id="q" placeholder="Recherche sémantique (Glossaire > Nom, Titre, Descriptif)..." oninput="doSearch()">
     </div>
     <div id="count"></div>
     <div class="grid">
         <section><h2>📄 Documents PDF</h2><div id="pdf-list"></div></section>
-        <section><h2>🌐 Onglets Spécifiques</h2><div id="web-list"></div></section>
+        <section><h2>🌐 Onglets du Portail (HTML)</h2><div id="web-list"></div></section>
     </div>
 </div>
 
 <script>
-let DATA = []; 
+let DATA_PDF = []; 
+let DATA_HTML = [];
 let GLOSSAIRE = {};
-
-const TABS = [
-    {d: "Le Fret Ferroviaire", u: "https://pensertransports.simdif.com/le_fret_ferroviaire.html"},
-    {d: "La Tarification des Infrastructures", u: "https://pensertransports.simdif.com/la_tarification_des_infrastructures.html"},
-    {d: "Le Grand Projet Lyon-Turin", u: "https://pensertransports.simdif.com/le_grand_projet_lyon-turin.html"},
-    {d: "Projet Lyon-Turin (Chapitre 2)", u: "https://pensertransports.simdif.com/le_projet_lyon_turin_chapitrre_2.html"}
-];
 
 async function init() {
     try {
@@ -55,10 +50,12 @@ async function init() {
             fetch('index.json?v=' + Date.now()).then(r => r.json()),
             fetch('glossaireinverse.json?v=' + Date.now()).then(r => r.json())
         ]);
-        DATA = resD.filter(it => it.url.toLowerCase().endsWith('.pdf'));
+        // Tri strict des données dès le départ
+        DATA_PDF = resD.filter(it => it.url.toLowerCase().endsWith('.pdf'));
+        DATA_HTML = resD.filter(it => it.url.toLowerCase().endsWith('.html'));
         GLOSSAIRE = resG;
         doSearch();
-    } catch (e) { console.error("Erreur chargement", e); }
+    } catch (e) { console.error("Erreur de chargement", e); }
 }
 
 function doSearch() {
@@ -66,18 +63,17 @@ function doSearch() {
     const pL = document.getElementById('pdf-list'); const wL = document.getElementById('web-list');
     pL.innerHTML = ""; wL.innerHTML = "";
 
-    // 1. ÉTAPE GLOSSAIRE (PRÉALABLE)
+    // 1. Expansion via Glossaire
     let terms = [q];
     if (q && GLOSSAIRE[q]) {
         terms = [...terms, ...GLOSSAIRE[q]]; 
     }
 
-    // 2. ÉTAPE SCAN (NOM, TITRE, DESCRIPTIF)
-    let resPdf = DATA.filter(it => {
+    // 2. Scan des PDF (Nom, Titre, Descriptif)
+    let resPdf = DATA_PDF.filter(it => {
         if (!q) return true;
-        const searchZone = (it.url + " " + (it.title || "") + " " + (it.description || "")).toLowerCase();
-        // Vérifie si l'un des termes du glossaire ou le mot lui-même est présent
-        return terms.some(t => searchZone.includes(t.toLowerCase()));
+        const haystack = (it.url + " " + (it.title || "") + " " + (it.description || "")).toLowerCase();
+        return terms.some(t => haystack.includes(t.toLowerCase()));
     }).sort((a,b) => b.date.localeCompare(a.date));
 
     resPdf.forEach(it => {
@@ -89,15 +85,19 @@ function doSearch() {
             </div>`);
     });
 
-    // 3. ÉTAPE WEB (ONGLETS)
-    TABS.forEach(t => {
-        const tabZone = (t.d + " " + t.u).toLowerCase();
-        if (!q || terms.some(trm => tabZone.includes(trm.toLowerCase()))) {
-            wL.insertAdjacentHTML('beforeend', `
-                <div class="card is-html">
-                    <a href="${t.u}" target="_blank" class="desc-link">${t.d}</a>
-                </div>`);
-        }
+    // 3. Scan des 14 Onglets HTML (Sémantique appliquée)
+    let resHtml = DATA_HTML.filter(it => {
+        if (!q) return true;
+        const haystack = (it.url + " " + (it.title || "") + " " + (it.description || "")).toLowerCase();
+        return terms.some(t => haystack.includes(t.toLowerCase()));
+    });
+
+    resHtml.forEach(it => {
+        wL.insertAdjacentHTML('beforeend', `
+            <div class="card is-html">
+                <a href="${it.url}" target="_blank" class="desc-link">${it.title || it.description || "Onglet Portail"}</a>
+                <div class="date-meta">Lien direct vers l'onglet</div>
+            </div>`);
     });
 
     document.getElementById('count').innerText = resPdf.length + " document(s) trouvé(s)";
