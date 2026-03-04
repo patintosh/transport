@@ -19,11 +19,12 @@
         .nav-sites a { 
             text-decoration: none; color: var(--accent); font-weight: bold; font-size: 0.75em;
             padding: 6px 10px; background: #f1f5f9; border-radius: 6px; border: 1px solid #e2e8f0;
+            transition: 0.2s;
         }
+        .nav-sites a:hover { background: var(--accent); color: white; }
         
         .wrapper { display: flex; flex-grow: 1; overflow: hidden; padding: 12px; gap: 12px; }
         
-        /* Ajustements mobiles iPhone */
         @media (max-width: 600px) { 
             h1 { font-size: 1.3em; margin-bottom: 8px; }
             header { padding: 10px 5px; }
@@ -42,7 +43,7 @@
         .main { flex-grow: 1; overflow: hidden; }
 
         .search-area { padding: 12px; border-bottom: 1px solid #f1f5f9; background: white; position: sticky; top: 0; z-index: 10; }
-        #search { width: 100%; box-sizing: border-box; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e0; font-size: 16px; /* Evite le zoom auto iPhone */ }
+        #search { width: 100%; box-sizing: border-box; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e0; font-size: 16px; }
         
         #global-list, #focus-list { overflow-y: auto; padding: 12px; }
         
@@ -67,7 +68,7 @@
     <header>
         <h1>Bibliothèque Patrice Salini</h1>
         <div class="nav-sites">
-            <a href="https://pensertransports.simdif.com" target="_blank">Penser les Transports</a>
+            <a href="https://pensertransports.simdif.com" target="_blank">Penser les Transports (P. Salini & C. Reynaud)</a>
             <a href="https://www.editions-harmattan.fr/catalogue/auteur/patrice-salini/15031" target="_blank">L'Harmattan</a>
             <a href="https://www.transportinfo.fr/?s=patrice+Salini" target="_blank">Transport Info</a>
             <a href="mailto:patrice.salini@wanadoo.fr">✉ Contact</a>
@@ -137,4 +138,4 @@
         window.onload = render;
     </script>
 </body>
-</html> 
+</html>
