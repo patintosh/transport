@@ -4,7 +4,7 @@ csv_file = 'INVENTAIRE_CLEAN.csv'
 glossary_file = 'glossaireinverse.json'
 output_file = 'index.html'
 
-# Index sémantique pour le Focus (SimDif)
+# Index sémantique pour le Focus
 ONGLETS_SIMDIF = [
     {"nom": "Politique des transports", "url": "https://pensertransports.simdif.com/où_est_passée_la_politique_des_transports.html", "contenu": "stratégie nationale, planification, investissement, infrastructures, grands projets"},
     {"nom": "Lyon-Turin (Chap. 2)", "url": "https://pensertransports.simdif.com/le_projet_lyon_turin_chapitrre_2.html", "contenu": "tunneliers, géologie, financement européen, opposition, tunnel de base, fret transalpin"},
@@ -13,7 +13,7 @@ ONGLETS_SIMDIF = [
     {"nom": "Évaluation des politiques", "url": "https://pensertransports.simdif.com/l’évaluation_des_politiques_et_des_projets_publics.html", "contenu": "socio-économie, rentabilité, utilité publique, calcul économique, bilan"},
     {"nom": "Questions sociales", "url": "https://pensertransports.simdif.com/les_questions_sociales.html", "contenu": "emploi, conditions de travail, syndicats, grèves, formation, retraites"},
     {"nom": "Europe des transports", "url": "https://pensertransports.simdif.com/l’europe_des_transports.html", "contenu": "paquet ferroviaire, bruxelles, directives, concurrence, ciel unique"},
-    {"nom": "Fret ferroviaire", "url": "https://pensertransports.simdif.com/le_fret_ferroviaire.html", "contenu": "sncf, trains de marchandises, embranchements, wagon isolé, déclin, rail"},
+    {"nom": "Fret ferroviaire", "url": "https://pensertransports.simdif.com/le_fret_ferroviaire.html", "contenu": "sncf, trains de marchandises, embranchements, wagon isolé, déclin"},
     {"nom": "Transport routier", "url": "https://pensertransports.simdif.com/le_transport_routier.html", "contenu": "camions, pavillon français, prix du gasoil, taxes, autoroutes"},
     {"nom": "Exemple Suisse", "url": "https://pensertransports.simdif.com/l’exemple_suisse.html", "contenu": "transit, alpes, redevance poids-lourds, intégration rail-route"},
     {"nom": "Politiques de voisinage", "url": "https://pensertransports.simdif.com/les_politiques_de_voisinage.html", "contenu": "coopération transfrontalière, intermodalité, zones urbaines"},
@@ -56,75 +56,91 @@ try:
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bibliothèque Numérique Patrice Salini</title>
     <style>
-        :root { --glass: rgba(255, 255, 255, 0.85); --accent: #0056b3; --video: #059669; }
+        :root { --glass: rgba(255, 255, 255, 0.9); --accent: #0056b3; --video: #059669; }
         body { 
             margin: 0; font-family: 'Segoe UI', system-ui, sans-serif; 
-            background: linear-gradient(135deg, #e0e7ff 0%, #f1f5f9 100%);
-            height: 100vh; display: flex; flex-direction: column; color: #1e293b;
+            background: #f1f5f9; height: 100vh; display: flex; flex-direction: column; color: #1e293b;
         }
         header { 
-            background: var(--glass); backdrop-filter: blur(12px);
-            padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.4);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            background: white; padding: 25px 15px; text-align: center; border-bottom: 1px solid #e2e8f0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
-        .nav-sites { display: flex; justify-content: center; gap: 15px; margin-top: 15px; }
+        h1 { margin: 0 0 15px 0; font-size: 2em; color: #1e3a8a; }
+        .nav-sites { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
         .nav-sites a { 
-            text-decoration: none; color: var(--accent); font-weight: bold; font-size: 0.85em;
-            padding: 8px 16px; background: white; border-radius: 50px; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: 0.3s;
+            text-decoration: none; color: var(--accent); font-weight: bold; font-size: 0.9em;
+            padding: 8px 16px; background: #f1f5f9; border-radius: 8px; transition: 0.3s;
+            border: 1px solid #e2e8f0;
         }
         .nav-sites a:hover { background: var(--accent); color: white; }
-        .nav-sites a.contact { border: 1px solid #cbd5e0; }
-
-        .wrapper { display: flex; flex-grow: 1; overflow: hidden; padding: 20px; gap: 20px; }
-        .sidebar, .main { 
-            background: var(--glass); backdrop-filter: blur(12px);
-            border-radius: 20px; display: flex; flex-direction: column;
-            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1); border: 1px solid rgba(255,255,255,0.4);
+        
+        .wrapper { display: flex; flex-grow: 1; overflow: hidden; padding: 15px; gap: 15px; }
+        @media (max-width: 900px) { 
+            .wrapper { flex-direction: column; overflow-y: auto; height: auto; }
+            body { height: auto; }
+            .sidebar, .main { width: 100% !important; height: auto !important; overflow: visible !important; }
         }
-        .sidebar { width: 380px; }
+        
+        .sidebar, .main { 
+            background: white; border-radius: 15px; display: flex; flex-direction: column;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;
+        }
+        .sidebar { width: 320px; }
         .main { flex-grow: 1; }
 
-        .search-area { padding: 20px; border-bottom: 1px solid rgba(0,0,0,0.05); display: flex; gap: 10px; }
-        #search { flex-grow: 1; padding: 12px 20px; border-radius: 12px; border: 1px solid #cbd5e0; outline: none; background: rgba(255,255,255,0.5); }
-        .btn-sort { padding: 10px 15px; border-radius: 12px; border: 1px solid #cbd5e0; background: white; cursor: pointer; font-weight: bold; }
-
-        #global-list, #focus-list { overflow-y: auto; padding: 10px 20px; }
+        .search-area { padding: 15px; border-bottom: 1px solid #f1f5f9; display: flex; gap: 10px; }
+        #search { flex-grow: 1; padding: 12px 15px; border-radius: 10px; border: 1px solid #cbd5e0; outline: none; }
+        
+        #global-list, #focus-list { overflow-y: auto; padding: 15px; }
         
         .card { 
-            background: rgba(255,255,255,0.7); margin-bottom: 12px; padding: 15px; border-radius: 12px;
-            display: flex; justify-content: space-between; align-items: center; border: 1px solid white;
+            background: #f8fafc; margin-bottom: 10px; padding: 12px; border-radius: 12px;
+            display: flex; flex-direction: column; gap: 10px; border: 1px solid #e2e8f0;
         }
-        .tag { font-size: 0.7em; padding: 3px 8px; border-radius: 5px; background: #e0e7ff; color: #4338ca; font-weight: 700; margin-right: 5px; }
-        .btn-consulter { color: white; text-decoration: none; padding: 10px 18px; border-radius: 10px; font-weight: bold; font-size: 0.85em; transition: 0.2s; }
-        .btn-pdf { background: var(--accent); }
-        .btn-vid { background: var(--video); }
+        @media (min-width: 600px) {
+            .card { flex-direction: row; justify-content: space-between; align-items: center; }
+        }
+        
+        .card-info { flex-grow: 1; }
+        .title { font-weight: bold; color: #1e3a8a; display: block; margin-bottom: 4px; line-height: 1.3; }
+        .tag { font-size: 0.75em; padding: 2px 8px; border-radius: 4px; background: #e0e7ff; color: #4338ca; }
+        
+        .actions { display: flex; gap: 8px; }
+        .btn { 
+            text-decoration: none; padding: 8px 14px; border-radius: 8px; font-weight: bold; 
+            font-size: 0.85em; text-align: center; flex-grow: 1;
+        }
+        .btn-view { background: var(--accent); color: white; }
+        .btn-vid { background: var(--video); color: white; }
+        .btn-dl { background: #64748b; color: white; min-width: 40px; }
     </style>
 </head>
 <body>
     <header>
-        <h1>Bibliothèque Numérique de Patrice Salini</h1>
+        <h1>Bibliothèque Patrice Salini</h1>
         <div class="nav-sites">
-            <a href="https://pensertransports.simdif.com" target="_blank">1. Penser les Transports</a>
-            <a href="https://www.editions-harmattan.fr/catalogue/auteur/patrice-salini/15031" target="_blank">2. L'Harmattan</a>
-            <a href="https://www.transportinfo.fr/?s=patrice+Salini" target="_blank">3. Transport Info</a>
-            <a href="mailto:patrice.salini@wanadoo.fr" class="contact">✉ Me contacter</a>
+            <a href="https://pensertransports.simdif.com" target="_blank">Site Penser les Transports (P. Salini & C. Reynaud)</a>
+            <a href="https://www.editions-harmattan.fr/catalogue/auteur/patrice-salini/15031" target="_blank">L'Harmattan</a>
+            <a href="https://www.transportinfo.fr/?s=patrice+Salini" target="_blank">Archives Transport Info</a>
+            <a href="mailto:patrice.salini@wanadoo.fr">✉ Contact</a>
         </div>
     </header>
 
     <div class="wrapper">
         <aside class="sidebar">
-            <div style="padding:20px; font-weight:bold; color: #1e3a8a; border-bottom: 1px solid rgba(0,0,0,0.05);">Focus : Penser-Transport</div>
+            <div style="padding:15px; font-weight:bold; color: #1e3a8a; border-bottom: 1px solid #f1f5f9; font-size: 0.9em;">
+                Focus : Penser les Transports
+            </div>
             <div id="focus-list"></div>
         </aside>
         <main class="main">
             <div class="search-area">
-                <input type="text" id="search" placeholder="Recherche par concept, titre ou année...">
-                <button class="btn-sort" onclick="toggleSort()">⇅ Date</button>
+                <input type="text" id="search" placeholder="Rechercher par titre, année ou concept...">
             </div>
-            <div id="counter" style="padding: 0 20px 10px; font-size: 0.85em; font-weight: bold; color: #64748b;"></div>
+            <div id="counter" style="padding: 0 15px 5px; font-size: 0.8em; font-weight: bold; color: #64748b;"></div>
             <div id="global-list"></div>
         </main>
     </div>
@@ -134,13 +150,11 @@ try:
         const glossary = GLOSSARY_PLACEHOLDER;
         const onglets = ONGLETS_PLACEHOLDER;
 
-        function toggleSort() { docs.reverse(); render(); }
-
         function render() {
             const query = document.getElementById('search').value.toLowerCase().trim();
             if (!query) {
-                document.getElementById('focus-list').innerHTML = '<p style="padding:20px; color:#64748b; font-size:0.9em; text-align:center;">Recherchez un concept pour analyser le site.</p>';
-                document.getElementById('counter').innerText = "Dernières publications (15 documents)";
+                document.getElementById('focus-list').innerHTML = '<p style="text-align:center;color:#94a3b8;font-size:0.8em;padding:20px;">Utilisez la recherche pour explorer les thématiques communes.</p>';
+                document.getElementById('counter').innerText = "Dernières publications";
                 displayList(docs.slice(0, 15));
                 return;
             }
@@ -150,28 +164,31 @@ try:
 
             const matchedOnglets = onglets.filter(o => terms.some(t => (o.nom + o.contenu).toLowerCase().includes(t)));
             document.getElementById('focus-list').innerHTML = matchedOnglets.map(o => `
-                <div style="background:#e0f2fe; padding:15px; border-radius:12px; margin-bottom:12px; border-left:5px solid #0369a1;">
-                    <a href="${o.url}" target="_blank" style="text-decoration:none; color:#1e3a8a; font-weight:bold; font-size:0.9em;">${o.nom}</a>
-                </div>`).join('') || '<p style="padding:20px; font-size:0.8em; color:#94a3b8; text-align:center;">Aucun onglet lié.</p>';
+                <div style="background:#e0f2fe; padding:10px; border-radius:8px; margin-bottom:8px; border-left:4px solid #0369a1;">
+                    <a href="${o.url}" target="_blank" style="text-decoration:none; color:#1e3a8a; font-weight:bold; font-size:0.85em;">${o.nom}</a>
+                </div>`).join('') || '<p style="text-align:center;font-size:0.8em;color:#94a3b8;">Aucun lien SimDif trouvé.</p>';
 
             const filtered = docs.filter(d => terms.some(t => (d.title + d.keywords).toLowerCase().includes(t)));
-            document.getElementById('counter').innerText = filtered.length + " documents trouvés";
+            document.getElementById('counter').innerText = filtered.length + " résultats";
             displayList(filtered);
         }
 
         function displayList(list) {
             document.getElementById('global-list').innerHTML = list.map(d => {
                 const videoExtensions = ['.mp4', '.mov', '.avi', '.webm'];
-                const isVideo = videoExtensions.some(ext => d.url.toLowerCase().endsWith(ext)) || d.url.includes('youtube.com');
-                const label = isVideo ? "🎥 Vidéo" : "📄 PDF";
-                const cl = isVideo ? "btn-vid" : "btn-pdf";
+                const isVideo = videoExtensions.some(ext => d.url.toLowerCase().endsWith(ext));
+                const label = isVideo ? "🎥 Voir" : "📄 Lire";
+                const btnClass = isVideo ? "btn-vid" : "btn-view";
                 return `
                 <div class="card">
-                    <div style="flex-grow:1; padding-right:20px;">
-                        <span style="font-weight:bold; display:block; color:#1e3a8a;">${d.title}</span>
+                    <div class="card-info">
+                        <span class="title">${d.title}</span>
                         <span class="tag">${d.date}</span>
                     </div>
-                    <a href="${encodeURI(d.url)}" target="_blank" class="btn-consulter ${cl}">${label}</a>
+                    <div class="actions">
+                        <a href="${encodeURI(d.url)}" target="_blank" class="btn ${btnClass}">${label}</a>
+                        <a href="${encodeURI(d.url)}" download class="btn btn-dl" title="Télécharger">💾</a>
+                    </div>
                 </div>`;
             }).join('');
         }
@@ -187,7 +204,7 @@ try:
 
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write(final_html)
-    print("✅ Index généré avec succès.")
+    print("✅ Index corrigé et finalisé.")
 
 except Exception as e:
     print(f"❌ Erreur : {e}")
