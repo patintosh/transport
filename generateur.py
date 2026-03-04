@@ -56,7 +56,7 @@ try:
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Bibliothèque Numérique Patrice Salini</title>
     <style>
         :root { --glass: rgba(255, 255, 255, 0.9); --accent: #0056b3; --video: #059669; }
@@ -65,84 +65,81 @@ try:
             background: #f1f5f9; height: 100vh; display: flex; flex-direction: column; color: #1e293b;
         }
         header { 
-            background: white; padding: 25px 15px; text-align: center; border-bottom: 1px solid #e2e8f0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            background: white; padding: 15px 10px; text-align: center; border-bottom: 1px solid #e2e8f0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); flex-shrink: 0;
         }
-        h1 { margin: 0 0 15px 0; font-size: 2em; color: #1e3a8a; }
-        .nav-sites { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+        h1 { margin: 0 0 10px 0; font-size: 1.6em; color: #1e3a8a; }
+        .nav-sites { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
         .nav-sites a { 
-            text-decoration: none; color: var(--accent); font-weight: bold; font-size: 0.9em;
-            padding: 8px 16px; background: #f1f5f9; border-radius: 8px; transition: 0.3s;
-            border: 1px solid #e2e8f0;
+            text-decoration: none; color: var(--accent); font-weight: bold; font-size: 0.75em;
+            padding: 6px 10px; background: #f1f5f9; border-radius: 6px; border: 1px solid #e2e8f0;
         }
-        .nav-sites a:hover { background: var(--accent); color: white; }
         
-        .wrapper { display: flex; flex-grow: 1; overflow: hidden; padding: 15px; gap: 15px; }
-        @media (max-width: 900px) { 
-            .wrapper { flex-direction: column; overflow-y: auto; height: auto; }
-            body { height: auto; }
-            .sidebar, .main { width: 100% !important; height: auto !important; overflow: visible !important; }
+        .wrapper { display: flex; flex-grow: 1; overflow: hidden; padding: 12px; gap: 12px; }
+        
+        /* Ajustements mobiles iPhone */
+        @media (max-width: 600px) { 
+            h1 { font-size: 1.3em; margin-bottom: 8px; }
+            header { padding: 10px 5px; }
+            .nav-sites a { font-size: 0.65em; padding: 4px 8px; }
+            .wrapper { flex-direction: column; overflow-y: auto; padding: 8px; }
+            .sidebar { width: 100% !important; order: 2; height: auto !important; }
+            .main { width: 100% !important; order: 1; height: auto !important; }
+            body { height: auto; display: block; }
         }
         
         .sidebar, .main { 
-            background: white; border-radius: 15px; display: flex; flex-direction: column;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;
+            background: white; border-radius: 12px; display: flex; flex-direction: column;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;
         }
-        .sidebar { width: 320px; }
-        .main { flex-grow: 1; }
+        .sidebar { width: 300px; }
+        .main { flex-grow: 1; overflow: hidden; }
 
-        .search-area { padding: 15px; border-bottom: 1px solid #f1f5f9; display: flex; gap: 10px; }
-        #search { flex-grow: 1; padding: 12px 15px; border-radius: 10px; border: 1px solid #cbd5e0; outline: none; }
+        .search-area { padding: 12px; border-bottom: 1px solid #f1f5f9; background: white; position: sticky; top: 0; z-index: 10; }
+        #search { width: 100%; box-sizing: border-box; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e0; font-size: 16px; /* Evite le zoom auto iPhone */ }
         
-        #global-list, #focus-list { overflow-y: auto; padding: 15px; }
+        #global-list, #focus-list { overflow-y: auto; padding: 12px; }
         
         .card { 
-            background: #f8fafc; margin-bottom: 10px; padding: 12px; border-radius: 12px;
-            display: flex; flex-direction: column; gap: 10px; border: 1px solid #e2e8f0;
+            background: #f8fafc; margin-bottom: 8px; padding: 10px; border-radius: 10px;
+            display: flex; flex-direction: column; gap: 8px; border: 1px solid #e2e8f0;
         }
-        @media (min-width: 600px) {
+        @media (min-width: 650px) {
             .card { flex-direction: row; justify-content: space-between; align-items: center; }
         }
         
-        .card-info { flex-grow: 1; }
-        .title { font-weight: bold; color: #1e3a8a; display: block; margin-bottom: 4px; line-height: 1.3; }
-        .tag { font-size: 0.75em; padding: 2px 8px; border-radius: 4px; background: #e0e7ff; color: #4338ca; }
-        
-        .actions { display: flex; gap: 8px; }
-        .btn { 
-            text-decoration: none; padding: 8px 14px; border-radius: 8px; font-weight: bold; 
-            font-size: 0.85em; text-align: center; flex-grow: 1;
-        }
+        .title { font-weight: bold; color: #1e3a8a; display: block; font-size: 0.95em; line-height: 1.2; }
+        .tag { font-size: 0.7em; padding: 2px 6px; border-radius: 4px; background: #e0e7ff; color: #4338ca; }
+        .actions { display: flex; gap: 6px; }
+        .btn { text-decoration: none; padding: 7px 12px; border-radius: 6px; font-weight: bold; font-size: 0.8em; text-align: center; flex-grow: 1; }
         .btn-view { background: var(--accent); color: white; }
         .btn-vid { background: var(--video); color: white; }
-        .btn-dl { background: #64748b; color: white; min-width: 40px; }
+        .btn-dl { background: #64748b; color: white; min-width: 35px; }
     </style>
 </head>
 <body>
     <header>
         <h1>Bibliothèque Patrice Salini</h1>
         <div class="nav-sites">
-            <a href="https://pensertransports.simdif.com" target="_blank">Site Penser les Transports (P. Salini & C. Reynaud)</a>
+            <a href="https://pensertransports.simdif.com" target="_blank">Penser les Transports</a>
             <a href="https://www.editions-harmattan.fr/catalogue/auteur/patrice-salini/15031" target="_blank">L'Harmattan</a>
-            <a href="https://www.transportinfo.fr/?s=patrice+Salini" target="_blank">Archives Transport Info</a>
+            <a href="https://www.transportinfo.fr/?s=patrice+Salini" target="_blank">Transport Info</a>
             <a href="mailto:patrice.salini@wanadoo.fr">✉ Contact</a>
         </div>
     </header>
 
     <div class="wrapper">
-        <aside class="sidebar">
-            <div style="padding:15px; font-weight:bold; color: #1e3a8a; border-bottom: 1px solid #f1f5f9; font-size: 0.9em;">
-                Focus : Penser les Transports
-            </div>
-            <div id="focus-list"></div>
-        </aside>
         <main class="main">
             <div class="search-area">
-                <input type="text" id="search" placeholder="Rechercher par titre, année ou concept...">
+                <input type="search" id="search" placeholder="Rechercher...">
             </div>
-            <div id="counter" style="padding: 0 15px 5px; font-size: 0.8em; font-weight: bold; color: #64748b;"></div>
+            <div id="counter" style="padding: 5px 12px; font-size: 0.75em; font-weight: bold; color: #64748b;"></div>
             <div id="global-list"></div>
         </main>
+        <aside class="sidebar">
+            <div style="padding:12px; font-weight:bold; color: #1e3a8a; border-bottom: 1px solid #f1f5f9; font-size: 0.85em;">Focus thématique</div>
+            <div id="focus-list"></div>
+        </aside>
     </div>
 
     <script>
@@ -153,8 +150,8 @@ try:
         function render() {
             const query = document.getElementById('search').value.toLowerCase().trim();
             if (!query) {
-                document.getElementById('focus-list').innerHTML = '<p style="text-align:center;color:#94a3b8;font-size:0.8em;padding:20px;">Utilisez la recherche pour explorer les thématiques communes.</p>';
-                document.getElementById('counter').innerText = "Dernières publications";
+                document.getElementById('focus-list').innerHTML = '<p style="text-align:center;color:#94a3b8;font-size:0.75em;padding:10px;">Lien automatique avec SimDif.</p>';
+                document.getElementById('counter').innerText = "Derniers ajouts";
                 displayList(docs.slice(0, 15));
                 return;
             }
@@ -164,9 +161,9 @@ try:
 
             const matchedOnglets = onglets.filter(o => terms.some(t => (o.nom + o.contenu).toLowerCase().includes(t)));
             document.getElementById('focus-list').innerHTML = matchedOnglets.map(o => `
-                <div style="background:#e0f2fe; padding:10px; border-radius:8px; margin-bottom:8px; border-left:4px solid #0369a1;">
-                    <a href="${o.url}" target="_blank" style="text-decoration:none; color:#1e3a8a; font-weight:bold; font-size:0.85em;">${o.nom}</a>
-                </div>`).join('') || '<p style="text-align:center;font-size:0.8em;color:#94a3b8;">Aucun lien SimDif trouvé.</p>';
+                <div style="background:#f0f9ff; padding:8px; border-radius:6px; margin-bottom:6px; border-left:3px solid #0369a1;">
+                    <a href="${o.url}" target="_blank" style="text-decoration:none; color:#1e3a8a; font-weight:bold; font-size:0.8em;">${o.nom}</a>
+                </div>`).join('') || '<p style="text-align:center;font-size:0.75em;color:#94a3b8;">-</p>';
 
             const filtered = docs.filter(d => terms.some(t => (d.title + d.keywords).toLowerCase().includes(t)));
             document.getElementById('counter').innerText = filtered.length + " résultats";
@@ -177,17 +174,15 @@ try:
             document.getElementById('global-list').innerHTML = list.map(d => {
                 const videoExtensions = ['.mp4', '.mov', '.avi', '.webm'];
                 const isVideo = videoExtensions.some(ext => d.url.toLowerCase().endsWith(ext));
-                const label = isVideo ? "🎥 Voir" : "📄 Lire";
-                const btnClass = isVideo ? "btn-vid" : "btn-view";
                 return `
                 <div class="card">
-                    <div class="card-info">
+                    <div style="flex-grow:1">
                         <span class="title">${d.title}</span>
                         <span class="tag">${d.date}</span>
                     </div>
                     <div class="actions">
-                        <a href="${encodeURI(d.url)}" target="_blank" class="btn ${btnClass}">${label}</a>
-                        <a href="${encodeURI(d.url)}" download class="btn btn-dl" title="Télécharger">💾</a>
+                        <a href="${encodeURI(d.url)}" target="_blank" class="btn ${isVideo ? 'btn-vid':'btn-view'}">${isVideo ? '🎥' : '📄'}</a>
+                        <a href="${encodeURI(d.url)}" download class="btn btn-dl">💾</a>
                     </div>
                 </div>`;
             }).join('');
@@ -204,7 +199,7 @@ try:
 
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write(final_html)
-    print("✅ Index corrigé et finalisé.")
+    print("✅ Index optimisé pour iPhone (Barre de recherche visible).")
 
 except Exception as e:
     print(f"❌ Erreur : {e}")
