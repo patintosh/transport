@@ -1,240 +1,849 @@
 {
-  "marchandises": ["fret", "choses"],
-  "fret": ["marchandises"],
-  "choses": ["marchandises"],
-
-  "voyageurs": ["passagers", "usagers", "personnes"],
-  "passagers": ["voyageurs"],
-  "usagers": ["voyageurs"],
-  "personnes": ["voyageurs"],
-
-  "rail": ["ferroviaire", "ferré", "chemin de fer"],
-  "ferroviaire": ["rail"],
-  "ferré": ["rail"],
-  "chemin de fer": ["rail"],
-
-  "camion": ["poids lourd", "pl", "véhicule utilitaire", "véhicule industriel", "véhicule routier"],
-  "poids lourd": ["camion"],
-  "pl": ["camion"],
-  "véhicule utilitaire": ["camion"],
-  "véhicule industriel": ["camion"],
-  "véhicule routier": ["camion"],
-
-  "routier": ["par route", "routière", "transport routier"],
-  "par route": ["routier"],
-  "routière": ["routier"],
-  "transport routier": ["routier"],
-
-  "transport": ["déplacement", "mobilité", "locomotion"],
-  "déplacement": ["transport"],
-  "mobilité": ["transport"],
-  "locomotion": ["transport"],
-
-  "combiné": ["intermodal", "ferroutage", "multimodal", "piggyback", "huckepack", "transport combiné", "rail-route"],
-  "intermodal": ["combiné"],
-  "ferroutage": ["combiné"],
-  "multimodal": ["combiné"],
-  "piggyback": ["combiné"],
-  "huckepack": ["combiné"],
-  "transport combiné": ["combiné"],
-  "rail-route": ["combiné"],
-
-  "ro-ro": ["transroulage maritime", "roll on-roll off"],
-  "transroulage maritime": ["ro-ro"],
-  "roll on-roll off": ["ro-ro"],
-
-  "lo-lo": ["lift-on-lift-out"],
-  "lift-on-lift-out": ["lo-lo"],
-
-  "route-roulante": ["rollande landstrasse"],
-  "rollande landstrasse": ["route-roulante"],
-
-  "uti": ["unité de transport intermodal", "conteneurs", "caisses mobiles"],
-  "unité de transport intermodal": ["uti"],
-  "conteneurs": ["uti"],
-  "caisses mobiles": ["uti"],
-
-  "voie navigable": ["vn", "voie d'eau", "voie fluviale"],
-  "vn": ["voie navigable"],
-  "voie d'eau": ["voie navigable"],
-  "voie fluviale": ["voie navigable"],
-
-  "tonnes.km": ["t.km", "tonnes-kilomètres", "tonne.kilomètre"],
-  "t.km": ["tonnes.km"],
-  "tonnes-kilomètres": ["tonnes.km"],
-  "tonne.kilomètre": ["tonnes.km"],
-
-  "voyageurs.km": ["v.km", "voyageurs-km", "voyageurs.kilomètres", "voyageur.kilomètre"],
-  "v.km": ["voyageurs.km"],
-  "voyageurs-km": ["voyageurs.km"],
-  "voyageurs.kilomètres": ["voyageurs.km"],
-  "voyageur.kilomètre": ["voyageurs.km"],
-
-  "véhicules.km": ["véhicules-km", "véhicues.kilomètres", "véhicules-kilomètres"],
-  "véhicules-km": ["véhicules.km"],
-  "véhicues.kilomètres": ["véhicules.km"],
-  "véhicules-kilomètres": ["véhicules.km"],
-
-  "tonne-kilomètre offerte": ["tko"],
-  "tko": ["tonne-kilomètre offerte"],
-
-  "tkbr": ["t.k.b.r", "tonnes kilomètres brutes remorquées", "tonne-kilomètre brute remorquée"],
-  "t.k.b.r": ["tkbr"],
-  "tonnes kilomètres brutes remorquées": ["tkbr"],
-  "tonne-kilomètre brute remorquée": ["tkbr"],
-
-  "p.k.o": ["pko", "places kilomètres offertes", "places-kilomètres-offertes"],
-  "pko": ["p.k.o"],
-  "places kilomètres offertes": ["p.k.o"],
-  "places-kilomètres-offertes": ["p.k.o"],
-
-  "n.s.t": ["nomenclature des statistiques de transport"],
-  "nomenclature des statistiques de transport": ["n.s.t"],
-
-  "tep": ["t.e.p", "tonne d’équivalent pétrole", "tonnes équivalent pétrole"],
-  "t.e.p": ["tep"],
-  "tonne d’équivalent pétrole": ["tep"],
-  "tonnes équivalent pétrole": ["tep"],
-
-  "gazole": ["diesel"],
-  "diesel": ["gazole"],
-
-  "gpl": ["gaz de pétrole liquéfié"],
-  "gaz de pétrole liquéfié": ["gpl"],
-
-  "cycle": ["vélo"],
-  "vélo": ["cycle"],
-
-  "cu": ["charge utile"],
-  "charge utile": ["cu"],
-
-  "ptac": ["poids total autorisé en charge"],
-  "poids total autorisé en charge": ["ptac"],
-
-  "trm": ["transport routier de marchandises", "routier", "routière"],
-  "transport routier de marchandises": ["trm"],
-  "routier": ["trm"],
-  "routière": ["trm"],
-
-  "trv": ["transport routier de voyageurs", "autocars", "autobus", "vtc", "taxi"],
-  "transport routier de voyageurs": ["trv"],
-  "autocars": ["trv"],
-  "autobus": ["trv"],
-  "vtc": ["trv"],
-  "taxi": ["trv"],
-
-  "evaluation": ["eclairage des choix", "choix d'investissements", "analyse coût avantages", "acb", "cba", "analyse coût-efficacité", "analyse des grands projets"],
-  "eclairage des choix": ["evaluation"],
-  "choix d'investissements": ["evaluation"],
-  "analyse coût avantages": ["evaluation"],
-  "acb": ["evaluation"],
-  "cba": ["evaluation"],
-  "analyse coût-efficacité": ["evaluation"],
-  "analyse des grands projets": ["evaluation"],
-
-  "budget de programmes": ["b2b", "ppbs", "rcb", "rationalisation des choix budgétaires", "zbb", "zero base budget", "méthodes modernes de gestion", "management public", "plan programme budget"],
-  "b2b": ["budget de programmes"],
-  "ppbs": ["budget de programmes"],
-  "rcb": ["budget de programmes"],
-  "rationalisation des choix budgétaires": ["budget de programmes"],
-  "zbb": ["budget de programmes"],
-  "zero base budget": ["budget de programmes"],
-  "méthodes modernes de gestion": ["budget de programmes"],
-  "management public": ["budget de programmes"],
-  "plan programme budget": ["budget de programmes"],
-
-  "modélisation": ["modèle", "modèles"],
-  "modèle": ["modélisation"],
-  "modèles": ["modélisation"],
-
-  "dynamique des systèmes": ["ds", "system dynamics", "modèle dynamique", "simtrans", "simpactrans", "simtrans co2", "stella", "isee", "ithink", "vensim"],
-  "ds": ["dynamique des systèmes"],
-  "system dynamics": ["dynamique des systèmes"],
-  "modèle dynamique": ["dynamique des systèmes"],
-  "simtrans": ["dynamique des systèmes"],
-  "simpactrans": ["dynamique des systèmes"],
-  "simtrans co2": ["dynamique des systèmes"],
-  "stella": ["dynamique des systèmes"],
-  "isee": ["dynamique des systèmes"],
-  "ithink": ["dynamique des systèmes"],
-  "vensim": ["dynamique des systèmes"],
-
-  "co2": ["ges", "gaz à effet de serre", "methane", "climat"],
-  "ges": ["co2"],
-  "gaz à effet de serre": ["co2"],
-  "methane": ["co2"],
-  "climat": ["co2"],
-
-  "nuisances": ["pollution", "externalités négatives", "effets externes", "dommages", "bruit", "insécurité", "accidents", "nuisance"],
-  "pollution": ["nuisances"],
-  "externalités négatives": ["nuisances"],
-  "effets externes": ["nuisances"],
-  "dommages": ["nuisances"],
-  "bruit": ["nuisances"],
-  "insécurité": ["nuisances"],
-  "accidents": ["nuisances"],
-  "nuisance": ["nuisances"],
-
-  "electricité": ["electrification", "énergie", "développement durable", "nucléaire"],
-  "electrification": ["electricité"],
-  "énergie": ["electricité"],
-  "développement durable": ["electricité"],
-  "nucléaire": ["electricité"],
-
-  "carburant": ["carburants", "fossiles", "essence", "gazole", "gasoil", "kerosène", "pétrole", "énergie"],
-  "carburants": ["carburant"],
-  "fossiles": ["carburant"],
-  "essence": ["carburant"],
-  "gasoil": ["carburant"],
-  "kerosène": ["carburant"],
-  "pétrole": ["carburant"],
-  "énergie": ["carburant"],
-
-  "charbon": ["houille", "lignite", "combustible solide", "cms", "combustibles minéraux"],
-  "houille": ["charbon"],
-  "lignite": ["charbon"],
-  "combustible solide": ["charbon"],
-  "cms": ["charbon"],
-  "combustibles minéraux": ["charbon"],
-
-  "modélisation multi-agents": ["anylogic", "modélisation discrète"],
-  "anylogic": ["modélisation multi-agents"],
-  "modélisation discrète": ["modélisation multi-agents"],
-
-  "planification": ["commissariat au plan", "commissariat du plan", "haut-commissariat à la stratégie et au plan", "plan"],
-  "commissariat au plan": ["planification"],
-  "commissariat du plan": ["planification"],
-  "haut-commissariat à la stratégie et au plan": ["planification"],
-  "plan": ["planification"],
-
-  "ferry": ["ferries", "car-ferries", "car-ferry", "ropax"],
-  "ferries": ["ferry"],
-  "car-ferries": ["ferry"],
-  "car-ferry": ["ferry"],
-  "ropax": ["ferry"],
-
-  "cabotage maritime": ["short-sea shipping", "sss", "transport maritime à courte distance"],
-  "short-sea shipping": ["cabotage maritime"],
-  "sss": ["cabotage maritime"],
-  "transport maritime à courte distance": ["cabotage maritime"],
-
-  "cabotage routier": ["cabotage"],
-  "cabotage": ["cabotage routier"],
-
-  "oest": ["observatoire", "observatoire économique et social des transports", "observatoire des transports"],
-  "observatoire": ["oest"],
-  "observatoire économique et social des transports": ["oest"],
-  "observatoire des transports": ["oest"],
-
-  "saei": ["service des affaires economiques et internationales"],
-  "service des affaires economiques et internationales": ["saei"],
-
-  "administration prospective": ["administration de mission"],
-  "administration de mission": ["administration prospective"],
-
-  "dgrst": ["délégation générale à la recherche scientifique et technique"],
-  "délégation générale à la recherche scientifique et technique": ["dgrst"],
-
-  "datar": ["délégation à l'aménagement du territoire et à l'action régionale"],
-  "délégation à l'aménagement du territoire et à l'action régionale": ["datar"]
+    "marchandises": [
+        "fret",
+        "choses"
+    ],
+    "fret": [
+        "marchandises"
+    ],
+    "choses": [
+        "marchandises"
+    ],
+    "voyageurs": [
+        "passagers",
+        "usagers",
+        "personnes"
+    ],
+    "passagers": [
+        "voyageurs"
+    ],
+    "usagers": [
+        "voyageurs"
+    ],
+    "personnes": [
+        "voyageurs"
+    ],
+    "rail": [
+        "ferroviaire",
+        "ferré",
+        "chemin de fer"
+    ],
+    "ferroviaire": [
+        "rail"
+    ],
+    "ferré": [
+        "rail"
+    ],
+    "chemin de fer": [
+        "rail"
+    ],
+    "camion": [
+        "poids lourd",
+        "pl",
+        "véhicule utilitaire",
+        "véhicule industriel",
+        "véhicule routier"
+    ],
+    "poids lourd": [
+        "camion"
+    ],
+    "pl": [
+        "camion"
+    ],
+    "véhicule utilitaire": [
+        "camion"
+    ],
+    "véhicule industriel": [
+        "camion"
+    ],
+    "véhicule routier": [
+        "camion"
+    ],
+    "routier": [
+        "trm"
+    ],
+    "par route": [
+        "routier"
+    ],
+    "routière": [
+        "trm"
+    ],
+    "transport routier": [
+        "routier"
+    ],
+    "transport": [
+        "déplacement",
+        "mobilité",
+        "locomotion"
+    ],
+    "déplacement": [
+        "transport"
+    ],
+    "mobilité": [
+        "transport"
+    ],
+    "locomotion": [
+        "transport"
+    ],
+    "combiné": [
+        "intermodal",
+        "ferroutage",
+        "multimodal",
+        "piggyback",
+        "huckepack",
+        "transport combiné",
+        "rail-route"
+    ],
+    "intermodal": [
+        "combiné"
+    ],
+    "ferroutage": [
+        "combiné"
+    ],
+    "multimodal": [
+        "combiné"
+    ],
+    "piggyback": [
+        "combiné"
+    ],
+    "huckepack": [
+        "combiné"
+    ],
+    "transport combiné": [
+        "combiné"
+    ],
+    "rail-route": [
+        "combiné"
+    ],
+    "ro-ro": [
+        "transroulage maritime",
+        "roll on-roll off"
+    ],
+    "transroulage maritime": [
+        "ro-ro"
+    ],
+    "roll on-roll off": [
+        "ro-ro"
+    ],
+    "lo-lo": [
+        "lift-on-lift-out"
+    ],
+    "lift-on-lift-out": [
+        "lo-lo"
+    ],
+    "route-roulante": [
+        "rollande landstrasse"
+    ],
+    "rollande landstrasse": [
+        "route-roulante"
+    ],
+    "uti": [
+        "unité de transport intermodal",
+        "conteneurs",
+        "caisses mobiles"
+    ],
+    "unité de transport intermodal": [
+        "uti"
+    ],
+    "conteneurs": [
+        "uti"
+    ],
+    "caisses mobiles": [
+        "uti"
+    ],
+    "voie navigable": [
+        "vn",
+        "voie d'eau",
+        "voie fluviale"
+    ],
+    "vn": [
+        "voie navigable"
+    ],
+    "voie d'eau": [
+        "voie navigable"
+    ],
+    "voie fluviale": [
+        "voie navigable"
+    ],
+    "tonnes.km": [
+        "t.km",
+        "tonnes-kilomètres",
+        "tonne.kilomètre"
+    ],
+    "t.km": [
+        "tonnes.km"
+    ],
+    "tonnes-kilomètres": [
+        "tonnes.km"
+    ],
+    "tonne.kilomètre": [
+        "tonnes.km"
+    ],
+    "voyageurs.km": [
+        "v.km",
+        "voyageurs-km",
+        "voyageurs.kilomètres",
+        "voyageur.kilomètre"
+    ],
+    "v.km": [
+        "voyageurs.km"
+    ],
+    "voyageurs-km": [
+        "voyageurs.km"
+    ],
+    "voyageurs.kilomètres": [
+        "voyageurs.km"
+    ],
+    "voyageur.kilomètre": [
+        "voyageurs.km"
+    ],
+    "véhicules.km": [
+        "véhicules-km",
+        "véhicues.kilomètres",
+        "véhicules-kilomètres"
+    ],
+    "véhicules-km": [
+        "véhicules.km"
+    ],
+    "véhicues.kilomètres": [
+        "véhicules.km"
+    ],
+    "véhicules-kilomètres": [
+        "véhicules.km"
+    ],
+    "tonne-kilomètre offerte": [
+        "tko"
+    ],
+    "tko": [
+        "tonne-kilomètre offerte"
+    ],
+    "tkbr": [
+        "t.k.b.r",
+        "tonnes kilomètres brutes remorquées",
+        "tonne-kilomètre brute remorquée"
+    ],
+    "t.k.b.r": [
+        "tkbr"
+    ],
+    "tonnes kilomètres brutes remorquées": [
+        "tkbr"
+    ],
+    "tonne-kilomètre brute remorquée": [
+        "tkbr"
+    ],
+    "p.k.o": [
+        "pko",
+        "places kilomètres offertes",
+        "places-kilomètres-offertes"
+    ],
+    "pko": [
+        "p.k.o"
+    ],
+    "places kilomètres offertes": [
+        "p.k.o"
+    ],
+    "places-kilomètres-offertes": [
+        "p.k.o"
+    ],
+    "n.s.t": [
+        "nomenclature des statistiques de transport"
+    ],
+    "nomenclature des statistiques de transport": [
+        "n.s.t"
+    ],
+    "tep": [
+        "t.e.p",
+        "tonne d’équivalent pétrole",
+        "tonnes équivalent pétrole"
+    ],
+    "t.e.p": [
+        "tep"
+    ],
+    "tonne d’équivalent pétrole": [
+        "tep"
+    ],
+    "tonnes équivalent pétrole": [
+        "tep"
+    ],
+    "gazole": [
+        "diesel"
+    ],
+    "diesel": [
+        "gazole"
+    ],
+    "gpl": [
+        "gaz de pétrole liquéfié"
+    ],
+    "gaz de pétrole liquéfié": [
+        "gpl"
+    ],
+    "cycle": [
+        "vélo"
+    ],
+    "vélo": [
+        "cycle"
+    ],
+    "cu": [
+        "charge utile"
+    ],
+    "charge utile": [
+        "cu"
+    ],
+    "ptac": [
+        "poids total autorisé en charge"
+    ],
+    "poids total autorisé en charge": [
+        "ptac"
+    ],
+    "trm": [
+        "transport routier de marchandises",
+        "routier",
+        "routière"
+    ],
+    "transport routier de marchandises": [
+        "trm"
+    ],
+    "trv": [
+        "transport routier de voyageurs",
+        "autocars",
+        "autobus",
+        "vtc",
+        "taxi"
+    ],
+    "transport routier de voyageurs": [
+        "trv"
+    ],
+    "autocars": [
+        "trv"
+    ],
+    "autobus": [
+        "trv"
+    ],
+    "vtc": [
+        "trv"
+    ],
+    "taxi": [
+        "trv"
+    ],
+    "evaluation": [
+        "eclairage des choix",
+        "choix d'investissements",
+        "analyse coût avantages",
+        "acb",
+        "cba",
+        "analyse coût-efficacité",
+        "analyse des grands projets"
+    ],
+    "eclairage des choix": [
+        "evaluation"
+    ],
+    "choix d'investissements": [
+        "evaluation"
+    ],
+    "analyse coût avantages": [
+        "evaluation"
+    ],
+    "acb": [
+        "evaluation"
+    ],
+    "cba": [
+        "evaluation"
+    ],
+    "analyse coût-efficacité": [
+        "evaluation"
+    ],
+    "analyse des grands projets": [
+        "evaluation"
+    ],
+    "budget de programmes": [
+        "b2b",
+        "ppbs",
+        "rcb",
+        "rationalisation des choix budgétaires",
+        "zbb",
+        "zero base budget",
+        "méthodes modernes de gestion",
+        "management public",
+        "plan programme budget"
+    ],
+    "b2b": [
+        "budget de programmes"
+    ],
+    "ppbs": [
+        "budget de programmes"
+    ],
+    "rcb": [
+        "budget de programmes"
+    ],
+    "rationalisation des choix budgétaires": [
+        "budget de programmes"
+    ],
+    "zbb": [
+        "budget de programmes"
+    ],
+    "zero base budget": [
+        "budget de programmes"
+    ],
+    "méthodes modernes de gestion": [
+        "budget de programmes"
+    ],
+    "management public": [
+        "budget de programmes"
+    ],
+    "plan programme budget": [
+        "budget de programmes"
+    ],
+    "modélisation": [
+        "modèle",
+        "modèles"
+    ],
+    "modèle": [
+        "modélisation"
+    ],
+    "modèles": [
+        "modélisation"
+    ],
+    "dynamique des systèmes": [
+        "ds",
+        "system dynamics",
+        "modèle dynamique",
+        "simtrans",
+        "simpactrans",
+        "simtrans co2",
+        "stella",
+        "isee",
+        "ithink",
+        "vensim"
+    ],
+    "ds": [
+        "dynamique des systèmes"
+    ],
+    "system dynamics": [
+        "dynamique des systèmes"
+    ],
+    "modèle dynamique": [
+        "dynamique des systèmes"
+    ],
+    "simtrans": [
+        "dynamique des systèmes"
+    ],
+    "simpactrans": [
+        "dynamique des systèmes"
+    ],
+    "simtrans co2": [
+        "dynamique des systèmes"
+    ],
+    "stella": [
+        "dynamique des systèmes"
+    ],
+    "isee": [
+        "dynamique des systèmes"
+    ],
+    "ithink": [
+        "dynamique des systèmes"
+    ],
+    "vensim": [
+        "dynamique des systèmes"
+    ],
+    "co2": [
+        "ges",
+        "gaz à effet de serre",
+        "methane",
+        "climat"
+    ],
+    "ges": [
+        "co2"
+    ],
+    "gaz à effet de serre": [
+        "co2"
+    ],
+    "methane": [
+        "co2"
+    ],
+    "climat": [
+        "co2"
+    ],
+    "nuisances": [
+        "pollution",
+        "externalités négatives",
+        "effets externes",
+        "dommages",
+        "bruit",
+        "insécurité",
+        "accidents",
+        "nuisance"
+    ],
+    "pollution": [
+        "nuisances"
+    ],
+    "externalités négatives": [
+        "nuisances"
+    ],
+    "effets externes": [
+        "nuisances"
+    ],
+    "dommages": [
+        "nuisances"
+    ],
+    "bruit": [
+        "nuisances"
+    ],
+    "insécurité": [
+        "nuisances"
+    ],
+    "accidents": [
+        "nuisances"
+    ],
+    "nuisance": [
+        "nuisances"
+    ],
+    "electricité": [
+        "electrification",
+        "énergie",
+        "développement durable",
+        "nucléaire"
+    ],
+    "electrification": [
+        "electricité"
+    ],
+    "énergie": [
+        "carburant"
+    ],
+    "développement durable": [
+        "electricité"
+    ],
+    "nucléaire": [
+        "electricité"
+    ],
+    "carburant": [
+        "carburants",
+        "fossiles",
+        "essence",
+        "gazole",
+        "gasoil",
+        "kerosène",
+        "pétrole",
+        "énergie"
+    ],
+    "carburants": [
+        "carburant"
+    ],
+    "fossiles": [
+        "carburant"
+    ],
+    "essence": [
+        "carburant"
+    ],
+    "gasoil": [
+        "carburant"
+    ],
+    "kerosène": [
+        "carburant"
+    ],
+    "pétrole": [
+        "carburant"
+    ],
+    "charbon": [
+        "houille",
+        "lignite",
+        "combustible solide",
+        "cms",
+        "combustibles minéraux"
+    ],
+    "houille": [
+        "charbon"
+    ],
+    "lignite": [
+        "charbon"
+    ],
+    "combustible solide": [
+        "charbon"
+    ],
+    "cms": [
+        "charbon"
+    ],
+    "combustibles minéraux": [
+        "charbon"
+    ],
+    "modélisation multi-agents": [
+        "anylogic",
+        "modélisation discrète"
+    ],
+    "anylogic": [
+        "modélisation multi-agents"
+    ],
+    "modélisation discrète": [
+        "modélisation multi-agents"
+    ],
+    "planification": [
+        "commissariat au plan",
+        "commissariat du plan",
+        "haut-commissariat à la stratégie et au plan",
+        "plan"
+    ],
+    "commissariat au plan": [
+        "planification"
+    ],
+    "commissariat du plan": [
+        "planification"
+    ],
+    "haut-commissariat à la stratégie et au plan": [
+        "planification"
+    ],
+    "plan": [
+        "planification"
+    ],
+    "ferry": [
+        "ferries",
+        "car-ferries",
+        "car-ferry",
+        "ropax"
+    ],
+    "ferries": [
+        "ferry"
+    ],
+    "car-ferries": [
+        "ferry"
+    ],
+    "car-ferry": [
+        "ferry"
+    ],
+    "ropax": [
+        "ferry"
+    ],
+    "cabotage maritime": [
+        "short-sea shipping",
+        "sss",
+        "transport maritime à courte distance"
+    ],
+    "short-sea shipping": [
+        "cabotage maritime"
+    ],
+    "sss": [
+        "cabotage maritime"
+    ],
+    "transport maritime à courte distance": [
+        "cabotage maritime"
+    ],
+    "cabotage routier": [
+        "cabotage"
+    ],
+    "cabotage": [
+        "cabotage routier"
+    ],
+    "oest": [
+        "observatoire",
+        "observatoire économique et social des transports",
+        "observatoire des transports"
+    ],
+    "observatoire": [
+        "oest"
+    ],
+    "observatoire économique et social des transports": [
+        "oest"
+    ],
+    "observatoire des transports": [
+        "oest"
+    ],
+    "saei": [
+        "service des affaires economiques et internationales"
+    ],
+    "service des affaires economiques et internationales": [
+        "saei"
+    ],
+    "administration prospective": [
+        "administration de mission"
+    ],
+    "administration de mission": [
+        "administration prospective"
+    ],
+    "dgrst": [
+        "délégation générale à la recherche scientifique et technique"
+    ],
+    "délégation générale à la recherche scientifique et technique": [
+        "dgrst"
+    ],
+    "datar": [
+        "délégation à l'aménagement du territoire et à l'action régionale"
+    ],
+    "délégation à l'aménagement du territoire et à l'action régionale": [
+        "datar"
+    ],
+    "contrat": [
+        "Accord"
+    ],
+    "alpes": [
+        "alpin"
+    ],
+    "militaire": [
+        "Armée"
+    ],
+    "licence": [
+        "Autorisation"
+    ],
+    "licences": [
+        "Autorisations"
+    ],
+    "bénéfices": [
+        "Avantages"
+    ],
+    "avions": [
+        "Aviation",
+        "aérien",
+        "aéronautique"
+    ],
+    "administration": [
+        "Bureaucratie",
+        "ministères"
+    ],
+    "rupture": [
+        "Césure"
+    ],
+    "ruptures": [
+        "Césures"
+    ],
+    "routiers": [
+        "Conducteurs"
+    ],
+    "contrôleurs": [
+        "Contrôle",
+        "Contrôleur"
+    ],
+    "contrôle": [
+        "Contrôleur"
+    ],
+    "covid": [
+        "Coronavirus"
+    ],
+    "covid19": [
+        "Coronavirus"
+    ],
+    "corse": [
+        "Corsica"
+    ],
+    "charges": [
+        "Cotisations"
+    ],
+    "européenne": [
+        "europe"
+    ],
+    "européennes": [
+        "europe"
+    ],
+    "européens": [
+        "europe"
+    ],
+    "allemagne": [
+        "germanique"
+    ],
+    "management": [
+        "Gestion"
+    ],
+    "mondialisation": [
+        "Globalisation"
+    ],
+    "hypermarchés": [
+        "Grande distribution"
+    ],
+    "messagerie": [
+        "Groupage"
+    ],
+    "grèce": [
+        "hellenique"
+    ],
+    "hydroxych": [
+        "hydroxychloroquine"
+    ],
+    "infrastructures": [
+        "infrastructure"
+    ],
+    "infrastructure": [
+        "infrastructures"
+    ],
+    "transeuropéens": [
+        "Intraeuropéen"
+    ],
+    "kondratieﬀ": [
+        "Kondratiev"
+    ],
+    "axefret": [
+        "Modèle de dynamique des sytèmes"
+    ],
+    "besoin": [
+        "Nécessité"
+    ],
+    "routiere": [
+        "Par route"
+    ],
+    "camions": [
+        "Poids lourds"
+    ],
+    "tarifs": [
+        "Prix"
+    ],
+    "problématiqu": [
+        "Problématique"
+    ],
+    "allègements": [
+        "reduction"
+    ],
+    "réglementation": [
+        "Régulation"
+    ],
+    "cerema": [
+        "Réseau technique du ministère de l’Equipement"
+    ],
+    "axes": [
+        "Route",
+        "voie"
+    ],
+    "simpactransexplo9": [
+        "Simpactrans"
+    ],
+    "logistique": [
+        "Supply chain"
+    ],
+    "system": [
+        "système"
+    ],
+    "systemes": [
+        "systémique"
+    ],
+    "système": [
+        "systémique"
+    ],
+    "systèmes": [
+        "systémique"
+    ],
+    "accises": [
+        "Taxation",
+        "excise",
+        "Impôt indirect"
+    ],
+    "ecotaxe": [
+        "Taxe environnementale"
+    ],
+    "écotaxe": [
+        "Taxe environnementale"
+    ],
+    "impots": [
+        "Taxes"
+    ],
+    "frigorifique": [
+        "Température dirigée"
+    ],
+    "régionaux": [
+        "Territoriaux"
+    ],
+    "ferroviaires": [
+        "Train",
+        "rail",
+        "chemin de fer"
+    ],
+    "russie": [
+        "URSS"
+    ],
+    "flottante": [
+        "Variable"
+    ]
 }
