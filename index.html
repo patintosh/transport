@@ -5,29 +5,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bibliothèque Patrice Salini</title>
     <style>
-        :root { --accent: #0056b3; --video: #059669; --bg: #f8fafc; }
-        body { margin: 0; font-family: 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; height: 100vh; display: flex; flex-direction: column; color: #1e293b; }
-        header { background: white; padding: 15px 20px; text-align: center; border-bottom: 1px solid #e2e8f0; flex-shrink: 0; }
-        h1 { margin: 0 0 10px 0; font-size: 1.5em; color: #1e3a8a; }
-        .nav-sites { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 5px; }
-        .nav-sites a { text-decoration: none; color: var(--accent); font-weight: 600; font-size: 0.75em; padding: 6px 12px; background: #f1f5f9; border-radius: 20px; border: 1px solid #e2e8f0; transition: all 0.2s; }
-        .nav-sites a:hover { background: var(--accent); color: white; }
-        .wrapper { display: flex; flex-grow: 1; overflow: hidden; padding: 12px; gap: 12px; }
-        .sidebar { width: 300px; background: white; border-radius: 12px; display: flex; flex-direction: column; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .main { flex-grow: 1; background: white; border-radius: 12px; display: flex; flex-direction: column; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .search-area { padding: 15px; border-bottom: 1px solid #f1f5f9; display: flex; gap: 10px; align-items: center; background: #fcfcfd; }
-        #search { flex-grow: 1; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e0; font-size: 16px; outline: none; }
-        .btn-sort { padding: 10px 15px; background: white; border: 1px solid #cbd5e0; border-radius: 8px; cursor: pointer; font-size: 0.85em; font-weight: 600; white-space: nowrap; }
-        #global-list { overflow-y: auto; padding: 15px; }
-        .card { background: white; margin-bottom: 10px; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; gap: 15px; }
-        .title { font-weight: 700; color: #1e3a8a; font-size: 0.95em; line-height: 1.4; flex-grow: 1; }
-        .date-tag { font-size: 0.75em; color: #64748b; background: #f1f5f9; padding: 3px 8px; border-radius: 6px; margin-top: 5px; display: inline-block; }
-        .actions { display: flex; gap: 8px; }
-        .btn-action { text-decoration: none; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 8px; color: white; font-weight: bold; }
-        .btn-view { background: var(--accent); }
-        .btn-dl { background: #64748b; }
-        @media (max-width: 768px) { .wrapper { flex-direction: column; overflow-y: auto; } .sidebar { width: 100%; order: 2; } .main { width: 100%; order: 1; min-height: 500px; } body { height: auto; display: block; } }
-    </style>
+    /* 1. IMPORT DE LA POLICE INTER */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+
+    :root { 
+        --accent: #007aff; 
+        --glass: rgba(255, 255, 255, 0.45);
+    }
+
+    body { 
+        margin: 0; 
+        font-family: 'Inter', sans-serif !important; 
+        background: radial-gradient(circle at top right, #e2e8f0, #cbd5e1) fixed;
+        color: #1e293b;
+    }
+
+    /* 2. EFFET LIQUID GLASS SUR VOS CONTENEURS */
+    header, .panel, aside, section { 
+        background: var(--glass) !important;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.5) !important;
+        border-radius: 20px;
+    }
+
+    /* 3. LUSTRAGE DES CARTES SANS TOUCHER AU CONTENU */
+    .card, .item, [class*="item"] {
+        background: white !important;
+        border-radius: 12px !important;
+        border: 1px solid rgba(0,0,0,0.05) !important;
+        transition: transform 0.2s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    input#search {
+        border-radius: 25px !important;
+        font-family: 'Inter', sans-serif;
+    }
+</style>
 </head>
 <body>
     <header>
