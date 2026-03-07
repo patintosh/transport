@@ -80,6 +80,7 @@ try:
             <a href="https://pensertransports.simdif.com" target="_blank">Penser les Transports</a>
             <a href="https://www.editions-harmattan.fr/catalogue/auteur/patrice-salini/15031" target="_blank">L'Harmattan</a>
             <a href="https://www.transportinfo.fr/?s=patrice+Salini" target="_blank">Transport Info</a>
+            <a href="https://www.lesechos.fr/recherche?search=patrice%20SALINI&searchType=posts" target="_blank">Les Échos</a>
             <a href="mailto:patrice.salini@wanadoo.fr">✉ Contact</a>
         </div>
     </header>
