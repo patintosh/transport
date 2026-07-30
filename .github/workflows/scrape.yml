@@ -34,7 +34,7 @@ jobs:
           pip install selenium pandas
 
       - name: Lancer le script de scraping
-        run: python scraper_aircorsica.py
+        run: python run_scraper.py
 
       - name: Générer les séries temporelles
         run: python process.py
