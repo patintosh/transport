@@ -16,7 +16,6 @@ ROUTES = [
 
 CSV_FILE = "aircorsica_prices.csv"
 
-# Dictionnaire pour s'affranchir de la locale système dans GitHub Actions pour les aria-label
 MONTHS_FR = {
     1: "Janvier", 2: "Février", 3: "Mars", 4: "Avril", 5: "Mai", 6: "Juin",
     7: "Juillet", 8: "Août", 9: "Septembre", 10: "Octobre", 11: "Novembre", 12: "Décembre"
@@ -35,62 +34,66 @@ def init_driver():
     return driver
 
 def handle_cookies(driver, wait):
-    """Gère le bandeau de consentement aux cookies pour éviter les interceptions de clics."""
     try:
         cookie_button = wait.until(
             EC.element_to_be_clickable((By.CSS_SELECTOR, "#didomi-notice-agree-button, button[id*='accept'], .cookie-accept-btn"))
         )
         cookie_button.click()
     except TimeoutException:
-        pass  # Aucun bandeau détecté ou déjà accepté
+        pass
+
+def select_airport(wait, input_selector, airport_code):
+    input_elem = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, input_selector)))
+    input_elem.click()
+    input_elem.clear()
+    input_elem.send_keys(airport_code)
+    
+    suggestion = wait.until(
+        EC.element_to_be_clickable((By.XPATH, f"//li[contains(., '{airport_code}')] | //div[contains(@class, 'suggestion') and contains(., '{airport_code}')]"))
+    )
+    suggestion.click()
 
 def scrape_route(driver, origen, destination, target_date_str, target_date_display):
-    """
-    Exécute la recherche, gère les cookies, renseigne les aéroports, 
-    sélectionne la date J+7 et extrait les prix réels de la SPA Amadeus.
-    """
     base_url = "https://book.aircorsica.com/"
     driver.get(base_url)
     
     wait = WebDriverWait(driver, 20)
     prices = []
     
-    # 1. Traitement des cookies en amont
     handle_cookies(driver, wait)
     
     try:
-        # 2. Saisie des aéroports de départ et d'arrivée
-        try:
-            input_origin = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "input[id*='origin'], input[name*='origin'], .origin-input")))
-            input_origin.clear()
-            input_origin.send_keys(origen)
-            
-            input_dest = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "input[id*='destination'], input[name*='destination'], .destination-input")))
-            input_dest.clear()
-            input_dest.send_keys(destination)
-        except Exception as e:
-            print(f"Note sur la saisie des aéroports ({origen} -> {destination}) : {e}")
+        # 1. Sélection des aéroports avec validation de l'autocomplétion
+        select_airport(wait, "input[id*='origin'], input[name*='origin'], .origin-input", origen)
+        select_airport(wait, "input[id*='destination'], input[name*='destination'], .destination-input", destination)
 
-        # 3. Sélection de la date J+7 via l'aria-label dynamique
-        xpath_date = f"//input[contains(@aria-label, '{target_date_display}')]"
+        # 2. Clic sur le bouton de recherche initial pour arriver sur le tableau des dates
+        bouton_recherche = wait.until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, "span.plnext-widget-btn-text, button[type='submit'], .search-btn"))
+        )
+        bouton_recherche.click()
+        
+        # 3. Sélection de la date J+7 dans le tableau de dates
+        xpath_date = f"//input[contains(@aria-label, '{target_date_display}')] | //div[contains(@aria-label, '{target_date_display}')]"
         element_date = wait.until(EC.element_to_be_clickable((By.XPATH, xpath_date)))
         driver.execute_script("arguments[0].click();", element_date)
         
-        # 4. Validation / Clic sur le bouton Continuer (Utilisation de By.CSS_SELECTOR corrigé)
+        # 4. Clic sur Continuer pour accéder à la liste des horaires et options (Light, Standard, Top)
         bouton_continuer = wait.until(
-            EC.element_to_be_clickable((By.CSS_SELECTOR, "span.plnext-widget-btn-text"))
+            EC.element_to_be_clickable((By.CSS_SELECTOR, "button.continue-btn, span.plnext-widget-btn-text, .btn-continue"))
         )
         bouton_continuer.click()
         
-        # 5. Attente active du chargement complet des lignes de vols
+        # 5. Attente de l'affichage des lignes de vols
         lignes_vols = wait.until(
-            EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".flight-row, .flight-item, [data-component*='Flight']"))
+            EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".flight-row, .flight-item, [data-component*='Flight'], .row-flight"))
         )
         
-        # 6. Extraction ciblée des prix de la colonne "Light"
+        # 6. Extraction exclusive des prix de la colonne Light sur les vols effectifs
         for ligne in lignes_vols:
             try:
-                element_prix = ligne.find_element(By.CSS_SELECTOR, ".fare-light .price-amount, .brand-column-0 .price, .fare-light-value, .price-amount")
+                # Ciblage strict de la colonne Light (première colonne de tarif)
+                element_prix = ligne.find_element(By.CSS_SELECTOR, ".fare-light .price-amount, .brand-column-0 .price, .fare-light-value, td.fare-light")
                 prix_texte = element_prix.text.replace("€", "").replace(",", ".").strip()
                 prix_float = float(prix_texte)
                 if prix_float > 0:
@@ -98,8 +101,8 @@ def scrape_route(driver, origen, destination, target_date_str, target_date_displ
             except Exception:
                 continue
                 
-    except (TimeoutException, AttributeError) as err:
-        print(f"Erreur ciblée (Timeout ou Attribut) pour {origen} -> {destination} le {target_date_str} : {err}")
+    except TimeoutException as err:
+        print(f"Erreur Timeout pour {origen} -> {destination} le {target_date_str} : {err}")
     except Exception as e:
         print(f"Erreur inattendue pour {origen} -> {destination} le {target_date_str} : {e}")
         
@@ -111,14 +114,13 @@ def main():
     date_capture = datetime.now().strftime("%Y-%m-%d")
     target_date = datetime.now() + timedelta(days=7)
     target_date_str = target_date.strftime("%Y-%m-%d")
-    
     target_date_display = f"{target_date.day:02d} {MONTHS_FR[target_date.month]} {target_date.year}"
     
     rows_to_save = []
     
     try:
         for origen, destination in ROUTES:
-            print(f"Traitement : {origen} -> {destination} pour le {target_date_str}")
+            print(f"Traitement : {origen} -> {destination} pour le {target_date_str} (J+7)")
             
             prices = scrape_route(driver, origen, destination, target_date_str, target_date_display)
             
