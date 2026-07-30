@@ -5,6 +5,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException, AttributeError
 
 ROUTES = [
     ("ORY", "AJA"),
@@ -33,9 +34,20 @@ def init_driver():
     driver = webdriver.Chrome(options=options)
     return driver
 
+def handle_cookies(driver, wait):
+    """Gère le bandeau de consentement aux cookies pour éviter les interceptions de clics."""
+    try:
+        cookie_button = wait.until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, "#didomi-notice-agree-button, button[id*='accept'], .cookie-accept-btn"))
+        )
+        cookie_button.click()
+    except TimeoutException:
+        pass  # Aucun bandeau détecté ou déjà accepté
+
 def scrape_route(driver, origen, destination, target_date_str, target_date_display):
     """
-    Exécute la recherche, sélectionne la date J+7 et extrait les prix réels de la SPA Amadeus.
+    Exécute la recherche, gère les cookies, renseigne les aéroports, 
+    sélectionne la date J+7 et extrait les prix réels de la SPA Amadeus.
     """
     base_url = "https://book.aircorsica.com/"
     driver.get(base_url)
@@ -43,27 +55,42 @@ def scrape_route(driver, origen, destination, target_date_str, target_date_displ
     wait = WebDriverWait(driver, 20)
     prices = []
     
+    # 1. Traitement des cookies en amont
+    handle_cookies(driver, wait)
+    
     try:
-        # 1. Sélection de la date J+7 via l'aria-label dynamique de l'input caché
+        # 2. Saisie des aéroports de départ et d'arrivée
+        try:
+            input_origin = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "input[id*='origin'], input[name*='origin'], .origin-input")))
+            input_origin.clear()
+            input_origin.send_keys(origen)
+            
+            input_dest = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "input[id*='destination'], input[name*='destination'], .destination-input")))
+            input_dest.clear()
+            input_dest.send_keys(destination)
+        except Exception as e:
+            print(f"Note sur la saisie des aéroports ({origen} -> {destination}) : {e}")
+
+        # 3. Sélection de la date J+7 via l'aria-label dynamique
         xpath_date = f"//input[contains(@aria-label, '{target_date_display}')]"
         element_date = wait.until(EC.element_to_be_clickable((By.XPATH, xpath_date)))
         driver.execute_script("arguments[0].click();", element_date)
         
-        # 2. Validation / Clic sur le bouton Continuer
+        # 4. Validation / Clic sur le bouton Continuer (Utilisation de By.CSS_SELECTOR corrigé)
         bouton_continuer = wait.until(
-            EC.element_to_be_clickable((By.CSSSelector, "span.plnext-widget-btn-text"))
+            EC.element_to_be_clickable((By.CSS_SELECTOR, "span.plnext-widget-btn-text"))
         )
         bouton_continuer.click()
         
-        # 3. Attente active du chargement complet des lignes de vols de la SPA Amadeus
+        # 5. Attente active du chargement complet des lignes de vols
         lignes_vols = wait.until(
-            EC.presence_of_all_elements_located((By.CSSSelector, ".flight-row, .flight-item, [data-component*='Flight']"))
+            EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".flight-row, .flight-item, [data-component*='Flight']"))
         )
         
-        # 4. Extraction ciblée des prix de la colonne "Light"
+        # 6. Extraction ciblée des prix de la colonne "Light"
         for ligne in lignes_vols:
             try:
-                element_prix = ligne.find_element(By.CSSSelector, ".fare-light .price-amount, .brand-column-0 .price, .fare-light-value, .price-amount")
+                element_prix = ligne.find_element(By.CSS_SELECTOR, ".fare-light .price-amount, .brand-column-0 .price, .fare-light-value, .price-amount")
                 prix_texte = element_prix.text.replace("€", "").replace(",", ".").strip()
                 prix_float = float(prix_texte)
                 if prix_float > 0:
@@ -71,8 +98,10 @@ def scrape_route(driver, origen, destination, target_date_str, target_date_displ
             except Exception:
                 continue
                 
+    except (TimeoutException, AttributeError) as err:
+        print(f"Erreur ciblée (Timeout ou Attribut) pour {origen} -> {destination} le {target_date_str} : {err}")
     except Exception as e:
-        print(f"Erreur lors du scraping de {origen} vers {destination} pour le {target_date_str} : {e}")
+        print(f"Erreur inattendue pour {origen} -> {destination} le {target_date_str} : {e}")
         
     return prices
 
@@ -83,7 +112,6 @@ def main():
     target_date = datetime.now() + timedelta(days=7)
     target_date_str = target_date.strftime("%Y-%m-%d")
     
-    # Formatage de la date en français pour correspondre à l'aria-label (ex: "06 Août 2026")
     target_date_display = f"{target_date.day:02d} {MONTHS_FR[target_date.month]} {target_date.year}"
     
     rows_to_save = []
@@ -119,7 +147,6 @@ def main():
     finally:
         driver.quit()
         
-    # Écriture dans le fichier CSV (sans la colonne TIME)
     file_exists = os.path.exists(CSV_FILE)
     
     with open(CSV_FILE, mode="a", newline="", encoding="utf-8") as f:
