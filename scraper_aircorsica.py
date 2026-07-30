@@ -57,43 +57,43 @@ def scrape_route(driver, origen, destination, target_date_str, target_date_displ
     base_url = "https://book.aircorsica.com/"
     driver.get(base_url)
     
-    wait = WebDriverWait(driver, 20)
+    wait = WebDriverWait(driver, 25)
     prices = []
     
     handle_cookies(driver, wait)
     
     try:
-        # 1. Sélection des aéroports avec validation de l'autocomplétion
+        # 1. Saisie des aéroports sur la page d'accueil
         select_airport(wait, "input[id*='origin'], input[name*='origin'], .origin-input", origen)
         select_airport(wait, "input[id*='destination'], input[name*='destination'], .destination-input", destination)
 
-        # 2. Clic sur le bouton de recherche initial pour arriver sur le tableau des dates
+        # 2. Clic pour aller sur le tableau des dates
         bouton_recherche = wait.until(
             EC.element_to_be_clickable((By.CSS_SELECTOR, "span.plnext-widget-btn-text, button[type='submit'], .search-btn"))
         )
         bouton_recherche.click()
         
-        # 3. Sélection de la date J+7 dans le tableau de dates
+        # 3. Sélection de la date J+7 dans le tableau
         xpath_date = f"//input[contains(@aria-label, '{target_date_display}')] | //div[contains(@aria-label, '{target_date_display}')]"
         element_date = wait.until(EC.element_to_be_clickable((By.XPATH, xpath_date)))
         driver.execute_script("arguments[0].click();", element_date)
         
-        # 4. Clic sur Continuer pour accéder à la liste des horaires et options (Light, Standard, Top)
+        # 4. Clic sur Continuer pour accéder à la liste des vols
         bouton_continuer = wait.until(
             EC.element_to_be_clickable((By.CSS_SELECTOR, "button.continue-btn, span.plnext-widget-btn-text, .btn-continue"))
         )
         bouton_continuer.click()
         
-        # 5. Attente de l'affichage des lignes de vols
+        # 5. VERROU STRICT : Attente exclusive du conteneur de résultats de vols Amadeus
+        # Empêche catégoriquement toute lecture tant que la page de vol n'est pas chargée
         lignes_vols = wait.until(
-            EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".flight-row, .flight-item, [data-component*='Flight'], .row-flight"))
+            EC.presence_of_all_elements_located((By.CSS_SELECTOR, "div[class*='flight-line'], tr[class*='flight'], div[class*='fare-family-item'], .travel-option-row"))
         )
         
-        # 6. Extraction exclusive des prix de la colonne Light sur les vols effectifs
+        # 6. Extraction exclusive de la colonne Light sur la page finale
         for ligne in lignes_vols:
             try:
-                # Ciblage strict de la colonne Light (première colonne de tarif)
-                element_prix = ligne.find_element(By.CSS_SELECTOR, ".fare-light .price-amount, .brand-column-0 .price, .fare-light-value, td.fare-light")
+                element_prix = ligne.find_element(By.CSS_SELECTOR, ".brand-column-0 .price-amount, td.fare-light .price, .fare-light-value, [class*='fare-light'] span[class*='price']")
                 prix_texte = element_prix.text.replace("€", "").replace(",", ".").strip()
                 prix_float = float(prix_texte)
                 if prix_float > 0:
