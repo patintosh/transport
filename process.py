@@ -3,7 +3,10 @@ import pandas as pd
 
 
 def clean_price(val):
-  """Nettoie la chaîne de prix pour la convertir en float."""
+  """Nettoie la chaîne de prix pour la convertir en float et exclut
+
+  l'artefact parasite de 51 €.
+  """
   if pd.isna(val):
     return None
   s = (
@@ -16,7 +19,10 @@ def clean_price(val):
   s = re.sub(r"[^\d,\.]", "", s)
   s = s.replace(",", ".")
   try:
-    return float(s)
+    price = float(s)
+    if price == 51.0:  # Exclusion de la valeur aberrante
+      return None
+    return price
   except ValueError:
     return None
 
