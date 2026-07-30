@@ -1,42 +1,26 @@
-name: Scrape and Process Air Corsica
+name: Scraper Air Corsica
 
 on:
+  workflow_dispatch: # Permet de lancer le script manuellement depuis l'onglet Actions de GitHub
   schedule:
-    - cron: '0 6 * * *'
-  workflow_dispatch:
-
-permissions:
-  contents: write
+    - cron: '0 8 * * *' # Optionnel : s'exécute tous les jours à 8h00 UTC (à adapter ou supprimer si inutile)
 
 jobs:
-  pipeline:
+  run-scraper:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
+      - name: Récupérer le code du dépôt
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Configurer Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.10'
 
-      - name: Install dependencies
+      - name: Installer les dépendances
         run: |
           python -m pip install --upgrade pip
-          pip install pandas requests beautifulsoup4 playwright
+          pip install selenium
 
-      - name: Install Playwright browsers
-        run: playwright install --with-deps
-
-      - name: Run scraper
+      - name: Lancer le script de scraping
         run: python scraper_aircorsica.py
-
-      - name: Run processor
-        run: python process.py
-
-      - name: Commit and push changes
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "Mise à jour automatique des données Air Corsica (J+7)"
-          file_pattern: "*.csv"
