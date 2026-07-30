@@ -45,7 +45,7 @@ def lancer_scraping_aircorsica():
     tous_les_resultats = []
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)
+        browser = p.chromium.launch(headless=True)
         
         for liaison in liaisons:
             print(f"\n✈️ [DEBUG] Traitement Aller-Retour pour : Paris Orly -> {liaison['nom']} ({liaison['arrivee']})...")
