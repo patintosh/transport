@@ -30,7 +30,7 @@ jobs:
         run: playwright install --with-deps
 
       - name: Run scraper
-        run: python scrape.py
+        run: python scraper_aircorsica.py
 
       - name: Run processor
         run: python process.py
