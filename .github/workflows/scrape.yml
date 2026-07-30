@@ -1,26 +1,40 @@
 name: Scraper Air Corsica
 
 on:
-  workflow_dispatch: # Permet de lancer le script manuellement depuis l'onglet Actions de GitHub
+  workflow_dispatch:
   schedule:
-    - cron: '0 8 * * *' # Optionnel : s'exécute tous les jours à 8h00 UTC (à adapter ou supprimer si inutile)
+    - cron: '0 8 * * *'
 
 jobs:
   run-scraper:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Récupérer le code du dépôt
+      - name: Checkout complet
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Debug version du scraper
+        run: |
+          echo "Vérification du scraper :"
+          grep -R "flight-card" -n scraper_aircorsica.py || echo "⚠️ ATTENTION : ancienne version détectée"
 
       - name: Configurer Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
+      - name: Désactiver cache pip
+        run: rm -rf ~/.cache/pip
+
       - name: Installer les dépendances
         run: |
           python -m pip install --upgrade pip
-          pip install selenium
+          pip install selenium pandas
 
       - name: Lancer le script de scraping
         run: python scraper_aircorsica.py
+
+      - name: Générer les séries temporelles
+        run: python process.py
