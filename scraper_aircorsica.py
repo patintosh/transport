@@ -17,7 +17,7 @@ def scrape_route(driver, origen, destination, target_date_str, target_date_displ
             EC.element_to_be_clickable((By.CSS_SELECTOR,
                 "span.plnext-widget-btn-text, button[type='submit'], .search-btn"))
         )
-        bouton_recherche.click()
+        driver.execute_script("arguments[0].click();", bouton_recherche)
 
         # 3. Sélection de la date
         xpath_date = (
@@ -33,29 +33,29 @@ def scrape_route(driver, origen, destination, target_date_str, target_date_displ
             EC.element_to_be_clickable((By.CSS_SELECTOR,
                 "button.continue-btn, span.plnext-widget-btn-text, .btn-continue"))
         )
-        bouton_continuer.click()
+        driver.execute_script("arguments[0].click();", bouton_continuer)
 
-        # 5. VERROU STRICT : attendre un élément qui n'existe QUE sur la vraie page de vols
+        # 5. VERROU STRICT : vraie page de vols
         wait.until(
             EC.presence_of_element_located((By.CSS_SELECTOR,
                 "div.flight-card, div.flight-info, div[id*='flightResults']"))
         )
+        print("PAGE DE VOLS CHARGÉE — extraction réelle")
 
-        # 6. Extraction des vrais vols (jamais les pubs)
+        # 6. Extraction des vrais vols
         lignes_vols = driver.find_elements(By.CSS_SELECTOR,
             "div.flight-card, div.flight-info")
 
         for ligne in lignes_vols:
             try:
-                # Colonne Light uniquement
                 prix_elem = ligne.find_element(By.CSS_SELECTOR,
-                    ".fare-cell .fare-price, .fare-light .fare-price")
+                    ".fare-light .fare-price, .fare-cell .fare-price")
 
                 prix_texte = prix_elem.text.replace("€", "").replace(",", ".").strip()
                 prix_brut = float(prix_texte)
 
                 if prix_brut > 0:
-                    prices.append(prix_brut + 3.0)  # frais obligatoires
+                    prices.append(prix_brut + 3.0)
             except:
                 continue
 
@@ -64,4 +64,10 @@ def scrape_route(driver, origen, destination, target_date_str, target_date_displ
     except Exception as e:
         print(f"Erreur inattendue {origen} -> {destination} le {target_date_str} : {e}")
 
+    # 🔥 Anti‑liste‑vide : on ne renvoie rien si extraction impossible
+    if len(prices) == 0:
+        print("⚠️ Extraction vide — aucun vol détecté, on NE renvoie PAS de prix.")
+        return []
+
+    print(f"Extraction réussie : {len(prices)} vols trouvés.")
     return prices
