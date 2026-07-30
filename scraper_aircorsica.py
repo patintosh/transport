@@ -8,17 +8,40 @@ import os
 
 BASE = "https://book.aircorsica.com/plnext/AirCorsicaDX"
 
+# -----------------------------
+# 1. Session avec headers anti-Imperva
+# -----------------------------
 def create_session():
     s = requests.Session()
-    s.get(BASE + "/")
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
+        "Accept": "*/*",
+        "Referer": "https://book.aircorsica.com/plnext/AirCorsicaDX/"
+    }
+    s.get(BASE + "/", headers=headers)
     return s
 
+# -----------------------------
+# 2. Récupération des routes
+# -----------------------------
 def get_routes(session):
     url = BASE + "/resources/json/markets.json"
-    r = session.get(url)
-    data = r.json()
-    routes = []
 
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
+        "Accept": "application/json",
+        "Referer": "https://book.aircorsica.com/plnext/AirCorsicaDX/"
+    }
+
+    r = session.get(url, headers=headers)
+
+    # Imperva renvoie du HTML → blocage
+    if "html" in r.text.lower():
+        raise Exception("Imperva a bloqué markets.json")
+
+    data = r.json()
+
+    routes = []
     for market in data.get("markets", []):
         dep = market.get("departure")
         arrs = market.get("arrival", [])
@@ -27,6 +50,9 @@ def get_routes(session):
 
     return routes
 
+# -----------------------------
+# 3. Appel FlexPricer
+# -----------------------------
 def flex_pricer(session, origin, dest, date_str):
     jsessionid = session.cookies.get("JSESSIONID")
     url = f"{BASE}/FlexPricerAvailabilityDispatcherPui.action;jsessionid={jsessionid}"
@@ -68,21 +94,31 @@ def flex_pricer(session, origin, dest, date_str):
     headers = {
         "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
         "Accept": "*/*",
-        "Referer": BASE + "/",
-        "User-Agent": "Mozilla/5.0"
+        "Referer": "https://book.aircorsica.com/plnext/AirCorsicaDX/",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15"
     }
 
     r = session.post(url, data=payload, headers=headers)
+
+    # Si Imperva bloque → HTML
+    if "html" in r.text.lower():
+        return {}
+
     return r.json()
 
+# -----------------------------
+# 4. Extraction des prix
+# -----------------------------
 def extract_prices(data):
     try:
         price_list = data["priceByBound"][0]["priceList"]
-        prices = [p["amount"] for p in price_list if "amount" in p]
-        return prices
+        return [p["amount"] for p in price_list if "amount" in p]
     except Exception:
         return []
 
+# -----------------------------
+# 5. Statistiques min / max / moyenne
+# -----------------------------
 def compute_stats(prices):
     if not prices:
         return None
@@ -92,12 +128,14 @@ def compute_stats(prices):
         "mean": mean(prices)
     }
 
+# -----------------------------
+# 6. Append global CSV
+# -----------------------------
 def append_to_global_csv(rows, filename="résultats_aircorsica.csv"):
     existing = []
     if os.path.exists(filename):
         with open(filename, "r", encoding="utf-8") as f:
-            reader = csv.DictReader(f)
-            existing = list(reader)
+            existing = list(csv.DictReader(f))
 
     all_rows = existing + rows
 
@@ -114,6 +152,9 @@ def append_to_global_csv(rows, filename="résultats_aircorsica.csv"):
         writer.writeheader()
         writer.writerows(all_rows_sorted)
 
+# -----------------------------
+# 7. Append route CSV
+# -----------------------------
 def append_to_route_csv(rows, origin, dest):
     os.makedirs("routes_aircorsica", exist_ok=True)
     filename = f"routes_aircorsica/{origin}_{dest}.csv"
@@ -121,8 +162,7 @@ def append_to_route_csv(rows, origin, dest):
     existing = []
     if os.path.exists(filename):
         with open(filename, "r", encoding="utf-8") as f:
-            reader = csv.DictReader(f)
-            existing = list(reader)
+            existing = list(csv.DictReader(f))
 
     all_rows = existing + rows
 
@@ -139,6 +179,9 @@ def append_to_route_csv(rows, origin, dest):
         writer.writeheader()
         writer.writerows(all_rows_sorted)
 
+# -----------------------------
+# 8. Main
+# -----------------------------
 if __name__ == "__main__":
     session = create_session()
 
@@ -147,10 +190,13 @@ if __name__ == "__main__":
 
     global_rows = []
 
-    for origin, dest in get_routes(session):
+    routes = get_routes(session)
+
+    for origin, dest in routes:
         data = flex_pricer(session, origin, dest, flight_date)
         prices = extract_prices(data)
         stats = compute_stats(prices)
+
         if stats:
             row = {
                 "scrape_date": scrape_date,
@@ -161,8 +207,10 @@ if __name__ == "__main__":
                 "max": stats["max"],
                 "mean": stats["mean"]
             }
+
             global_rows.append(row)
             append_to_route_csv([row], origin, dest)
 
     append_to_global_csv(global_rows)
+
     print(f"{len(global_rows)} lignes ajoutées à résultats_aircorsica.csv")
