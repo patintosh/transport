@@ -9,20 +9,28 @@ import os
 BASE = "https://book.aircorsica.com/plnext/AirCorsicaDX"
 
 # -----------------------------
-# 1. Session avec headers anti-Imperva
+# 1. Session + récupération cookie Imperva
 # -----------------------------
 def create_session():
     s = requests.Session()
+
     headers = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
         "Accept": "*/*",
-        "Referer": "https://book.aircorsica.com/plnext/AirCorsicaDX/"
+        "Referer": BASE + "/"
     }
-    s.get(BASE + "/", headers=headers)
+
+    # Appel initial pour obtenir les cookies Imperva
+    r = s.get(BASE + "/", headers=headers)
+
+    # Vérification cookie Imperva
+    if not any("incap" in c.lower() for c in s.cookies.keys()):
+        raise Exception("Imperva n'a pas délivré de cookie. Impossible de scraper depuis GitHub Actions.")
+
     return s
 
 # -----------------------------
-# 2. Récupération des routes
+# 2. Récupération des routes via markets.json
 # -----------------------------
 def get_routes(session):
     url = BASE + "/resources/json/markets.json"
@@ -30,25 +38,16 @@ def get_routes(session):
     headers = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
         "Accept": "application/json",
-        "Referer": "https://book.aircorsica.com/plnext/AirCorsicaDX/"
+        "Referer": BASE + "/"
     }
 
     r = session.get(url, headers=headers)
 
     # Imperva renvoie du HTML → blocage
     if "html" in r.text.lower():
-        raise Exception("Imperva a bloqué markets.json")
+        raise Exception("Imperva a bloqué markets.json malgré le cookie.")
 
-    data = r.json()
-
-    routes = []
-    for market in data.get("markets", []):
-        dep = market.get("departure")
-        arrs = market.get("arrival", [])
-        for arr in arrs:
-            routes.append((dep, arr))
-
-    return routes
+    return r.json()
 
 # -----------------------------
 # 3. Appel FlexPricer
@@ -94,13 +93,12 @@ def flex_pricer(session, origin, dest, date_str):
     headers = {
         "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
         "Accept": "*/*",
-        "Referer": "https://book.aircorsica.com/plnext/AirCorsicaDX/",
+        "Referer": BASE + "/",
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15"
     }
 
     r = session.post(url, data=payload, headers=headers)
 
-    # Si Imperva bloque → HTML
     if "html" in r.text.lower():
         return {}
 
