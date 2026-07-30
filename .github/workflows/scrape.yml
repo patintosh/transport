@@ -1,0 +1,37 @@
+name: Pipeline Quotidien Air Corsica
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupération du dépôt
+        uses: actions/checkout@v3
+
+      - name: Configuration de l'environnement Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Installation des dépendances
+        run: |
+          pip install pandas playwright
+          playwright install chromium
+
+      - name: 1. Exécution du script de scraping
+        run: python scraper_aircorsica.py
+
+      - name: 2. Exécution du script de nettoyage
+        run: python clean_csv.py
+
+      - name: 3. Sauvegarde automatique des modifications
+        run: |
+          git config --global user.name 'Air Corsica Bot'
+          git config --global user.email 'bot@users.noreply.github.com'
+          git add vols_aircorsica.csv
+          git commit -m "Mise à jour automatique des prix du $(date +%Y-%m-%d)"
+          git push
