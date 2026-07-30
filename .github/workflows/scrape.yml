@@ -5,6 +5,9 @@ on:
     - cron: '0 3 * * *'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   run-pipeline:
     runs-on: ubuntu-latest
@@ -21,6 +24,7 @@ jobs:
         run: |
           pip install pandas playwright
           playwright install chromium
+          playwright install-deps chromium
 
       - name: 1. Exécution du script de scraping
         run: python scraper_aircorsica.py
@@ -33,5 +37,5 @@ jobs:
           git config --global user.name 'Air Corsica Bot'
           git config --global user.email 'bot@users.noreply.github.com'
           git add vols_aircorsica.csv
-          git commit -m "Mise à jour automatique des prix du $(date +%Y-%m-%d)"
+          git diff --staged --quiet || git commit -m "Mise à jour automatique des prix du $(date +%Y-%m-%d)"
           git push
