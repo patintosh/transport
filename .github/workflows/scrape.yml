@@ -1,48 +1,229 @@
-name: Pipeline Quotidien Air Corsica
+import os
+import re
+from datetime import datetime, timedelta
+import pandas as pd
+from playwright.sync_api import sync_playwright
 
-on:
-  schedule:
-    - cron: '0 3 * * *'
-  workflow_dispatch:
+def sauvegarder_donnees(nouveaux_resultats, chemin_fichier="vols_aircorsica.csv"):
+    if not nouveaux_resultats:
+        print("⚠️ Aucun nouveau résultat à sauvegarder.")
+        return
 
-jobs:
-  run-pipeline:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Récupération du dépôt
-        uses: actions/checkout@v4
+    df_nouveau = pd.DataFrame(nouveaux_resultats)
+    
+    colonnes_officielles = ["Date de capture", "Départ", "Arrivée", "Date vol", "Horaire", "Prix"]
+    for col in colonnes_officielles:
+        if col not in df_nouveau.columns:
+            df_nouveau[col] = "Inconnu"
+    df_nouveau = df_nouveau[colonnes_officielles]
 
-      - name: Configuration de l'environnement Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
+    if os.path.exists(chemin_fichier):
+        df_existant = pd.read_csv(chemin_fichier)
+        for col in colonnes_officielles:
+            if col not in df_existant.columns:
+                df_existant[col] = "Inconnu"
+        df_existant = df_existant[colonnes_officielles]
+        
+        df_final = pd.concat([df_nouveau, df_existant], ignore_index=True)
+    else:
+        df_final = df_nouveau
 
-      - name: Installation des dépendances Python
-        run: |
-          python -m pip install --upgrade pip
-          pip install pandas playwright
+    df_final.to_csv(chemin_fichier, index=False, encoding="utf-8-sig")
+    print(f"💾 {len(nouveaux_resultats)} lignes ajoutées en haut de '{chemin_fichier}'.")
 
-      - name: Installation de Playwright et des dépendances système
-        run: playwright install --with-deps chromium
+def lancer_scraping_aircorsica():
+    liaisons = [
+        {"depart": "ORY", "arrivee": "AJA", "nom": "Ajaccio"},
+        {"depart": "ORY", "arrivee": "BIA", "nom": "Bastia"},
+        {"depart": "ORY", "arrivee": "FSC", "nom": "Figari"},
+        {"depart": "ORY", "arrivee": "CLY", "nom": "Calvi"}
+    ]
 
-      - name: Exécution du script de scraping
-        run: python scraper_aircorsica.py
+    date_capture_jour = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    date_aller = (datetime.now() + timedelta(days=7)).strftime("%d/%m/%Y")
+    tous_les_resultats = []
 
-      - name: Exécution du script de nettoyage
-        run: python clean_csv.py
+    with sync_playwright() as p:
+        # Mode invisible forcé pour GitHub Actions
+        browser = p.chromium.launch(headless=True)
+        
+        for liaison in liaisons:
+            print(f"\n✈️ Traitement Aller-Retour pour : Paris Orly -> {liaison['nom']} ({liaison['arrivee']})...")
+            
+            context = browser.new_context(viewport={"width": 1280, "height": 800})
+            page = context.new_page()
 
-      - name: Configuration de l'identité Git
-        run: |
-          git config --global user.name 'Air Corsica Bot'
-          git config --global user.email 'bot@users.noreply.github.com'
+            try:
+                page.goto("https://www.aircorsica.com/", timeout=60000)
+                
+                try:
+                    selectors_cookies = [
+                        "#axeptio_btn_acceptAll",
+                        "button:has-text('Tout accepter')",
+                        "button:has-text('Accepter')",
+                        "#tarteaucitronAllAllowed",
+                        "#didomi-notice-agree-button"
+                    ]
+                    for sel in selectors_cookies:
+                        btn = page.locator(sel)
+                        if btn.count() > 0 and btn.first.is_visible():
+                            btn.first.click(force=True)
+                            page.wait_for_timeout(1000)
+                            break
+                except Exception:
+                    pass
 
-      - name: Validation et envoi des modifications
-        run: |
-          if [ -f vols_aircorsica.csv ]; then
-            git add vols_aircorsica.csv
-            git diff --staged --quiet || (git commit -m "Mise à jour automatique des prix du $(date +%Y-%m-%d)" && git push origin HEAD:${{ github.ref_name }})
-          else
-            echo "⚠️ Le fichier vols_aircorsica.csv n'existe pas, aucun commit effectué."
-          fi
+                page.wait_for_timeout(5000)
+
+                origine_ok = page.evaluate(f"""() => {{
+                    const allElements = Array.from(document.querySelectorAll('input[type="text"], input:not([type]), [role="combobox"], .multiselect, button'));
+                    const inputs = allElements.filter(el => {{
+                        const rect = el.getBoundingClientRect();
+                        if (rect.width === 0 || rect.height === 0 || rect.top < 120) return false;
+                        if (el.closest('header') || el.closest('nav') || el.closest('.header') || el.closest('.top-bar')) return false;
+                        return true;
+                    }});
+                    
+                    if (inputs.length >= 1) {{
+                        let target = inputs[0];
+                        if (target.tagName !== 'INPUT') {{
+                            let sub = target.querySelector('input');
+                            if (sub) target = sub;
+                        }}
+                        target.click();
+                        target.focus();
+                        target.value = '{liaison['depart']}';
+                        target.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                        target.dispatchEvent(new Event('change', {{ bubbles: true }}));
+                        return true;
+                    }}
+                    return false;
+                }}""")
+
+                if not origine_ok:
+                    print("⚠️ Champ Origine introuvable.")
+                    context.close()
+                    continue
+
+                page.wait_for_timeout(1500)
+                page.keyboard.press("ArrowDown")
+                page.wait_for_timeout(500)
+                page.keyboard.press("Enter")
+                page.wait_for_timeout(1500)
+
+                dest_ok = page.evaluate(f"""() => {{
+                    const allElements = Array.from(document.querySelectorAll('input[type="text"], input:not([type]), [role="combobox"], .multiselect, button'));
+                    const inputs = allElements.filter(el => {{
+                        const rect = el.getBoundingClientRect();
+                        if (rect.width === 0 || rect.height === 0 || rect.top < 120) return false;
+                        if (el.closest('header') || el.closest('nav') || el.closest('.header') || el.closest('.top-bar')) return false;
+                        return true;
+                    }});
+                    
+                    if (inputs.length >= 2) {{
+                        let target = inputs[1];
+                        if (target.tagName !== 'INPUT') {{
+                            let sub = target.querySelector('input');
+                            if (sub) target = sub;
+                        }}
+                        target.click();
+                        target.focus();
+                        target.value = '{liaison['arrivee']}';
+                        target.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                        target.dispatchEvent(new Event('change', {{ bubbles: true }}));
+                        return true;
+                    }}
+                    return false;
+                }}""")
+
+                if not dest_ok:
+                    print("⚠️ Champ Destination introuvable.")
+                    context.close()
+                    continue
+
+                page.wait_for_timeout(1500)
+                
+                try:
+                    suggestion = page.locator("li, div[class*='suggestion'], div[class*='item'], .dropdown-item").filter(has_text=liaison['arrivee'])
+                    if suggestion.count() > 0:
+                        suggestion.first.click(force=True)
+                    else:
+                        page.keyboard.press("ArrowDown")
+                        page.wait_for_timeout(500)
+                        page.keyboard.press("Enter")
+                except Exception:
+                    page.keyboard.press("ArrowDown")
+                    page.keyboard.press("Enter")
+
+                page.wait_for_timeout(2000)
+
+                clicked = page.evaluate("""() => {
+                    const btn = document.querySelector('#search-submit') || 
+                                document.querySelector('button[type="submit"]') || 
+                                Array.from(document.querySelectorAll('button')).find(el => el.textContent.includes('Rechercher'));
+                    if (btn) { btn.click(); return true; }
+                    return false;
+                }""")
+
+                if not clicked:
+                    print("⚠️ Bouton de recherche introuvable.")
+                    context.close()
+                    continue
+
+                try:
+                    page.wait_for_load_state("networkidle", timeout=12000)
+                except Exception:
+                    pass
+                
+                page.wait_for_timeout(6000)
+
+                cartes_vols = page.locator("div, article, li").filter(has_text="€")
+                nb_cartes = cartes_vols.count()
+                
+                resultats_liaison = 0
+                for i in range(min(nb_cartes, 40)):
+                    carte = cartes_vols.nth(i)
+                    try:
+                        texte = carte.inner_text(timeout=400).strip()
+                    except Exception:
+                        continue
+
+                    if "€" in texte and any(c.isdigit() for c in texte):
+                        lignes = [l.strip() for l in texte.split("\n") if l.strip()]
+                        prix = "Inconnu"
+                        horaire = "Inconnu"
+
+                        horaires_trouves = re.findall(r'\b([0-2]?[0-9]:[0-5][0-9])\b', texte)
+                        if horaires_trouves:
+                            horaire = horaires_trouves[0]
+
+                        for ligne in lignes:
+                            if "€" in ligne and any(c.isdigit() for c in ligne) and len(ligne) < 25 and prix == "Inconnu":
+                                prix = ligne
+
+                        if prix != "Inconnu":
+                            enregistrement = {
+                                "Date de capture": date_capture_jour,
+                                "Départ": liaison['depart'],
+                                "Arrivée": liaison['arrivee'],
+                                "Date vol": date_aller,
+                                "Horaire": horaire,
+                                "Prix": prix
+                            }
+                            if enregistrement not in tous_les_resultats:
+                                tous_les_resultats.append(enregistrement)
+                                resultats_liaison += 1
+
+                print(f"✅ {resultats_liaison} résultats aller-retour extraits pour {liaison['nom']}.")
+
+            except Exception as e:
+                print(f"⚠️ Erreur pour {liaison['nom']} : {e}")
+            finally:
+                context.close()
+
+        browser.close()
+
+    sauvegarder_donnees(tous_les_resultats)
+
+if __name__ == "__main__":
+    lancer_scraping_aircorsica()
