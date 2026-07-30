@@ -1,17 +1,16 @@
 import requests
 import time
 import json
+from statistics import mean
 
 BASE = "https://book.aircorsica.com/plnext/AirCorsicaDX"
 
 def create_session():
-    """Crée une session Air Corsica (obligatoire pour FlexPricer)."""
     s = requests.Session()
     s.get(BASE + "/")
     return s
 
 def get_routes(session):
-    """Récupère toutes les routes Air Corsica via markets.json."""
     url = BASE + "/resources/json/markets.json"
     r = session.get(url)
     data = r.json()
@@ -26,10 +25,7 @@ def get_routes(session):
     return routes
 
 def flex_pricer(session, origin, dest, date_str):
-    """Appelle FlexPricer pour une route et une date."""
-    # Session ID obligatoire
     jsessionid = session.cookies.get("JSESSIONID")
-
     url = f"{BASE}/FlexPricerAvailabilityDispatcherPui.action;jsessionid={jsessionid}"
 
     payload = {
@@ -76,6 +72,25 @@ def flex_pricer(session, origin, dest, date_str):
     r = session.post(url, data=payload, headers=headers)
     return r.json()
 
+def extract_prices(data):
+    """Extrait tous les prix disponibles dans la réponse FlexPricer."""
+    try:
+        price_list = data["priceByBound"][0]["priceList"]
+        prices = [p["amount"] for p in price_list if "amount" in p]
+        return prices
+    except Exception:
+        return []
+
+def compute_stats(prices):
+    """Retourne min, max, moyenne."""
+    if not prices:
+        return None
+    return {
+        "min": min(prices),
+        "max": max(prices),
+        "mean": mean(prices)
+    }
+
 def scrape_all_routes(date_str):
     """Scrape toutes les routes Air Corsica pour une date donnée."""
     session = create_session()
@@ -86,8 +101,17 @@ def scrape_all_routes(date_str):
     for origin, dest in routes:
         try:
             data = flex_pricer(session, origin, dest, date_str)
-            results[(origin, dest)] = data
+            prices = extract_prices(data)
+            stats = compute_stats(prices)
+            results[(origin, dest)] = stats
         except Exception as e:
             results[(origin, dest)] = {"error": str(e)}
 
     return results
+
+if __name__ == "__main__":
+    # Exemple : J+7
+    import datetime
+    target_date = (datetime.datetime.now() + datetime.timedelta(days=7)).strftime("%Y%m%d0000")
+    results = scrape_all_routes(target_date)
+    print(json.dumps(results, indent=2))
