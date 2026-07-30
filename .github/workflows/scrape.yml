@@ -1,9 +1,9 @@
-name: Scraper Air Corsica API
+name: Scraper Air Corsica
 
 on:
-  workflow_dispatch:
   schedule:
-    - cron: '0 8 * * *'
+    - cron: "0 4 * * *"   # Tous les jours à 04:00
+  workflow_dispatch:
 
 jobs:
   run-scraper:
@@ -12,21 +12,22 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: "3.11"
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install requests pandas
+          pip install requests
 
       - name: Run scraper
-        run: python run_scraper.py
+        run: |
+          python scraper_aircorsica.py > results.json
 
-      - name: Generate time series
-        run: python process.py
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: aircorsica-prices
+          path: results.json
