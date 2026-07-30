@@ -19,21 +19,30 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Installation des dépendances
-        run: |
-          pip install pandas playwright
-          sudo playwright install-deps chromium
-          playwright install chromium
+      - name: Installation de pandas et playwright
+        run: pip install pandas playwright
 
-      - name: 1. Exécution du script de scraping
+      - name: Installation des dépendances système Playwright
+        run: sudo playwright install-deps chromium
+
+      - name: Installation du navigateur Chromium
+        run: playwright install chromium
+
+      - name: Exécution du script de scraping
         run: python scraper_aircorsica.py
 
-      - name: 2. Exécution du script de nettoyage
+      - name: Exécution du script de nettoyage
         run: python clean_csv.py
 
-      - name: 3. Sauvegarde automatique des modifications
+      - name: Configuration de l'identité Git
         run: |
           git config --global user.name 'Air Corsica Bot'
           git config --global user.email 'bot@users.noreply.github.com'
-          git add vols_aircorsica.csv
-          git diff --staged --quiet || (git commit -m "Mise à jour automatique des prix du $(date +%Y-%m-%d)" && git push)
+
+      - name: Ajout du fichier CSV au suivi Git
+        run: git add vols_aircorsica.csv
+
+      - name: Validation et envoi des modifications
+        run: |
+          git diff --staged --quiet || git commit -m "Mise à jour automatique des prix du $(date +%Y-%m-%d)"
+          git push
