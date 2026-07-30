@@ -24,7 +24,7 @@ jobs:
         run: |
           pip install pandas playwright
           playwright install chromium
-          playwright install-deps chromium
+          sudo playwright install-deps chromium
 
       - name: 1. Exécution du script de scraping
         run: python scraper_aircorsica.py
