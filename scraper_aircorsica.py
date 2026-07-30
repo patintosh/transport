@@ -1,45 +1,100 @@
-from playwright.sync_api import sync_playwright
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
 
-def scrape_route(origen, destination, target_date_str):
+# --- Cookies ---
+def handle_cookies(driver, wait):
+    try:
+        btn = wait.until(
+            EC.element_to_be_clickable((By.ID, "onetrust-accept-btn-handler"))
+        )
+        driver.execute_script("arguments[0].click();", btn)
+        print("Cookies acceptés.")
+    except:
+        print("Pas de cookies à gérer.")
+
+# --- Sélection aéroport ---
+def select_airport(wait, field_id, list_selector, airport_code):
+    field = wait.until(EC.element_to_be_clickable((By.ID, field_id)))
+    field.clear()
+    field.send_keys(airport_code)
+
+    suggestion = wait.until(
+        EC.element_to_be_clickable((By.CSS_SELECTOR, list_selector))
+    )
+    suggestion.click()
+
+# --- Scraper principal ---
+def scrape_route(driver, origen, destination, target_date_str, target_date_display):
+    driver.get("https://book.aircorsica.com/")
+    wait = WebDriverWait(driver, 30)
     prices = []
 
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
-        page = browser.new_page()
+    try:
+        handle_cookies(driver, wait)
 
-        # Page d'accueil
-        page.goto("https://book.aircorsica.com/", timeout=60000)
+        # 1. Origine
+        select_airport(
+            wait,
+            "origin-input",
+            "ul#origin-list li",
+            origen
+        )
 
-        # Cookies
-        try:
-            page.click("#onetrust-accept-btn-handler", timeout=5000)
-        except:
-            pass
+        # 2. Destination
+        select_airport(
+            wait,
+            "destination-input",
+            "ul#destination-list li",
+            destination
+        )
 
-        # Origine
-        page.fill("#origin-input", origen)
-        page.click("ul#origin-list li", timeout=10000)
+        # 3. Recherche
+        search_btn = wait.until(
+            EC.element_to_be_clickable((By.ID, "search-button"))
+        )
+        driver.execute_script("arguments[0].click();", search_btn)
 
-        # Destination
-        page.fill("#destination-input", destination)
-        page.click("ul#destination-list li", timeout=10000)
+        # 4. Date
+        date_cell = wait.until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, f"td[data-date='{target_date_str}']"))
+        )
+        driver.execute_script("arguments[0].click();", date_cell)
 
-        # Recherche
-        page.click("#search-button", timeout=15000)
+        # 5. Continuer
+        continue_btn = wait.until(
+            EC.element_to_be_clickable((By.ID, "continue-button"))
+        )
+        driver.execute_script("arguments[0].click();", continue_btn)
 
-        # Date
-        page.click(f"td[data-date='{target_date_str}']", timeout=15000)
+        # 6. Page de vols
+        wait.until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "div.flight-card"))
+        )
+        print("PAGE DE VOLS CHARGÉE — extraction réelle")
 
-        # Continuer
-        page.click("#continue-button", timeout=15000)
-
-        # Attendre les vols
-        page.wait_for_selector("div.flight-card", timeout=30000)
-
-        # Extraction
-        cards = page.query_selector_all("div.flight-card")
+        # 7. Extraction
+        cards = driver.find_elements(By.CSS_SELECTOR, "div.flight-card")
 
         for card in cards:
-            price_elem = card.query_selector(".fare-price")
-            if price_elem:
-                txt = price_elem.inner_text().replace("€", "").replace(",",
+            try:
+                price_elem = card.find_element(By.CSS_SELECTOR, ".fare-price")
+                price_text = price_elem.text.replace("€", "").replace(",", ".").strip()
+                price = float(price_text)
+                if price > 0:
+                    prices.append(price + 3.0)
+            except:
+                continue
+
+    except TimeoutException as err:
+        print(f"Timeout {origen} -> {destination} : {err}")
+    except Exception as e:
+        print(f"Erreur inattendue {origen} -> {destination} : {e}")
+
+    if not prices:
+        print("⚠️ Extraction vide — aucun vol détecté.")
+        return []
+
+    print(f"Extraction réussie : {len(prices)} vols trouvés.")
+    return prices
