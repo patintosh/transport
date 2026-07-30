@@ -1,52 +1,33 @@
-import pandas as pd
 import os
+import pandas as pd
 
 def nettoyer_csv(chemin_fichier="vols_aircorsica.csv"):
     if not os.path.exists(chemin_fichier):
-        print("❌ Aucun fichier CSV trouvé à nettoyer.")
+        print(f"⚠️ Le fichier {chemin_fichier} n'existe pas encore.")
         return
 
-    print("🧹 Nettoyage, normalisation et suppression des erreurs...")
-    df = pd.read_csv(chemin_fichier)
+    try:
+        df = pd.read_csv(chemin_fichier)
+        if df.empty:
+            print("⚠️ Le fichier CSV est vide.")
+            return
 
-    # Uniformisation des noms de colonnes historiques
-    mapping_colonnes = {
-        "Date_Scraping": "Date de capture",
-        "Date_Vol": "Date vol"
-    }
-    df = df.rename(columns=mapping_colonnes)
+        print(f"📊 Fichier chargé : {len(df)} lignes avant nettoyage.")
 
-    colonnes_attendues = ["Date de capture", "Départ", "Arrivée", "Date vol", "Horaire", "Prix"]
-    
-    for col in colonnes_attendues:
-        if col not in df.columns:
-            df[col] = "Inconnu"
+        # Suppression des doublons stricts pour éviter les redondances
+        df = df.drop_duplicates()
 
-    df = df[colonnes_attendues]
+        # Nettoyage des espaces superflus sur les colonnes textuelles existantes
+        for col in df.select_dtypes(include=['object']).columns:
+            df[col] = df[col].astype(str).str.strip()
 
-    # Suppression des lignes où le départ ou l'arrivée sont inconnus ou vides
-    df = df[
-        (df['Départ'].notna()) & (df['Départ'] != 'Inconnu') &
-        (df['Arrivée'].notna()) & (df['Arrivée'] != 'Inconnu')
-    ]
+        # Sauvegarde du fichier nettoyé
+        df.to_csv(chemin_fichier, index=False, encoding="utf-8-sig")
+        print(f"✅ Nettoyage terminé avec succès : {len(df)} lignes conservées.")
 
-    # Remplacement des valeurs vides (NaN) par des valeurs par défaut propres
-    df['Date vol'] = df['Date vol'].fillna('05/08/2026')
-    df['Horaire'] = df['Horaire'].fillna('Inconnu')
-
-    # Nettoyage des prix (extraction de la valeur numérique TTC)
-    df = df.dropna(subset=["Prix"])
-    df['Prix_num'] = df['Prix'].astype(str).str.extract(r'(\d+[.,]?\d*)')[0].str.replace(',', '.').astype(float)
-    
-    # Filtrage des prix aberrants
-    df = df[(df['Prix_num'] >= 35) & (df['Prix_num'] <= 3000)]
-    df = df.drop(columns=['Prix_num'])
-
-    # Suppression des doublons stricts
-    df = df.drop_duplicates(subset=["Date de capture", "Départ", "Arrivée", "Date vol", "Horaire", "Prix"])
-
-    df.to_csv(chemin_fichier, index=False, encoding="utf-8-sig")
-    print(f"✅ CSV nettoyé avec succès ! {len(df)} lignes valides conservées (0 valeur manquante).")
+    except Exception as e:
+        print(f"❌ Erreur lors du nettoyage du CSV : {e}")
+        raise e
 
 if __name__ == "__main__":
     nettoyer_csv()
