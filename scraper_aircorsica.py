@@ -80,14 +80,14 @@ def create_session():
     s.cookies.update(cookies)
 
     headers = {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-                      "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
         "Accept-Language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
         "Referer": BASE + "/",
-        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Site": "same-origin",
         "Sec-Fetch-Mode": "navigate",
-        "Sec-Fetch-Site": "same-origin"
+        "Sec-Fetch-Dest": "document",
+        "Connection": "keep-alive"
     }
 
     s.get(BASE + "/", headers=headers)
@@ -112,7 +112,7 @@ def get_routes(session):
 
 
 # ============================================================
-# 4. Appel FlexPricer (avec en-têtes anti-blocage Imperva)
+# 4. Appel FlexPricer (avec en-têtes Chrome 126 complets)
 # ============================================================
 
 def flex_pricer(session, origin, dest, date_str):
@@ -156,16 +156,16 @@ def flex_pricer(session, origin, dest, date_str):
     }
 
     headers = {
-        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
         "Accept": "application/json, text/javascript, */*; q=0.01",
         "Accept-Language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
         "Referer": BASE + "/",
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-                      "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
         "X-Requested-With": "XMLHttpRequest",
-        "Sec-Fetch-Dest": "empty",
+        "Sec-Fetch-Site": "same-origin",
         "Sec-Fetch-Mode": "cors",
-        "Sec-Fetch-Site": "same-origin"
+        "Sec-Fetch-Dest": "empty",
+        "Connection": "keep-alive",
+        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
     }
 
     r = session.post(url, data=payload, headers=headers)
