@@ -1,16 +1,23 @@
 import os
+import sys
 import csv
 import subprocess
 from datetime import datetime, timedelta
-from curl_cffi import requests
-from bs4 import BeautifulSoup
+
+# Vérification et importation sécurisée des dépendances
+try:
+    from curl_cffi import requests
+    from bs4 import BeautifulSoup
+except ImportError as e:
+    with open("scraper.log", "w", encoding="utf-8") as f:
+        f.write(f"ERREUR CRITIQUE : Dépendance manquante - {e}\n")
+    sys.exit(1)
 
 BASE = "https://book.aircorsica.com/plnext/AirCorsicaDX"
 CSV_FILENAME = "air_corsica_flights.csv"
 LOG_FILENAME = "scraper.log"
 
 def log_message(message):
-    """Écrit un message à la fois dans la console et dans le fichier de log"""
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     formatted_msg = f"[{timestamp}] {message}"
     print(formatted_msg)
@@ -18,7 +25,6 @@ def log_message(message):
         f.write(formatted_msg + "\n")
 
 def create_session():
-    """Crée une session curl_cffi imitant Chrome et initialise le parcours"""
     s = requests.Session(impersonate="chrome")
 
     headers = {
@@ -41,7 +47,6 @@ def create_session():
     return s
 
 def fetch_flight_data(session):
-    """Récupère et parse les données de vol réelles (J+7)"""
     target_date = (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d")
     log_message(f"Recherche des vols pour la date : {target_date}")
 
@@ -61,7 +66,6 @@ def fetch_flight_data(session):
     if r.status_code == 200:
         if "Pardon Our Interruption" in r.text or "Access Denied" in r.text or "captcha" in r.text.lower():
             log_message("ALERTE : La page renvoyée est une page de blocage Imperva.")
-            # Sauvegarde du HTML de blocage pour analyse
             with open("imperva_debug.html", "w", encoding="utf-8") as f:
                 f.write(r.text)
             log_message("Le contenu de la page bloquée a été sauvegardé dans imperva_debug.html")
@@ -101,12 +105,19 @@ def git_commit_and_push():
         log_message(f"Erreur lors de l'opération Git : {e}")
 
 if __name__ == "__main__":
-    # Réinitialise ou crée le fichier de log pour cette session
-    with open(LOG_FILENAME, "w", encoding="utf-8") as f:
-        f.write(f"--- Début du run : {datetime.now()} ---\n")
+    try:
+        with open(LOG_FILENAME, "w", encoding="utf-8") as f:
+            f.write(f"--- Début du run : {datetime.now()} ---\n")
 
-    session = create_session()
-    flights = fetch_flight_data(session)
-    if flights:
-        save_to_csv(flights)
-        git_commit_and_push()
+        session = create_session()
+        flights = fetch_flight_data(session)
+        if flights:
+            save_to_csv(flights)
+            git_commit_and_push()
+    except Exception as e:
+        import traceback
+        error_detail = traceback.format_exc()
+        print(f"Erreur fatale : {e}")
+        with open(LOG_FILENAME, "a", encoding="utf-8") as f:
+            f.write(f"ERREUR FATALE : {e}\n{error_detail}\n")
+        sys.exit(1)
