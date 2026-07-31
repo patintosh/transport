@@ -11,6 +11,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Copy Chrome profile
+        run: cp -R ~/scraper_corse/chrome_profile ./chrome_profile
+
       - name: Use system Python
         run: python3 --version
 
