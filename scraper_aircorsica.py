@@ -173,14 +173,16 @@ def flex_pricer(session, origin, dest, date_str):
 
 
 # ============================================================
-# 5. Extraction des prix (avec ajout des 3€ de frais d'émission)
+# 5. Extraction des prix (avec diagnostic de structure JSON)
 # ============================================================
 
 def extract_prices(data):
     try:
         price_list = data["priceByBound"][0]["priceList"]
         return [p["amount"] + 3.0 for p in price_list if "amount" in p]
-    except Exception:
+    except Exception as e:
+        print(f"⚠ Structure JSON inattendue : {e}")
+        print(f"Clés reçues dans le JSON : {list(data.keys()) if isinstance(data, dict) else 'Pas un dictionnaire'}")
         return []
 
 
