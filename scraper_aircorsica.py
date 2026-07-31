@@ -1,4 +1,4 @@
-import requests
+from curl_cffi import requests
 import time
 import json
 from statistics import mean
@@ -29,7 +29,7 @@ def load_chrome_cookies(profile_path):
 
     conn.close()
 
-    jar = requests.cookies.RequestsCookieJar()
+    jar = requests.Cookies()
     for host, name, value in cookies:
         if "aircorsica" in host.lower() or "incap" in name.lower():
             jar.set(name, value, domain=host)
@@ -69,14 +69,15 @@ def send_email_alert(subject, body):
 
 
 # ============================================================
-# 2. Session + cookies Imperva
+# 2. Session + cookies Imperva (avec impersonation TLS Chrome)
 # ============================================================
 
 def create_session():
     profile_path = os.path.join(os.getcwd(), "chrome_profile")
     cookies = load_chrome_cookies(profile_path)
 
-    s = requests.Session()
+    # curl_cffi simule l'empreinte TLS de Chrome pour tromper Imperva
+    s = requests.Session(impersonate="chrome")
     s.cookies.update(cookies)
 
     headers = {
@@ -91,9 +92,6 @@ def create_session():
     }
 
     s.get(BASE + "/", headers=headers)
-
-    if not any("incap" in c.lower() for c in s.cookies.keys()):
-        raise Exception("Imperva n'a pas délivré de cookie. Impossible de scraper.")
 
     return s
 
@@ -112,7 +110,7 @@ def get_routes(session):
 
 
 # ============================================================
-# 4. Appel FlexPricer (avec en-têtes Chrome 126 complets)
+# 4. Appel FlexPricer
 # ============================================================
 
 def flex_pricer(session, origin, dest, date_str):
@@ -171,7 +169,7 @@ def flex_pricer(session, origin, dest, date_str):
     r = session.post(url, data=payload, headers=headers)
 
     if "html" in r.text.lower() or not r.text.strip():
-        print(f"⚠ Échec route {origin} → {dest} (Statut: {r.status_code}) - Réponse rejetée ou bloquée par Imperva.")
+        print(f"⚠ Échec route {origin} → {dest} (Statut: {r.status_code}) - Bloqué par Imperva.")
         print(f"Extrait réponse : {r.text[:200]}")
         return {}
 
@@ -184,7 +182,7 @@ def flex_pricer(session, origin, dest, date_str):
 
 
 # ============================================================
-# 5. Extraction des prix (avec diagnostic de structure JSON)
+# 5. Extraction des prix
 # ============================================================
 
 def extract_prices(data):
@@ -193,7 +191,6 @@ def extract_prices(data):
         return [p["amount"] + 3.0 for p in price_list if "amount" in p]
     except Exception as e:
         print(f"⚠ Structure JSON inattendue : {e}")
-        print(f"Clés reçues dans le JSON : {list(data.keys()) if isinstance(data, dict) else 'Pas un dictionnaire'}")
         return []
 
 
