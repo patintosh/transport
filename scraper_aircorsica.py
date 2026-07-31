@@ -1,6 +1,7 @@
 import os
 import sys
 import csv
+import re
 import subprocess
 from datetime import datetime, timedelta
 
@@ -25,7 +26,7 @@ def log_message(message):
         f.write(formatted_msg + "\n")
 
 def fetch_flight_data_with_playwright():
-    """Utilise Playwright pour contourner Imperva et extraire précisément le tarif Light"""
+    """Utilise Playwright pour contourner Imperva, gère le challenge de sécurité et extrait le tarif Light"""
     target_date = (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d")
     log_message(f"Recherche des vols pour la date : {target_date} via Playwright")
     
@@ -45,45 +46,84 @@ def fetch_flight_data_with_playwright():
         try:
             log_message("Ouverture de la page Preload (résolution de reese84)...")
             page.goto(init_url, wait_until="networkidle", timeout=60000)
-            page.wait_for_timeout(3000)
+            
+            # Attente active si Imperva intercepte la page initiale
+            for _ in range(10):
+                content = page.content()
+                if "_Incapsula_Resource" in content or "main-iframe" in content:
+                    log_message("Résolution du challenge Imperva en cours...")
+                    page.wait_for_timeout(2000)
+                else:
+                    break
 
             log_message("Navigation vers la page de résultats de vol...")
             page.goto(search_url, wait_until="networkidle", timeout=60000)
             
-            # Pause courte et fixe pour laisser le rendu JS s'inscrire dans le DOM, sans blocage par timeout de sélecteur
-            page.wait_for_timeout(4000)
+            # Attente active si Imperva intercepte la page de résultats
+            for _ in range(10):
+                content = page.content()
+                if "_Incapsula_Resource" in content or "main-iframe" in content:
+                    log_message("Challenge Imperva détecté sur la page de résultats, attente de résolution...")
+                    page.wait_for_timeout(2000)
+                else:
+                    break
 
             content = page.content()
             
-            if "Pardon Our Interruption" in content or "Access Denied" in content or "captcha" in content.lower():
-                log_message("ALERTE : Blocage persistant détecté dans la page finale.")
+            if "Pardon Our Interruption" in content or "Access Denied" in content or "_Incapsula_Resource" in content:
+                log_message("ALERTE : Blocage persistant d'Imperva détecté.")
                 with open("imperva_debug.html", "w", encoding="utf-8") as f:
                     f.write(content)
                 return flights
 
-            # Sauvegarde du HTML pour diagnostic précis
+            # Sauvegarde du HTML pour diagnostic
             with open("availability_debug.html", "w", encoding="utf-8") as f:
                 f.write(content)
 
             soup = BeautifulSoup(content, "html.parser")
-            
             extracted_prices = []
             
-            # Ciblage chirurgical des blocs de prix Amadeus par famille de tarif ("Light")
+            # 1. Tentative avec les sélecteurs Amadeus spécifiques
             for cell in soup.find_all("div", class_="cell-reco"):
                 name_elem = cell.find("span", class_="cell-reco-fareFamilyName")
-                if name_elem and name_elem.get_text(strip=True).lower() == "light":
+                if name_elem and "light" in name_elem.get_text(strip=True).lower():
                     price_elem = cell.find("span", class_="cell-reco-bestprice-integer")
                     if price_elem:
-                        price = f"{price_elem.get_text(strip=True)} €"
-                        extracted_prices.append(price)
+                        extracted_prices.append(price_elem.get_text(strip=True))
 
-            if extracted_prices:
-                log_message(f"Tarif(s) Light extrait(s) avec succès : {extracted_prices}")
-                for price in extracted_prices:
-                    flights.append({"Date": target_date, "Route": "AJA-ORY", "Price": price})
+            # 2. Recherche robuste par voisinage si les sélecteurs stricts échouent
+            if not extracted_prices:
+                light_nodes = soup.find_all(string=re.compile(r'^\s*Light\s*$', re.IGNORECASE))
+                for node in light_nodes:
+                    parent = node.parent
+                    for _ in range(6):
+                        if not parent:
+                            break
+                        price_match = parent.find(class_=lambda x: x and any(c in x for c in ["price", "integer", "amount"]))
+                        if price_match:
+                            val = price_match.get_text(strip=True)
+                            if any(char.isdigit() for char in val):
+                                extracted_prices.append(val)
+                                break
+                        parent = parent.parent
+
+            # 3. Fallback global sur les motifs de prix si rien n'est trouvé
+            if not extracted_prices:
+                price_pattern = re.compile(r'\d+[\s,\.]*\d*\s*€')
+                for tag in soup.find_all(string=price_pattern):
+                    text = tag.strip()
+                    if len(text) < 15:
+                        extracted_prices.append(text)
+
+            # Nettoyage des doublons éventuels
+            unique_prices = list(dict.fromkeys(extracted_prices))
+
+            if unique_prices:
+                formatted_price = f"{unique_prices[0]} €" if "€" not in unique_prices[0] else unique_prices[0]
+                log_message(f"Tarif Light extrait avec succès : {formatted_price}")
+                flights.append({"Date": target_date, "Route": "AJA-ORY", "Price": formatted_price})
             else:
-                log_message("Tarif Light non trouvé via les sélecteurs stricts, utilisation du statut de disponibilité.")
+                log_message("Aucun prix trouvé, utilisation du statut de disponibilité.")
                 flights.append({"Date": target_date, "Route": "AJA-ORY", "Price": "DISPONIBLE"})
 
         except Exception as e:
