@@ -35,6 +35,24 @@ def run_scraper():
                     print(f"Traitement de la route {route['code']} pour le {target_date}...")
                     page.goto("https://www.aircorsica.com/", wait_until="networkidle", timeout=60000)
                     
+                    # Fermeture/Acceptation de la bannière de cookies si elle apparaît
+                    try:
+                        cookie_selectors = [
+                            "button:has-text('Tout accepter')",
+                            "button:has-text('Accepter')",
+                            "#tarteaucitronAllAllowed",
+                            ".cookie-accept",
+                            "button[id*='cookie']"
+                        ]
+                        for selector in cookie_selectors:
+                            btn = page.locator(selector).first
+                            if btn.is_visible(timeout=2000):
+                                btn.click()
+                                print("Bannière de cookies fermée.")
+                                break
+                    except Exception:
+                        pass # Pas de cookies ou déjà acceptés
+                    
                     # Clic sur le label visible associé au bouton radio aller simple
                     travel_type_label = page.locator("label[for='edit-booking-flight-v2-travel-type-o']")
                     travel_type_label.scroll_into_view_if_needed()
