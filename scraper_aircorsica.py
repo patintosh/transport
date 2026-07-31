@@ -45,17 +45,13 @@ def fetch_flight_data_with_playwright():
         try:
             log_message("Ouverture de la page Preload (résolution de reese84)...")
             page.goto(init_url, wait_until="networkidle", timeout=60000)
-            page.wait_for_timeout(4000)
+            page.wait_for_timeout(3000)
 
             log_message("Navigation vers la page de résultats de vol...")
             page.goto(search_url, wait_until="networkidle", timeout=60000)
             
-            try:
-                # Augmentation du délai d'attente à 30 secondes pour laisser le temps au rendu Amadeus
-                page.wait_for_selector(".cell-reco", timeout=30000)
-                page.wait_for_timeout(3000)
-            except Exception:
-                log_message("Délai d'attente dépassé pour les blocs tarifaires, analyse du contenu actuel.")
+            # Pause courte et fixe pour laisser le rendu JS s'inscrire dans le DOM, sans blocage par timeout de sélecteur
+            page.wait_for_timeout(4000)
 
             content = page.content()
             
@@ -65,7 +61,7 @@ def fetch_flight_data_with_playwright():
                     f.write(content)
                 return flights
 
-            # Sauvegarde du HTML pour diagnostic
+            # Sauvegarde du HTML pour diagnostic précis
             with open("availability_debug.html", "w", encoding="utf-8") as f:
                 f.write(content)
 
