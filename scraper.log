@@ -1,7 +1,7 @@
---- Début du run : 2026-07-31 16:05:54.982954 ---
-[2026-07-31 16:05:55] Statut d'initialisation (Preload) : 200
-[2026-07-31 16:05:55] Cookies capturés après Preload : {'um_jst': 'B075B4EBA462364849B3A0C53B92D4351F8F83C9C26152BDB6A3472CCF05C653', 'BIGipServer~etv_aere_prd~Shared~az_xdcr_fran-prd_443_pool': '2389850890.47873.0000', 'DWM_XSITECODE': 'BDEQBNEW', '70657fe77a019424c4787a5f4e9c9d66': '7b0a7ff194a8785a71d9dde5355b2643', 'SITE': 'BDEQBNEW', '6f12e107902fddd4d03e1b95f0b76f50': 'e41097f9678a1dfb050d8f900c49cab2', 'JSESSIONID': 'NtHJrDCfVNZ0dlfpAWHfydgqwxJQRI0dyhtm381m!1785506755285.xylhwx', 'nlbi_2333454': 'soDrcW6UdQng2ug+KeSHTwAAAACVgv0DuQ/6nIXhtFCULhmz', 'visid_incap_2333454': 'pzh/zbPrTJGiULvrevREOcKrbGoAAAAAQUIPAAAAAABtl8pXtrIQ35vVtvPy+dkV', 'incap_ses_969_2333454': 'Y2HdMW7nplmH1dCuuJRyDcKrbGoAAAAAsFtIEkDCK1bxDCVrDFo9AQ=='}
-[2026-07-31 16:05:55] Recherche des vols pour la date : 2026-08-07
-[2026-07-31 16:05:55] Statut de la requête de vol : 200
-[2026-07-31 16:05:55] ALERTE : La page renvoyée est une page de blocage Imperva.
-[2026-07-31 16:05:55] Type de défi détecté : Script de challenge JS Imperva (reese84).
+--- Début du run : 2026-07-31 16:09:55.700591 ---
+[2026-07-31 16:09:55] Recherche des vols pour la date : 2026-08-07 via Playwright
+[2026-07-31 16:09:58] Ouverture de la page Preload (résolution de reese84)...
+[2026-07-31 16:10:03] Navigation vers la page de résultats de vol...
+[2026-07-31 16:10:07] Structure HTML reçue sans sélecteur 'flight-row' direct.
+[2026-07-31 16:10:07] Aucune correspondance trouvée dans le contenu de la page.
+[2026-07-31 16:10:07] Aucune donnée enregistrée suite au blocage ou à l'absence de vols.
