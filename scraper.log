@@ -1,7 +1,7 @@
---- Début du run : 2026-07-31 16:33:33.265643 ---
-[2026-07-31 16:33:33] Recherche des vols pour la date : 2026-08-07 via Playwright
-[2026-07-31 16:33:34] Ouverture de la page Preload (résolution de reese84)...
-[2026-07-31 16:33:39] Navigation vers la page de résultats de vol...
-[2026-07-31 16:33:45] Aucun prix explicite trouvé, utilisation du statut de disponibilité.
-[2026-07-31 16:33:45] Données enregistrées dans le CSV.
-[2026-07-31 16:33:48] Modifications poussées avec succès sur le dépôt Git.
+--- Début du run : 2026-07-31 16:40:04.418633 ---
+[2026-07-31 16:40:04] Recherche des vols pour la date : 2026-08-07 via Playwright
+[2026-07-31 16:40:05] Ouverture de la page Preload (résolution de reese84)...
+[2026-07-31 16:40:10] Navigation vers la page de résultats de vol...
+[2026-07-31 16:40:17] Aucun prix explicite trouvé par regex, utilisation du statut de disponibilité.
+[2026-07-31 16:40:17] Données enregistrées dans le CSV.
+[2026-07-31 16:40:19] Modifications poussées avec succès sur le dépôt Git.
