@@ -98,7 +98,7 @@ def save_to_csv(data):
 def git_commit_and_push():
     try:
         subprocess.run(["git", "add", CSV_FILENAME], check=True)
-        subprocess.run(["git", "commit", -m f"Automated scrape update: {datetime.now().strftime('%Y-%m-%d')}"], check=True)
+        subprocess.run(["git", "commit", "-m", f"Automated scrape update: {datetime.now().strftime('%Y-%m-%d')}"], check=True)
         subprocess.run(["git", "push"], check=True)
         log_message("Modifications poussées avec succès sur le dépôt Git.")
     except subprocess.CalledProcessError as e:
