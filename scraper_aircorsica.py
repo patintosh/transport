@@ -1,7 +1,6 @@
 import os
 import sys
 import csv
-import re
 import subprocess
 from datetime import datetime, timedelta
 
@@ -26,7 +25,7 @@ def log_message(message):
         f.write(formatted_msg + "\n")
 
 def fetch_flight_data_with_playwright():
-    """Utilise Playwright pour contourner Imperva et récupérer les prix réels des vols"""
+    """Utilise Playwright pour contourner Imperva et extraire précisément le tarif Light"""
     target_date = (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d")
     log_message(f"Recherche des vols pour la date : {target_date} via Playwright")
     
@@ -52,10 +51,10 @@ def fetch_flight_data_with_playwright():
             page.goto(search_url, wait_until="networkidle", timeout=60000)
             
             try:
-                page.wait_for_selector("body", timeout=10000)
-                page.wait_for_timeout(5000)
+                page.wait_for_selector(".cell-reco", timeout=15000)
+                page.wait_for_timeout(3000)
             except Exception:
-                log_message("Délai d'attente dépassé pour les éléments dynamiques, on analyse le contenu actuel.")
+                log_message("Délai d'attente dépassé pour les blocs tarifaires, analyse du contenu actuel.")
 
             content = page.content()
             
@@ -71,25 +70,23 @@ def fetch_flight_data_with_playwright():
 
             soup = BeautifulSoup(content, "html.parser")
             
-            # Expression régulière pour cibler précisément les prix au format monétaire
-            price_pattern = re.compile(r'\d+[\s,\.]*\d*\s*€')
             extracted_prices = []
             
-            for tag in soup.find_all(string=price_pattern):
-                text = tag.strip()
-                if len(text) < 15: # Filtre pour éviter de capturer de longs blocs de texte
-                    extracted_prices.append(text)
+            # Ciblage chirurgical des blocs de prix Amadeus par famille de tarif ("Light")
+            for cell in soup.find_all("div", class_="cell-reco"):
+                name_elem = cell.find("span", class_="cell-reco-fareFamilyName")
+                if name_elem and name_elem.get_text(strip=True).lower() == "light":
+                    price_elem = cell.find("span", class_="cell-reco-bestprice-integer")
+                    if price_elem:
+                        price = f"{price_elem.get_text(strip=True)} €"
+                        extracted_prices.append(price)
 
-            # Suppression des doublons
-            seen = set()
-            unique_prices = [p for p in extracted_prices if not (p in seen or seen.add(p))]
-
-            if unique_prices:
-                log_message(f"Prix réels extraits avec succès : {unique_prices[:3]}")
-                for price in unique_prices[:3]:
+            if extracted_prices:
+                log_message(f"Tarif(s) Light extrait(s) avec succès : {extracted_prices}")
+                for price in extracted_prices:
                     flights.append({"Date": target_date, "Route": "AJA-ORY", "Price": price})
             else:
-                log_message("Aucun prix explicite trouvé par regex, utilisation du statut de disponibilité.")
+                log_message("Tarif Light non trouvé via les sélecteurs stricts, utilisation du statut de disponibilité.")
                 flights.append({"Date": target_date, "Route": "AJA-ORY", "Price": "DISPONIBLE"})
 
         except Exception as e:
