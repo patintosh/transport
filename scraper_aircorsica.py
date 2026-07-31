@@ -35,12 +35,12 @@ def run_scraper():
                     print(f"Traitement de la route {route['code']} pour le {target_date}...")
                     page.goto("https://www.aircorsica.com/", wait_until="networkidle", timeout=60000)
                     
-                    # Correction : Faire défiler la vue jusqu'au bouton radio avant de cliquer
-                    travel_type_radio = page.locator("#edit-booking-flight-v2-travel-type-o")
-                    travel_type_radio.scroll_into_view_if_needed()
-                    travel_type_radio.click(timeout=5000)
+                    # Clic sur le label visible associé au bouton radio aller simple
+                    travel_type_label = page.locator("label[for='edit-booking-flight-v2-travel-type-o']")
+                    travel_type_label.scroll_into_view_if_needed()
+                    travel_type_label.click(timeout=5000)
                     
-                    # Sélection des aéroports via les balises <select> natives cachées par Select2
+                    # Sélection des aéroports via les balises <select> natives
                     page.select_option("#edit-booking-flight-v2-from", route["origin"])
                     page.select_option("#edit-booking-flight-v2-to", route["destination"])
                     
