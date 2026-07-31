@@ -110,10 +110,19 @@ def get_routes(session):
 
     r = session.get(url, headers=headers)
 
+    print(f"DEBUG - Status Code markets.json : {r.status_code}")
+    print(f"DEBUG - Response Text (500 premiers caractères) : {r.text[:500]}")
+
+    if r.status_code != 200 or not r.text.strip():
+        raise Exception(f"Erreur HTTP {r.status_code} ou réponse vide reçue pour markets.json. Blocage probable.")
+
     if "html" in r.text.lower():
         raise Exception("Imperva a bloqué markets.json malgré le cookie.")
 
-    return r.json()
+    try:
+        return r.json()
+    except Exception as e:
+        raise Exception(f"Erreur de décodage JSON. Contenu reçu : {r.text}") from e
 
 
 # ============================================================
@@ -168,20 +177,23 @@ def flex_pricer(session, origin, dest, date_str):
 
     r = session.post(url, data=payload, headers=headers)
 
-    if "html" in r.text.lower():
+    if "html" in r.text.lower() or not r.text.strip():
         return {}
 
-    return r.json()
+    try:
+        return r.json()
+    except Exception:
+        return {}
 
 
 # ============================================================
-# 5. Extraction des prix
+# 5. Extraction des prix (avec ajout des 3€ de frais d'émission)
 # ============================================================
 
 def extract_prices(data):
     try:
         price_list = data["priceByBound"][0]["priceList"]
-        return [p["amount"] for p in price_list if "amount" in p]
+        return [p["amount"] + 3.0 for p in price_list if "amount" in p]
     except Exception:
         return []
 
