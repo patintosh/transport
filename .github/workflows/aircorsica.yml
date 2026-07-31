@@ -14,17 +14,17 @@ jobs:
       - name: Copy Chrome profile
         run: cp -R ~/scraper_corse/chrome_profile ./chrome_profile
 
-      - name: Use system Python
-        run: python3 --version
+      - name: Use macOS system Python
+        run: /usr/bin/python3 --version
 
-      - name: Install dependencies
-        run: pip3 install requests pandas plotly
+      - name: Install dependencies (system pip)
+        run: /usr/bin/pip3 install requests pandas plotly simplejson
 
       - name: Run scraper
-        run: python3 scraper_aircorsica.py
+        run: /usr/bin/python3 scraper_aircorsica.py
 
       - name: Generate dashboard
-        run: python3 generate_dashboard.py
+        run: /usr/bin/python3 generate_dashboard.py
 
       - name: Commit and push results
         run: |
