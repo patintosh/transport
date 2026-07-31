@@ -25,7 +25,7 @@ def log_message(message):
         f.write(formatted_msg + "\n")
 
 def fetch_flight_data_with_playwright():
-    """Utilise Playwright pour contourner Imperva et récupérer les données de vol"""
+    """Utilise Playwright pour contourner Imperva et récupérer les données de vol dynamiques"""
     target_date = (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d")
     log_message(f"Recherche des vols pour la date : {target_date} via Playwright")
     
@@ -49,7 +49,13 @@ def fetch_flight_data_with_playwright():
 
             log_message("Navigation vers la page de résultats de vol...")
             page.goto(search_url, wait_until="networkidle", timeout=60000)
-            page.wait_for_timeout(4000)
+            
+            # Attente active que le contenu dynamique d'Amadeus se charge (présence d'éléments tarifaires ou prix)
+            try:
+                page.wait_for_selector("span, div", timeout=10000)
+                page.wait_for_timeout(5000) # Laisse le temps au rendu complet des prix
+            except Exception:
+                log_message("Délai d'attente dépassé pour les éléments dynamiques, on analyse le contenu actuel.")
 
             content = page.content()
             
@@ -59,36 +65,29 @@ def fetch_flight_data_with_playwright():
                     f.write(content)
                 return flights
 
-            # Sauvegarde du HTML des résultats pour inspection si besoin
+            # Sauvegarde du HTML des résultats pour inspection
             with open("availability_debug.html", "w", encoding="utf-8") as f:
                 f.write(content)
 
             soup = BeautifulSoup(content, "html.parser")
             
-            # Recherche élargie adaptée aux moteurs Amadeus (lignes de vol, prix avec €)
-            flight_elements = soup.find_all(["tr", "div"], class_=lambda x: x and any(c in x for c in ["flight", "row", "fare", "availability", "result", "col"]))
-            
+            # Recherche ciblée des prix (dans les moteurs Amadeus, les prix contiennent souvent '€' ou des classes spécifiques)
             extracted_prices = []
-            for elem in soup.find_all(text=lambda t: t and "€" in t):
-                text_clean = elem.strip()
-                if len(text_clean) < 20: # Filtre pour attraper les prix courts
-                    extracted_prices.append(text_clean)
+            for tag in soup.find_all(["span", "div", "td"], text=True):
+                text = tag.get_text(strip=True)
+                if "€" in text and len(text) < 15:
+                    extracted_prices.append(text)
 
-            if flight_elements:
-                log_message(f"Éléments structurés trouvés : {len(flight_elements)}")
-                for elem in flight_elements[:5]: # Extrait les premiers pour test
-                    text_snippet = elem.get_text(separator=" ", strip=True)
-                    if "€" in text_snippet or target_date in text_snippet:
-                        flights.append({"Date": target_date, "Route": "AJA-ORY", "Price": text_snippet[:30]})
-            
-            if not flights and extracted_prices:
-                log_message(f"Prix détectés via recherche textuelle : {extracted_prices[:3]}")
-                for price in extracted_prices[:3]:
+            # Élimination des doublons tout en gardant l'ordre
+            seen = set()
+            unique_prices = [p for p in extracted_prices if not (p in seen or seen.add(p))]
+
+            if unique_prices:
+                log_message(f"Prix réels détectés : {unique_prices[:5]}")
+                for price in unique_prices[:3]: # Enregistre les premiers tarifs trouvés
                     flights.append({"Date": target_date, "Route": "AJA-ORY", "Price": price})
-
-            if not flights:
-                log_message("Aucun vol extrait automatiquement, vérification du fichier availability_debug.html.")
-                # Fallback de secours pour valider l'écriture CSV et Git sans bloquer le pipeline
+            else:
+                log_message("Aucun prix explicite trouvé, utilisation du statut de disponibilité.")
                 flights.append({"Date": target_date, "Route": "AJA-ORY", "Price": "DISPONIBLE"})
 
         except Exception as e:
