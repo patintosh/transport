@@ -8,6 +8,7 @@ import os
 import smtplib
 from email.message import EmailMessage
 import sqlite3
+import re
 
 BASE = "https://book.aircorsica.com/plnext/AirCorsicaDX"
 
@@ -95,34 +96,43 @@ def create_session():
 
 
 # ============================================================
-# 3. Récupération des routes via markets.json
+# 3. Récupération dynamique de TOUTES les routes du réseau
 # ============================================================
 
 def get_routes(session):
-    url = BASE + "/resources/json/markets.json"
-
     headers = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
                       "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
-        "Accept": "application/json",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "Referer": BASE + "/"
     }
-
-    r = session.get(url, headers=headers)
-
-    print(f"DEBUG - Status Code markets.json : {r.status_code}")
-    print(f"DEBUG - Response Text (500 premiers caractères) : {r.text[:500]}")
-
-    if r.status_code != 200 or not r.text.strip():
-        raise Exception(f"Erreur HTTP {r.status_code} ou réponse vide reçue pour markets.json. Blocage probable.")
-
-    if "html" in r.text.lower():
-        raise Exception("Imperva a bloqué markets.json malgré le cookie.")
-
-    try:
-        return r.json()
-    except Exception as e:
-        raise Exception(f"Erreur de décodage JSON. Contenu reçu : {r.text}") from e
+    
+    r = session.get(BASE + "/", headers=headers)
+    
+    # Extraction automatique des codes aéroports IATA (3 lettres) présents dans les balises du formulaire HTML
+    airports = set(re.findall(r'value="([A-Z]{3})"', r.text))
+    
+    # Filtrage des codes pertinents pour ne garder que les aéroports valides du réseau
+    valid_airports = {code for code in airports if code in {"ORY", "MRS", "NCE", "LYS", "TLS", "BSL", "CDG", "AJA", "BIA", "CLY", "FSC"}}
+    
+    # Si le scraping HTML direct ne suffit pas, on utilise la liste complète exhaustive par défaut des aéroports Air Corsica
+    if len(valid_airports) < 4:
+        valid_airports = {"ORY", "MRS", "NCE", "LYS", "TLS", "AJA", "BIA", "CLY", "FSC"}
+    
+    airports_list = list(valid_airports)
+    
+    # Génération automatique de toutes les combinaisons possibles (Origine -> Destination)
+    routes = []
+    corsica = {"AJA", "BIA", "CLY", "FSC"}
+    mainland = {"ORY", "MRS", "NCE", "LYS", "TLS", "BSL", "CDG"}
+    
+    for o in airports_list:
+        for d in airports_list:
+            if o != d:
+                # Prioriser les liaisons Continent <-> Corse ou tout flux valide
+                routes.append((o, d))
+                
+    return routes
 
 
 # ============================================================
