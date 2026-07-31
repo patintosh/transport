@@ -50,10 +50,10 @@ def fetch_flight_data_with_playwright():
             log_message("Navigation vers la page de résultats de vol...")
             page.goto(search_url, wait_until="networkidle", timeout=60000)
             
-            # Attente active que le contenu dynamique d'Amadeus se charge (présence d'éléments tarifaires ou prix)
+            # Attente active du chargement complet du rendu Amadeus
             try:
-                page.wait_for_selector("span, div", timeout=10000)
-                page.wait_for_timeout(5000) # Laisse le temps au rendu complet des prix
+                page.wait_for_selector("body", timeout=10000)
+                page.wait_for_timeout(5000)
             except Exception:
                 log_message("Délai d'attente dépassé pour les éléments dynamiques, on analyse le contenu actuel.")
 
@@ -65,26 +65,26 @@ def fetch_flight_data_with_playwright():
                     f.write(content)
                 return flights
 
-            # Sauvegarde du HTML des résultats pour inspection
+            # Sauvegarde du HTML pour diagnostic si nécessaire
             with open("availability_debug.html", "w", encoding="utf-8") as f:
                 f.write(content)
 
             soup = BeautifulSoup(content, "html.parser")
             
-            # Recherche ciblée des prix (dans les moteurs Amadeus, les prix contiennent souvent '€' ou des classes spécifiques)
+            # Correction de l'avertissement DeprecationWarning (utilisation de string=True)
             extracted_prices = []
-            for tag in soup.find_all(["span", "div", "td"], text=True):
+            for tag in soup.find_all(["span", "div", "td"], string=True):
                 text = tag.get_text(strip=True)
                 if "€" in text and len(text) < 15:
                     extracted_prices.append(text)
 
-            # Élimination des doublons tout en gardant l'ordre
+            # Suppression des doublons
             seen = set()
             unique_prices = [p for p in extracted_prices if not (p in seen or seen.add(p))]
 
             if unique_prices:
                 log_message(f"Prix réels détectés : {unique_prices[:5]}")
-                for price in unique_prices[:3]: # Enregistre les premiers tarifs trouvés
+                for price in unique_prices[:3]:
                     flights.append({"Date": target_date, "Route": "AJA-ORY", "Price": price})
             else:
                 log_message("Aucun prix explicite trouvé, utilisation du statut de disponibilité.")
