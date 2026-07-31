@@ -9,11 +9,9 @@ try:
     from playwright.sync_api import sync_playwright
     from bs4 import BeautifulSoup
 except ImportError as e:
-    with open("scraper.log", "w", encoding="utf-8") as f:
-        f.write(f"ERREUR CRITIQUE : Dépendance manquante - {e}\n")
+    print(f"Erreur critique : Dépendance manquante - {e}")
     sys.exit(1)
 
-BASE = "https://book.aircorsica.com/plnext/AirCorsicaDX"
 CSV_FILENAME = "air_corsica_flights.csv"
 LOG_FILENAME = "scraper.log"
 USER_DATA_DIR = "./playwright_profile"
@@ -25,24 +23,17 @@ def log_message(message):
     with open(LOG_FILENAME, "a", encoding="utf-8") as f:
         f.write(formatted_msg + "\n")
 
-def fetch_flight_data_with_playwright():
+def run_scraper():
     target_date = (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d")
-    log_message(f"Recherche des vols pour la date : {target_date} avec les paramètres Amadeus officiels")
+    log_message(f"Démarrage du run pour la date cible : {target_date}")
     
-    flights = []
+    all_flights_data = []
     
-    # URL construite exactement selon la structure des vrais prix Amadeus fournie
-    search_url = (
-        f"{BASE}/FlexPricerAvailabilityDispatcherPui.action"
-        f"?BOOKING_FLOW=REVENUE"
-        f"&COUNTRY_SITE=FR"
-        f"&LANGUAGE=FR"
-        f"&OFFICE_ID=AJAXK08AB"
-        f"&PAGE_ID=FPOW"
-        f"&SITE=BDEQBNEW"
-        f"&TRIP_FLOW=YES"
-        f"&DATE={target_date}"
-    )
+    # Définition des deux sens à explorer
+    routes_to_check = [
+        {"origin": "Ajaccio", "destination": "Paris - Orly", "code": "AJA-ORY"},
+        {"origin": "Paris - Orly", "destination": "Ajaccio", "code": "ORY-AJA"}
+    ]
 
     with sync_playwright() as p:
         context = p.chromium.launch_persistent_context(
@@ -56,96 +47,122 @@ def fetch_flight_data_with_playwright():
             ],
             user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
             locale="fr-FR",
-            viewport={"width": 1920, "height": 1080},
-            device_scale_factor=1,
-            extra_http_headers={
-                "Accept-Language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
-                "Sec-Ch-Ua": '"Not/A)Brand";v="8", "Chromium";v="126", "Google Chrome";v="126"',
-                "Sec-Ch-Ua-Mobile": "?0",
-                "Sec-Ch-Ua-Platform": '"macOS"'
-            }
+            viewport={"width": 1920, "height": 1080}
         )
         
         context.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
         page = context.pages[0] if context.pages else context.new_page()
 
         try:
-            log_message("Navigation directe vers la grille tarifaire Amadeus...")
-            page.goto(search_url, wait_until="networkidle", timeout=60000)
+            log_message("Navigation vers la page d'accueil d'Air Corsica...")
+            page.goto("https://www.aircorsica.com/", wait_until="networkidle", timeout=60000)
             
-            # Surveillance active du challenge Imperva
-            for attempt in range(5):
-                content = page.content()
-                if "Pardon Our Interruption" not in content and "Access Denied" not in content and "_Incapsula_Resource" not in content:
-                    break
-                log_message(f"Challenge Imperva détecté (tentative {attempt + 1}/5), attente de résolution...")
-                page.wait_for_timeout(4000)
+            # Gestion des cookies
+            try:
+                cookie_btn = page.locator("button:has-text('Tout accepter'), button:has-text('Accepter')")
+                if cookie_btn.count() > 0:
+                    cookie_btn.first.click(timeout=3000)
+                    log_message("Bandeau de cookies accepté.")
+            except Exception:
+                pass
 
-            content = page.content()
-            
-            if "Pardon Our Interruption" in content or "Access Denied" in content or "_Incapsula_Resource" in content:
-                log_message("ALERTE : Blocage persistant d'Imperva.")
-                with open("imperva_debug.html", "w", encoding="utf-8") as f:
-                    f.write(content)
-                context.close()
-                return flights
+            for route in routes_to_check:
+                route_code = route["code"]
+                log_message(f"Traitement de la liaison : {route_code}")
 
-            soup = BeautifulSoup(content, "html.parser")
-            extracted_prices = []
-            
-            # Extraction affinée sur la famille de prix "Light" et filtrage des valeurs réalistes (> 50 EUR)
-            for cell in soup.find_all("div", class_="cell-reco"):
-                name_elem = cell.find("span", class_="cell-reco-fareFamilyName")
-                if name_elem and "light" in name_elem.get_text(strip=True).lower():
-                    price_elem = cell.find("span", class_="cell-reco-bestprice-integer")
-                    if price_elem:
-                        val = price_elem.get_text(strip=True)
-                        extracted_prices.append(val)
+                # Simulation de la recherche pour chaque sens
+                try:
+                    page.click("text=Aller simple", timeout=5000)
+                    
+                    # Saisie départ / arrivée
+                    page.fill("input[name*='departure'], input[placeholder*='Départ']", route["origin"])
+                    page.click(f"text={route['origin']}")
+                    
+                    page.fill("input[name*='arrival'], input[placeholder*='Arrivée']", route["destination"])
+                    page.click(f"text={route['destination']}")
 
-            if not extracted_prices:
-                light_nodes = soup.find_all(string=re.compile(r'^\s*Light\s*$', re.IGNORECASE))
-                for node in light_nodes:
-                    parent = node.parent
-                    for _ in range(6):
-                        if not parent:
-                            break
-                        price_match = parent.find(class_=lambda x: x and any(c in x for c in ["price", "integer", "amount"]))
-                        if price_match:
-                            val = price_match.get_text(strip=True)
-                            # Nettoyage et vérification pour ignorer les bannières publicitaires (< 50€)
-                            clean_val = re.sub(r'[^\d.,]', '', val.replace(',', '.'))
-                            if clean_val:
+                    # Sélection de la date J+7
+                    page.click("input[name*='date'], .calendar-input")
+                    date_selector = f"[data-date='{target_date}'], td[title*='{target_date}']"
+                    page.click(date_selector, timeout=5000)
+
+                    # Lancement de la recherche
+                    page.click("button:has-text('Rechercher'), input[value*='Rechercher']")
+                    page.wait_for_load_state("networkidle", timeout=30000)
+
+                    # Sélection du jour dans la grille tarifaire
+                    page.click(f"[data-date='{target_date}'] .cell-price, .day-cell:has-text('{target_date.split('-')[-1]}')", timeout=5000)
+                    page.click("button:has-text('Continuer'), .btn-continue", timeout=5000)
+                    page.wait_for_load_state("networkidle", timeout=30000)
+
+                    content = page.content()
+                    if "Pardon Our Interruption" in content or "Access Denied" in content:
+                        log_message("ALERTE : Blocage de sécurité détecté.")
+                        break
+
+                    soup = BeautifulSoup(content, "html.parser")
+                    flight_rows = soup.find_all("div", class_=re.compile("flight-row|row-flight|row-reco", re.I))
+                    
+                    # SÉCURITÉ : Si N = 0, aucun vol proposé par le transporteur à cette date
+                    if not flight_rows or len(flight_rows) == 0:
+                        log_message(f"Aucun vol disponible détecté pour {route_code} à la date {target_date}. Aucun prix enregistré pour cette liaison.")
+                        # Retour en arrière ou rechargement propre pour la liaison suivante si nécessaire
+                        page.goto("https://www.aircorsica.com/", wait_until="networkidle", timeout=30000)
+                        continue
+
+                    log_message(f"Nombre de vols (N) détectés pour {route_code} : {len(flight_rows)}")
+                    route_flights_extracted = 0
+
+                    for row in flight_rows:
+                        time_elem = row.find(class_=re.compile("time|departure-time", re.I))
+                        flight_time = time_elem.get_text(strip=True) if time_elem else "Inconnu"
+
+                        light_cell = row.find("div", class_=re.compile("cell-reco|fare-light", re.I))
+                        if light_cell:
+                            price_elem = light_cell.find(class_=re.compile("price|integer|amount", re.I))
+                            if price_elem:
+                                price_val = price_elem.get_text(strip=True)
+                                clean_price = re.sub(r'[^\d.,]', '', price_val.replace(',', '.'))
                                 try:
-                                    if float(clean_val) > 50.0:
-                                        extracted_prices.append(val)
-                                        break
+                                    if float(clean_price) > 0.0:
+                                        formatted_price = f"{price_val} EUR" if "EUR" not in price_val and "€" not in price_val else price_val
+                                        all_flights_data.append({
+                                            "Date_Recherche": datetime.now().strftime("%Y-%m-%d"),
+                                            "Date_Vol": target_date,
+                                            "Route": route_code,
+                                            "Horaire": flight_time,
+                                            "Tarif": formatted_price
+                                        })
+                                        route_flights_extracted += 1
                                 except ValueError:
                                     pass
-                        parent = parent.parent
 
-            unique_prices = list(dict.fromkeys(extracted_prices))
+                    log_message(f"Succès pour {route_code} : {route_flights_extracted} tarifs Light récupérés.")
+                    
+                    # Retour à l'accueil pour la liaison suivante
+                    page.goto("https://www.aircorsica.com/", wait_until="networkidle", timeout=30000)
 
-            if unique_prices:
-                formatted_price = f"{unique_prices[0]} EUR" if "EUR" not in unique_prices[0] and "€" not in unique_prices[0] else unique_prices[0]
-                log_message(f"Tarif Light valide extrait : {formatted_price}")
-                flights.append({"Date": target_date, "Route": "AJA-ORY", "Price": formatted_price})
-            else:
-                log_message("Aucun prix valide supérieur à 50€ trouvé sur la page.")
-                with open("no_prices_debug.html", "w", encoding="utf-8") as f:
-                    f.write(content)
+                except Exception as e:
+                    log_message(f"Erreur lors du traitement de la liaison {route_code} : {e}")
+                    try:
+                        page.goto("https://www.aircorsica.com/", wait_until="networkidle", timeout=30000)
+                    except Exception:
+                        break
 
         except Exception as e:
-            log_message(f"Erreur durant l'exécution Playwright : {e}")
+            log_message(f"Erreur critique Playwright : {e}")
         finally:
             context.close()
 
-    return flights
+    return all_flights_data
 
-def save_to_csv(data):
+def save_to_csv_top(data):
     if not data:
         return
         
     existing_rows = []
+    fieldnames = ["Date_Recherche", "Date_Vol", "Route", "Horaire", "Tarif"]
+    
     if os.path.exists(CSV_FILENAME):
         with open(CSV_FILENAME, mode="r", newline="", encoding="utf-8") as f:
             reader = csv.DictReader(f)
@@ -154,37 +171,29 @@ def save_to_csv(data):
     all_rows = data + existing_rows
     
     with open(CSV_FILENAME, mode="w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=["Date", "Route", "Price"])
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         for row in all_rows:
             writer.writerow(row)
             
-    log_message("Données enregistrées en haut du fichier CSV.")
+    log_message("Données insérées en haut du fichier CSV.")
 
-def git_commit_and_push():
+def git_push():
     try:
         subprocess.run(["git", "add", CSV_FILENAME], check=True)
-        subprocess.run(["git", "commit", "-m", f"Automated scrape update: {datetime.now().strftime('%Y-%m-%d')}"], check=True)
+        subprocess.run(["git", "commit", "-m", f"Auto-update flights {datetime.now().strftime('%Y-%m-%d')}"], check=True)
         subprocess.run(["git", "push"], check=True)
-        log_message("Modifications poussées avec succès sur le dépôt Git.")
+        log_message("Mise à jour poussée sur Git avec succès.")
     except subprocess.CalledProcessError as e:
-        log_message(f"Erreur lors de l'opération Git : {e}")
+        log_message(f"Erreur Git : {e}")
 
 if __name__ == "__main__":
-    try:
-        with open(LOG_FILENAME, "w", encoding="utf-8") as f:
-            f.write(f"--- Début du run : {datetime.now()} ---\n")
-
-        flights = fetch_flight_data_with_playwright()
-        if flights:
-            save_to_csv(flights)
-            git_commit_and_push()
-        else:
-            log_message("Aucune donnée valide à enregistrer. Commit Git ignoré.")
-    except Exception as e:
-        import traceback
-        error_detail = traceback.format_exc()
-        print(f"Erreur fatale : {e}")
-        with open(LOG_FILENAME, "a", encoding="utf-8") as f:
-            f.write(f"ERREUR FATALE : {e}\n{error_detail}\n")
-        sys.exit(1)
+    with open(LOG_FILENAME, "w", encoding="utf-8") as f:
+        f.write(f"--- Début du run : {datetime.now()} ---\n")
+        
+    records = run_scraper()
+    if records:
+        save_to_csv_top(records)
+        git_push()
+    else:
+        log_message("Aucun vol trouvé ou échec général sur l'ensemble des liaisons ce jour.")
