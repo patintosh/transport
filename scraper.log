@@ -1,0 +1,7 @@
+--- Début du run : 2026-07-31 15:56:02.488968 ---
+[2026-07-31 15:56:02] Statut d'initialisation (Preload) : 200
+[2026-07-31 15:56:02] Cookies capturés après Preload : {'um_jst': 'CA67E814F3929D77C58A318BB1EBF76AE2B2EA53CA5BB6902BD300710440276A', 'BIGipServer~etv_aere_prd~Shared~az_xdcr_fran-prd_443_pool': '2406628106.47873.0000', 'DWM_XSITECODE': 'BDEQBNEW', '70657fe77a019424c4787a5f4e9c9d66': '834a544a2ab5e9ee0e77092dbe72fd36', 'SITE': 'BDEQBNEW', '6f12e107902fddd4d03e1b95f0b76f50': '1687aff52df96b5046e10bbf7fd5cef1', 'JSESSIONID': 'CwHxlj2vTWQw6Q3VyH3Nk-m9HnaO2vOad2aJMY8o!1785506162751.dljdmx', 'nlbi_2333454': 'QVuMLeqNzzMk/g0VKeSHTwAAAACYO0vB5UeZ2c5FYtdt/yaF', 'visid_incap_2333454': 'QCpJnk9IS9y9ceOJoQ4ioHKpbGoAAAAAQUIPAAAAAAD6wt54kCGxl3luGFMYlQXU', 'incap_ses_969_2333454': 'sBcqK2TKGX8e0MSuuJRyDXKpbGoAAAAAg5xoTsygrmrE+Fs1f0Izew=='}
+[2026-07-31 15:56:02] Recherche des vols pour la date : 2026-08-07
+[2026-07-31 15:56:02] Statut de la requête de vol : 200
+[2026-07-31 15:56:02] ALERTE : La page renvoyée est une page de blocage Imperva.
+[2026-07-31 15:56:02] Le contenu de la page bloquée a été sauvegardé dans imperva_debug.html
