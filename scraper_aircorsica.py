@@ -70,7 +70,15 @@ def fetch_flight_data(session):
             log_message("ALERTE : La page renvoyée est une page de blocage Imperva.")
             with open("imperva_debug.html", "w", encoding="utf-8") as f:
                 f.write(r.text)
-            log_message("Le contenu de la page bloquée a été sauvegardé dans imperva_debug.html")
+            
+            # Analyse rapide du contenu bloqué pour le log
+            if "reese84" in r.text or "_Incapsula_Resource" in r.text:
+                log_message("Type de défi détecté : Script de challenge JS Imperva (reese84).")
+            elif "captcha" in r.text.lower():
+                log_message("Type de défi détecté : CAPTCHA bloquant.")
+            else:
+                log_message("Type de défi détecté : Blocage standard ou personnalisé.")
+
             return flights
 
         soup = BeautifulSoup(r.text, "html.parser")
