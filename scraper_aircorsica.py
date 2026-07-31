@@ -4,16 +4,12 @@ import csv
 from playwright.sync_api import sync_playwright
 
 def run_scraper():
-    # Définition des liaisons avec les codes IATA
     routes = [
         {"code": "AJA-ORY", "origin": "AJA", "destination": "ORY"},
         {"code": "ORY-AJA", "origin": "ORY", "destination": "AJA"}
     ]
     
-    # Calcul de la date J+7
     target_date = (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d")
-    
-    # Répertoire du profil persistant pour assurer la stabilité et éviter les blocages anti-bot
     user_data_dir = os.path.expanduser("~/.aircorsica_browser_profile")
     
     csv_filename = "air_corsica_prices.csv"
@@ -39,10 +35,12 @@ def run_scraper():
                     print(f"Traitement de la route {route['code']} pour le {target_date}...")
                     page.goto("https://www.aircorsica.com/", wait_until="networkidle", timeout=60000)
                     
-                    # Sélection du type de parcours "Aller simple"
-                    page.click("#edit-booking-flight-v2-travel-type-o", timeout=5000)
+                    # Correction : Faire défiler la vue jusqu'au bouton radio avant de cliquer
+                    travel_type_radio = page.locator("#edit-booking-flight-v2-travel-type-o")
+                    travel_type_radio.scroll_into_view_if_needed()
+                    travel_type_radio.click(timeout=5000)
                     
-                    # Sélection directe des aéroports via les balises <select> natives cachées par Select2
+                    # Sélection des aéroports via les balises <select> natives cachées par Select2
                     page.select_option("#edit-booking-flight-v2-from", route["origin"])
                     page.select_option("#edit-booking-flight-v2-to", route["destination"])
                     
