@@ -51,7 +51,8 @@ def fetch_flight_data_with_playwright():
             page.goto(search_url, wait_until="networkidle", timeout=60000)
             
             try:
-                page.wait_for_selector(".cell-reco", timeout=15000)
+                # Augmentation du délai d'attente à 30 secondes pour laisser le temps au rendu Amadeus
+                page.wait_for_selector(".cell-reco", timeout=30000)
                 page.wait_for_timeout(3000)
             except Exception:
                 log_message("Délai d'attente dépassé pour les blocs tarifaires, analyse du contenu actuel.")
