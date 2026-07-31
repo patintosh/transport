@@ -1,6 +1,7 @@
 import os
 import sys
 import csv
+import re
 import subprocess
 from datetime import datetime, timedelta
 
@@ -25,7 +26,7 @@ def log_message(message):
         f.write(formatted_msg + "\n")
 
 def fetch_flight_data_with_playwright():
-    """Utilise Playwright pour contourner Imperva et récupérer les données de vol dynamiques"""
+    """Utilise Playwright pour contourner Imperva et récupérer les prix réels des vols"""
     target_date = (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d")
     log_message(f"Recherche des vols pour la date : {target_date} via Playwright")
     
@@ -50,7 +51,6 @@ def fetch_flight_data_with_playwright():
             log_message("Navigation vers la page de résultats de vol...")
             page.goto(search_url, wait_until="networkidle", timeout=60000)
             
-            # Attente active du chargement complet du rendu Amadeus
             try:
                 page.wait_for_selector("body", timeout=10000)
                 page.wait_for_timeout(5000)
@@ -65,17 +65,19 @@ def fetch_flight_data_with_playwright():
                     f.write(content)
                 return flights
 
-            # Sauvegarde du HTML pour diagnostic si nécessaire
+            # Sauvegarde du HTML pour diagnostic
             with open("availability_debug.html", "w", encoding="utf-8") as f:
                 f.write(content)
 
             soup = BeautifulSoup(content, "html.parser")
             
-            # Correction de l'avertissement DeprecationWarning (utilisation de string=True)
+            # Expression régulière pour cibler précisément les prix au format monétaire
+            price_pattern = re.compile(r'\d+[\s,\.]*\d*\s*€')
             extracted_prices = []
-            for tag in soup.find_all(["span", "div", "td"], string=True):
-                text = tag.get_text(strip=True)
-                if "€" in text and len(text) < 15:
+            
+            for tag in soup.find_all(string=price_pattern):
+                text = tag.strip()
+                if len(text) < 15: # Filtre pour éviter de capturer de longs blocs de texte
                     extracted_prices.append(text)
 
             # Suppression des doublons
@@ -83,11 +85,11 @@ def fetch_flight_data_with_playwright():
             unique_prices = [p for p in extracted_prices if not (p in seen or seen.add(p))]
 
             if unique_prices:
-                log_message(f"Prix réels détectés : {unique_prices[:5]}")
+                log_message(f"Prix réels extraits avec succès : {unique_prices[:3]}")
                 for price in unique_prices[:3]:
                     flights.append({"Date": target_date, "Route": "AJA-ORY", "Price": price})
             else:
-                log_message("Aucun prix explicite trouvé, utilisation du statut de disponibilité.")
+                log_message("Aucun prix explicite trouvé par regex, utilisation du statut de disponibilité.")
                 flights.append({"Date": target_date, "Route": "AJA-ORY", "Price": "DISPONIBLE"})
 
         except Exception as e:
