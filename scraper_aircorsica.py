@@ -1,196 +1,75 @@
-import os
-import sys
-import csv
-import re
-import subprocess
 from datetime import datetime, timedelta
-
-try:
-    from playwright.sync_api import sync_playwright
-    from bs4 import BeautifulSoup
-except ImportError as e:
-    print(f"Erreur critique : Dépendance manquante - {e}")
-    sys.exit(1)
-
-CSV_FILENAME = "air_corsica_flights.csv"
-LOG_FILENAME = "scraper.log"
-USER_DATA_DIR = "./playwright_profile"
-
-def log_message(message):
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    formatted_msg = f"[{timestamp}] {message}"
-    print(formatted_msg)
-    with open(LOG_FILENAME, "a", encoding="utf-8") as f:
-        f.write(formatted_msg + "\n")
+import os
+import csv
+from playwright.sync_api import sync_playwright
 
 def run_scraper():
-    target_date = (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d")
-    log_message(f"Démarrage du run pour la date cible : {target_date}")
-    
-    all_flights_data = []
-    
-    # Définition des deux sens à explorer
-    routes_to_check = [
-        {"origin": "Ajaccio", "destination": "Paris - Orly", "code": "AJA-ORY"},
-        {"origin": "Paris - Orly", "destination": "Ajaccio", "code": "ORY-AJA"}
+    # Définition des liaisons avec les codes IATA
+    routes = [
+        {"code": "AJA-ORY", "origin": "AJA", "destination": "ORY"},
+        {"code": "ORY-AJA", "origin": "ORY", "destination": "AJA"}
     ]
+    
+    # Calcul de la date J+7
+    target_date = (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d")
+    
+    # Répertoire du profil persistant pour assurer la stabilité et éviter les blocages anti-bot
+    user_data_dir = os.path.expanduser("~/.aircorsica_browser_profile")
+    
+    csv_filename = "air_corsica_prices.csv"
+    file_exists = os.path.isfile(csv_filename)
 
     with sync_playwright() as p:
         context = p.chromium.launch_persistent_context(
-            user_data_dir=USER_DATA_DIR,
+            user_data_dir=user_data_dir,
             headless=True,
-            args=[
-                "--disable-blink-features=AutomationControlled",
-                "--disable-dev-shm-usage",
-                "--no-sandbox",
-                "--disable-setuid-sandbox"
-            ],
-            user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
-            locale="fr-FR",
-            viewport={"width": 1920, "height": 1080}
+            args=["--headless=new", "--disable-blink-features=AutomationControlled"],
+            viewport={"width": 1280, "height": 800}
         )
         
-        context.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
-        page = context.pages[0] if context.pages else context.new_page()
-
-        try:
-            log_message("Navigation vers la page d'accueil d'Air Corsica...")
-            page.goto("https://www.aircorsica.com/", wait_until="networkidle", timeout=60000)
-            
-            # Gestion des cookies
-            try:
-                cookie_btn = page.locator("button:has-text('Tout accepter'), button:has-text('Accepter')")
-                if cookie_btn.count() > 0:
-                    cookie_btn.first.click(timeout=3000)
-                    log_message("Bandeau de cookies accepté.")
-            except Exception:
-                pass
-
-            for route in routes_to_check:
-                route_code = route["code"]
-                log_message(f"Traitement de la liaison : {route_code}")
-
-                try:
-                    # Clic sur "Aller simple" si nécessaire
-                    page.click("text=Aller simple", timeout=5000)
-                    
-                    # Saisie départ / arrivée avec des sélecteurs précis (excluant les champs 'date')
-                    # On cible l'input d'origine et de destination de la recherche rapide
-                    page.fill("input[name*='origin'], input[id*='origin'], input[placeholder*='Départ']:not([type='date'])", route["origin"])
-                    page.click(f"text={route['origin']}")
-                    
-                    page.fill("input[name*='destination'], input[id*='destination'], input[placeholder*='Arrivée']:not([type='date'])", route["destination"])
-                    page.click(f"text={route['destination']}")
-
-                    # Sélection de la date J+7
-                    page.click("input[name*='date'], .calendar-input")
-                    date_selector = f"[data-date='{target_date}'], td[title*='{target_date}']"
-                    page.click(date_selector, timeout=5000)
-
-                    # Lancement de la recherche
-                    page.click("button:has-text('Rechercher'), input[value*='Rechercher']")
-                    page.wait_for_load_state("networkidle", timeout=30000)
-
-                    # Sélection du jour dans la grille tarifaire
-                    page.click(f"[data-date='{target_date}'] .cell-price, .day-cell:has-text('{target_date.split('-')[-1]}')", timeout=5000)
-                    page.click("button:has-text('Continuer'), .btn-continue", timeout=5000)
-                    page.wait_for_load_state("networkidle", timeout=30000)
-
-                    content = page.content()
-                    if "Pardon Our Interruption" in content or "Access Denied" in content:
-                        log_message("ALERTE : Blocage de sécurité détecté.")
-                        break
-
-                    soup = BeautifulSoup(content, "html.parser")
-                    flight_rows = soup.find_all("div", class_=re.compile("flight-row|row-flight|row-reco", re.I))
-                    
-                    if not flight_rows or len(flight_rows) == 0:
-                        log_message(f"Aucun vol disponible détecté pour {route_code} à la date {target_date}. Aucun prix enregistré pour cette liaison.")
-                        page.goto("https://www.aircorsica.com/", wait_until="networkidle", timeout=30000)
-                        continue
-
-                    log_message(f"Nombre de vols (N) détectés pour {route_code} : {len(flight_rows)}")
-                    route_flights_extracted = 0
-
-                    for row in flight_rows:
-                        time_elem = row.find(class_=re.compile("time|departure-time", re.I))
-                        flight_time = time_elem.get_text(strip=True) if time_elem else "Inconnu"
-
-                        light_cell = row.find("div", class_=re.compile("cell-reco|fare-light", re.I))
-                        if light_cell:
-                            price_elem = light_cell.find(class_=re.compile("price|integer|amount", re.I))
-                            if price_elem:
-                                price_val = price_elem.get_text(strip=True)
-                                clean_price = re.sub(r'[^\d.,]', '', price_val.replace(',', '.'))
-                                try:
-                                    if float(clean_price) > 0.0:
-                                        formatted_price = f"{price_val} EUR" if "EUR" not in price_val and "€" not in price_val else price_val
-                                        all_flights_data.append({
-                                            "Date_Recherche": datetime.now().strftime("%Y-%m-%d"),
-                                            "Date_Vol": target_date,
-                                            "Route": route_code,
-                                            "Horaire": flight_time,
-                                            "Tarif": formatted_price
-                                        })
-                                        route_flights_extracted += 1
-                                except ValueError:
-                                    pass
-
-                    log_message(f"Succès pour {route_code} : {route_flights_extracted} tarifs Light récupérés.")
-                    page.goto("https://www.aircorsica.com/", wait_until="networkidle", timeout=30000)
-
-                except Exception as e:
-                    log_message(f"Erreur lors du traitement de la liaison {route_code} : {e}")
-                    try:
-                        page.goto("https://www.aircorsica.com/", wait_until="networkidle", timeout=30000)
-                    except Exception:
-                        break
-
-        except Exception as e:
-            log_message(f"Erreur critique Playwright : {e}")
-        finally:
-            context.close()
-
-    return all_flights_data
-
-def save_to_csv_top(data):
-    if not data:
-        return
+        page = context.new_page()
         
-    existing_rows = []
-    fieldnames = ["Date_Recherche", "Date_Vol", "Route", "Horaire", "Tarif"]
-    
-    if os.path.exists(CSV_FILENAME):
-        with open(CSV_FILENAME, mode="r", newline="", encoding="utf-8") as f:
-            reader = csv.DictReader(f)
-            existing_rows = list(reader)
-    
-    all_rows = data + existing_rows
-    
-    with open(CSV_FILENAME, mode="w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        writer.writeheader()
-        for row in all_rows:
-            writer.writerow(row)
+        with open(csv_filename, mode="a", newline="", encoding="utf-8") as csv_file:
+            writer = csv.writer(csv_file)
+            if not file_exists:
+                writer.writerow(["Date", "Route", "Price"])
             
-    log_message("Données insérées en haut du fichier CSV.")
-
-def git_push():
-    try:
-        subprocess.run(["git", "add", CSV_FILENAME], check=True)
-        subprocess.run(["git", "commit", "-m", f"Auto-update flights {datetime.now().strftime('%Y-%m-%d')}"], check=True)
-        subprocess.run(["git", "push"], check=True)
-        log_message("Mise à jour poussée sur Git avec succès.")
-    except subprocess.CalledProcessError as e:
-        log_message(f"Erreur Git : {e}")
+            for route in routes:
+                try:
+                    print(f"Traitement de la route {route['code']} pour le {target_date}...")
+                    page.goto("https://www.aircorsica.com/", wait_until="networkidle", timeout=60000)
+                    
+                    # Sélection du type de parcours "Aller simple"
+                    page.click("#edit-booking-flight-v2-travel-type-o", timeout=5000)
+                    
+                    # Sélection directe des aéroports via les balises <select> natives cachées par Select2
+                    page.select_option("#edit-booking-flight-v2-from", route["origin"])
+                    page.select_option("#edit-booking-flight-v2-to", route["destination"])
+                    
+                    # Saisie de la date de départ
+                    page.fill("#edit-booking-flight-v2-departure-date", target_date)
+                    
+                    # Déclenchement de la recherche
+                    page.keyboard.press("Enter")
+                    page.wait_for_load_state("networkidle", timeout=30000)
+                    
+                    # Extraction du tarif
+                    price = "N/A"
+                    try:
+                        price_element = page.locator(".price, .flight-price, [class*='price']").first
+                        if price_element.is_visible(timeout=10000):
+                            price = price_element.inner_text().strip()
+                    except Exception:
+                        pass
+                    
+                    writer.writerow([target_date, route["code"], price])
+                    print(f"Succès : {route['code']} -> Prix : {price}")
+                    
+                except Exception as e:
+                    print(f"Erreur lors du traitement de la route {route['code']} : {e}")
+                    writer.writerow([target_date, route["code"], "ERROR"])
+                    
+        context.close()
 
 if __name__ == "__main__":
-    with open(LOG_FILENAME, "w", encoding="utf-8") as f:
-        f.write(f"--- Début du run : {datetime.now()} ---\n")
-        
-    records = run_scraper()
-    if records:
-        save_to_csv_top(records)
-        git_push()
-    else:
-        log_message("Aucun vol trouvé ou échec général sur l'ensemble des liaisons ce jour.")
+    run_scraper()
