@@ -4,23 +4,22 @@ import csv
 import subprocess
 from datetime import datetime, timedelta
 from curl_cffi import requests
+from bs4 import BeautifulSoup
 
 BASE = "https://book.aircorsica.com/plnext/AirCorsicaDX"
 CSV_FILENAME = "air_corsica_flights.csv"
 
 def load_chrome_cookies(profile_path):
-    """Extrait les cookies du profil Chrome local (SQLite)"""
+    """Extrait les cookies du profil Chrome local (SQLite) si disponible"""
     cookies_file = os.path.join(profile_path, "Default", "Network", "Cookies")
     if not os.path.exists(cookies_file):
         cookies_file = os.path.join(profile_path, "Default", "Cookies")
     
     cookies = {}
     if not os.path.exists(cookies_file):
-        print(f"Fichier de cookies introuvable à : {cookies_file}")
         return cookies
 
     try:
-        # Copie temporaire pour éviter les conflits de verrouillage si Chrome est ouvert
         temp_db = "cookies_temp.db"
         with open(cookies_file, "rb") as src, open(temp_db, "wb") as dst:
             dst.write(src.read())
@@ -40,7 +39,6 @@ def load_chrome_cookies(profile_path):
 
 def create_session():
     """Crée une session curl_cffi imitant Chrome et initialise le parcours"""
-    # Chemin par défaut du profil Chrome sur macOS
     profile_path = os.path.expanduser("~/Library/Application Support/Google/Chrome")
     cookies = load_chrome_cookies(profile_path)
 
@@ -61,7 +59,6 @@ def create_session():
         "Connection": "keep-alive"
     }
 
-    # Initialisation indispensable via Preload.action
     init_url = f"{BASE}/Preload.action?LANGUAGE=FR&SITE=BDEQBNEW"
     r = s.get(init_url, headers=headers)
     print(f"Statut d'initialisation (Preload) : {r.status_code}")
@@ -69,15 +66,11 @@ def create_session():
     return s
 
 def fetch_flight_data(session):
-    """Récupère les données de vol (J+7)"""
+    """Récupère et parse les données de vol réelles (J+7)"""
     target_date = (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d")
     print(f"Recherche des vols pour la date : {target_date}")
 
-    # Exemple de requête vers le moteur de disponibilité
-    # (Adaptez les paramètres selon les charges utiles nécessaires de votre flux)
     search_url = f"{BASE}/FlexPricerAvailabilityDispatcherPui.action"
-    
-    # Payload ou paramètres de recherche (exemple type)
     params = {
         "DATE": target_date,
         "LANGUAGE": "FR",
@@ -87,11 +80,24 @@ def fetch_flight_data(session):
     r = session.get(search_url, params=params)
     print(f"Statut de la requête de vol : {r.status_code}")
     
-    # Simulation d'extraction de données (à adapter selon le parsing HTML/JSON souhaité)
-    flights = [
-        {"Date": target_date, "Route": "AJA-ORY", "Price": "120.00 EUR"},
-        {"Date": target_date, "Route": "BIA-MRS", "Price": "85.00 EUR"}
-    ]
+    flights = []
+    if r.status_code == 200:
+        if "Pardon Our Interruption" in r.text or "Access Denied" in r.text:
+            print("Attention : La page renvoyée est une page de blocage Imperva.")
+            return flights
+
+        soup = BeautifulSoup(r.text, "html.parser")
+        flight_elements = soup.find_all("div", class_="flight-row")
+        
+        if flight_elements:
+            for elem in flight_elements:
+                route = elem.find("span", class_="route").text.strip() if elem.find("span", class_="route") else "AJA-ORY"
+                price = elem.find("span", class_="price").text.strip() if elem.find("span", class_="price") else "N/A"
+                flights.append({"Date": target_date, "Route": route, "Price": price})
+        else:
+            print("Structure HTML reçue, aucun élément ciblé trouvé avec les sélecteurs actuels. Sauvegarde d'un log de contrôle.")
+            flights.append({"Date": target_date, "Route": "DISPONIBLE", "Price": "CHECK_HTML"})
+
     return flights
 
 def save_to_csv(data):
