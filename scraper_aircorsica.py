@@ -1,5 +1,4 @@
 import os
-import sqlite3
 import csv
 import subprocess
 from datetime import datetime, timedelta
@@ -8,45 +7,19 @@ from bs4 import BeautifulSoup
 
 BASE = "https://book.aircorsica.com/plnext/AirCorsicaDX"
 CSV_FILENAME = "air_corsica_flights.csv"
+LOG_FILENAME = "scraper.log"
 
-def load_chrome_cookies(profile_path):
-    """Extrait les cookies du profil Chrome local (SQLite) si disponible"""
-    cookies_file = os.path.join(profile_path, "Default", "Network", "Cookies")
-    if not os.path.exists(cookies_file):
-        cookies_file = os.path.join(profile_path, "Default", "Cookies")
-    
-    cookies = {}
-    if not os.path.exists(cookies_file):
-        return cookies
-
-    try:
-        temp_db = "cookies_temp.db"
-        with open(cookies_file, "rb") as src, open(temp_db, "wb") as dst:
-            dst.write(src.read())
-
-        conn = sqlite3.connect(temp_db)
-        cursor = conn.cursor()
-        cursor.execute("SELECT name, value FROM cookies")
-        for row in cursor.fetchall():
-            cookies[row[0]] = row[1]
-        
-        conn.close()
-        os.remove(temp_db)
-    except Exception as e:
-        print(f"Erreur lors de la lecture des cookies : {e}")
-
-    return cookies
+def log_message(message):
+    """Écrit un message à la fois dans la console et dans le fichier de log"""
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    formatted_msg = f"[{timestamp}] {message}"
+    print(formatted_msg)
+    with open(LOG_FILENAME, "a", encoding="utf-8") as f:
+        f.write(formatted_msg + "\n")
 
 def create_session():
     """Crée une session curl_cffi imitant Chrome et initialise le parcours"""
-    profile_path = os.path.expanduser("~/Library/Application Support/Google/Chrome")
-    cookies = load_chrome_cookies(profile_path)
-
-    print(f"Nombre de cookies chargés : {len(cookies)}")
-
     s = requests.Session(impersonate="chrome")
-    if cookies:
-        s.cookies.update(cookies)
 
     headers = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
@@ -58,17 +31,19 @@ def create_session():
         "Sec-Fetch-Dest": "document",
         "Connection": "keep-alive"
     }
+    s.headers.update(headers)
 
     init_url = f"{BASE}/Preload.action?LANGUAGE=FR&SITE=BDEQBNEW"
-    r = s.get(init_url, headers=headers)
-    print(f"Statut d'initialisation (Preload) : {r.status_code}")
+    r = s.get(init_url)
+    log_message(f"Statut d'initialisation (Preload) : {r.status_code}")
+    log_message(f"Cookies capturés après Preload : {dict(s.cookies)}")
 
     return s
 
 def fetch_flight_data(session):
     """Récupère et parse les données de vol réelles (J+7)"""
     target_date = (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d")
-    print(f"Recherche des vols pour la date : {target_date}")
+    log_message(f"Recherche des vols pour la date : {target_date}")
 
     search_url = f"{BASE}/FlexPricerAvailabilityDispatcherPui.action"
     params = {
@@ -77,13 +52,19 @@ def fetch_flight_data(session):
         "SITE": "BDEQBNEW"
     }
 
+    session.headers.update({"Referer": f"{BASE}/Preload.action?LANGUAGE=FR&SITE=BDEQBNEW"})
+
     r = session.get(search_url, params=params)
-    print(f"Statut de la requête de vol : {r.status_code}")
+    log_message(f"Statut de la requête de vol : {r.status_code}")
     
     flights = []
     if r.status_code == 200:
-        if "Pardon Our Interruption" in r.text or "Access Denied" in r.text:
-            print("Attention : La page renvoyée est une page de blocage Imperva.")
+        if "Pardon Our Interruption" in r.text or "Access Denied" in r.text or "captcha" in r.text.lower():
+            log_message("ALERTE : La page renvoyée est une page de blocage Imperva.")
+            # Sauvegarde du HTML de blocage pour analyse
+            with open("imperva_debug.html", "w", encoding="utf-8") as f:
+                f.write(r.text)
+            log_message("Le contenu de la page bloquée a été sauvegardé dans imperva_debug.html")
             return flights
 
         soup = BeautifulSoup(r.text, "html.parser")
@@ -95,34 +76,35 @@ def fetch_flight_data(session):
                 price = elem.find("span", class_="price").text.strip() if elem.find("span", class_="price") else "N/A"
                 flights.append({"Date": target_date, "Route": route, "Price": price})
         else:
-            print("Structure HTML reçue, aucun élément ciblé trouvé avec les sélecteurs actuels. Sauvegarde d'un log de contrôle.")
+            log_message("Structure HTML reçue, aucun élément ciblé trouvé avec les sélecteurs actuels.")
             flights.append({"Date": target_date, "Route": "DISPONIBLE", "Price": "CHECK_HTML"})
 
     return flights
 
 def save_to_csv(data):
-    """Enregistre les données dans le CSV sans colonne TIME"""
     file_exists = os.path.exists(CSV_FILENAME)
-    
     with open(CSV_FILENAME, mode="a", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=["Date", "Route", "Price"])
         if not file_exists:
             writer.writeheader()
         for row in data:
             writer.writerow(row)
-    print("Données enregistrées dans le CSV.")
+    log_message("Données enregistrées dans le CSV.")
 
 def git_commit_and_push():
-    """Automatise le commit et le push Git des résultats"""
     try:
         subprocess.run(["git", "add", CSV_FILENAME], check=True)
-        subprocess.run(["git", "commit", "-m", f"Automated scrape update: {datetime.now().strftime('%Y-%m-%d')}"], check=True)
+        subprocess.run(["git", "commit", -m f"Automated scrape update: {datetime.now().strftime('%Y-%m-%d')}"], check=True)
         subprocess.run(["git", "push"], check=True)
-        print("Modifications poussées avec succès sur le dépôt Git.")
+        log_message("Modifications poussées avec succès sur le dépôt Git.")
     except subprocess.CalledProcessError as e:
-        print(f"Erreur lors de l'opération Git : {e}")
+        log_message(f"Erreur lors de l'opération Git : {e}")
 
 if __name__ == "__main__":
+    # Réinitialise ou crée le fichier de log pour cette session
+    with open(LOG_FILENAME, "w", encoding="utf-8") as f:
+        f.write(f"--- Début du run : {datetime.now()} ---\n")
+
     session = create_session()
     flights = fetch_flight_data(session)
     if flights:
