@@ -70,15 +70,16 @@ def run_scraper():
                 route_code = route["code"]
                 log_message(f"Traitement de la liaison : {route_code}")
 
-                # Simulation de la recherche pour chaque sens
                 try:
+                    # Clic sur "Aller simple" si nécessaire
                     page.click("text=Aller simple", timeout=5000)
                     
-                    # Saisie départ / arrivée
-                    page.fill("input[name*='departure'], input[placeholder*='Départ']", route["origin"])
+                    # Saisie départ / arrivée avec des sélecteurs précis (excluant les champs 'date')
+                    # On cible l'input d'origine et de destination de la recherche rapide
+                    page.fill("input[name*='origin'], input[id*='origin'], input[placeholder*='Départ']:not([type='date'])", route["origin"])
                     page.click(f"text={route['origin']}")
                     
-                    page.fill("input[name*='arrival'], input[placeholder*='Arrivée']", route["destination"])
+                    page.fill("input[name*='destination'], input[id*='destination'], input[placeholder*='Arrivée']:not([type='date'])", route["destination"])
                     page.click(f"text={route['destination']}")
 
                     # Sélection de la date J+7
@@ -103,10 +104,8 @@ def run_scraper():
                     soup = BeautifulSoup(content, "html.parser")
                     flight_rows = soup.find_all("div", class_=re.compile("flight-row|row-flight|row-reco", re.I))
                     
-                    # SÉCURITÉ : Si N = 0, aucun vol proposé par le transporteur à cette date
                     if not flight_rows or len(flight_rows) == 0:
                         log_message(f"Aucun vol disponible détecté pour {route_code} à la date {target_date}. Aucun prix enregistré pour cette liaison.")
-                        # Retour en arrière ou rechargement propre pour la liaison suivante si nécessaire
                         page.goto("https://www.aircorsica.com/", wait_until="networkidle", timeout=30000)
                         continue
 
@@ -138,8 +137,6 @@ def run_scraper():
                                     pass
 
                     log_message(f"Succès pour {route_code} : {route_flights_extracted} tarifs Light récupérés.")
-                    
-                    # Retour à l'accueil pour la liaison suivante
                     page.goto("https://www.aircorsica.com/", wait_until="networkidle", timeout=30000)
 
                 except Exception as e:
