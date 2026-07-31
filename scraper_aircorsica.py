@@ -69,14 +69,18 @@ def send_email_alert(subject, body):
 
 
 # ============================================================
-# 2. Session + cookies Imperva (avec impersonation TLS Chrome)
+# 2. Session + cookies Imperva (avec debug et impersonation TLS)
 # ============================================================
 
 def create_session():
     profile_path = os.path.join(os.getcwd(), "chrome_profile")
     cookies = load_chrome_cookies(profile_path)
 
-    # curl_cffi simule l'empreinte TLS de Chrome pour tromper Imperva
+    print(f"Cookies chargés depuis SQLite : {[c.name for c in cookies]}")
+
+    if not any("incap" in c.name.lower() for c in cookies):
+        print("⚠ ATTENTION : Aucun cookie Imperva ('incap') n'a été trouvé dans la base SQLite !")
+
     s = requests.Session(impersonate="chrome")
     s.cookies.update(cookies)
 
@@ -91,7 +95,8 @@ def create_session():
         "Connection": "keep-alive"
     }
 
-    s.get(BASE + "/", headers=headers)
+    r = s.get(BASE + "/", headers=headers)
+    print(f"Statut de la page d'accueil : {r.status_code}")
 
     return s
 
@@ -191,6 +196,7 @@ def extract_prices(data):
         return [p["amount"] + 3.0 for p in price_list if "amount" in p]
     except Exception as e:
         print(f"⚠ Structure JSON inattendue : {e}")
+        print(f"Clés reçues dans le JSON : {list(data.keys()) if isinstance(data, dict) else 'Pas un dictionnaire'}")
         return []
 
 
