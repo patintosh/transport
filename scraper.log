@@ -1,8 +1,8 @@
---- Début du run : 2026-07-31 16:51:56.863461 ---
-[2026-07-31 16:51:56] Recherche des vols pour la date : 2026-08-07 via Playwright
-[2026-07-31 16:51:58] Ouverture de la page Preload (résolution de reese84)...
-[2026-07-31 16:52:03] Navigation vers la page de résultats de vol...
-[2026-07-31 16:52:19] Délai d'attente dépassé pour les blocs tarifaires, analyse du contenu actuel.
-[2026-07-31 16:52:19] Tarif Light non trouvé via les sélecteurs stricts, utilisation du statut de disponibilité.
-[2026-07-31 16:52:19] Données enregistrées dans le CSV.
-[2026-07-31 16:52:22] Modifications poussées avec succès sur le dépôt Git.
+--- Début du run : 2026-07-31 16:57:07.365271 ---
+[2026-07-31 16:57:07] Recherche des vols pour la date : 2026-08-07 via Playwright
+[2026-07-31 16:57:08] Ouverture de la page Preload (résolution de reese84)...
+[2026-07-31 16:57:13] Navigation vers la page de résultats de vol...
+[2026-07-31 16:57:45] Délai d'attente dépassé pour les blocs tarifaires, analyse du contenu actuel.
+[2026-07-31 16:57:45] Tarif Light non trouvé via les sélecteurs stricts, utilisation du statut de disponibilité.
+[2026-07-31 16:57:45] Données enregistrées dans le CSV.
+[2026-07-31 16:57:47] Modifications poussées avec succès sur le dépôt Git.
