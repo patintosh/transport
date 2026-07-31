@@ -1,7 +1,7 @@
---- Début du run : 2026-07-31 15:56:02.488968 ---
-[2026-07-31 15:56:02] Statut d'initialisation (Preload) : 200
-[2026-07-31 15:56:02] Cookies capturés après Preload : {'um_jst': 'CA67E814F3929D77C58A318BB1EBF76AE2B2EA53CA5BB6902BD300710440276A', 'BIGipServer~etv_aere_prd~Shared~az_xdcr_fran-prd_443_pool': '2406628106.47873.0000', 'DWM_XSITECODE': 'BDEQBNEW', '70657fe77a019424c4787a5f4e9c9d66': '834a544a2ab5e9ee0e77092dbe72fd36', 'SITE': 'BDEQBNEW', '6f12e107902fddd4d03e1b95f0b76f50': '1687aff52df96b5046e10bbf7fd5cef1', 'JSESSIONID': 'CwHxlj2vTWQw6Q3VyH3Nk-m9HnaO2vOad2aJMY8o!1785506162751.dljdmx', 'nlbi_2333454': 'QVuMLeqNzzMk/g0VKeSHTwAAAACYO0vB5UeZ2c5FYtdt/yaF', 'visid_incap_2333454': 'QCpJnk9IS9y9ceOJoQ4ioHKpbGoAAAAAQUIPAAAAAAD6wt54kCGxl3luGFMYlQXU', 'incap_ses_969_2333454': 'sBcqK2TKGX8e0MSuuJRyDXKpbGoAAAAAg5xoTsygrmrE+Fs1f0Izew=='}
-[2026-07-31 15:56:02] Recherche des vols pour la date : 2026-08-07
-[2026-07-31 15:56:02] Statut de la requête de vol : 200
-[2026-07-31 15:56:02] ALERTE : La page renvoyée est une page de blocage Imperva.
-[2026-07-31 15:56:02] Le contenu de la page bloquée a été sauvegardé dans imperva_debug.html
+--- Début du run : 2026-07-31 16:00:33.517711 ---
+[2026-07-31 16:00:33] Statut d'initialisation (Preload) : 200
+[2026-07-31 16:00:33] Cookies capturés après Preload : {'um_jst': 'A6CE75F4005BC29A02AB4113C1B7121744B1E34A82AEA8C92281E21DC43C28DD', 'BIGipServer~etv_aere_prd~Shared~az_xdcr_fran-prd_443_pool': '2389850890.47873.0000', 'DWM_XSITECODE': 'BDEQBNEW', '70657fe77a019424c4787a5f4e9c9d66': 'fdab79f583201d057810e3a524a27867', 'SITE': 'BDEQBNEW', '6f12e107902fddd4d03e1b95f0b76f50': 'a0fc5d50577f0e856cbb65cb98fe84c0', 'JSESSIONID': 'nd5977XdqSkQqhYr70DCUSVQcs0KSGkq8KtNxBJ7!1785506433785.xylhwx', 'nlbi_2333454': '3zdXeWhVqzvjr0/yKeSHTwAAAADSQytQkFToki9p0jtZKQvr', 'visid_incap_2333454': 'WUEVAUxNTYuaAKl+DQ052IGqbGoAAAAAQUIPAAAAAABLJh5awUFcM4K5Ji+z6xiJ', 'incap_ses_969_2333454': 'bV7EaiiE8Sz1SsquuJRyDYGqbGoAAAAALKJc4Y9N8JIO0f6ueywGNQ=='}
+[2026-07-31 16:00:33] Recherche des vols pour la date : 2026-08-07
+[2026-07-31 16:00:33] Statut de la requête de vol : 200
+[2026-07-31 16:00:33] ALERTE : La page renvoyée est une page de blocage Imperva.
+[2026-07-31 16:00:33] Le contenu de la page bloquée a été sauvegardé dans imperva_debug.html
