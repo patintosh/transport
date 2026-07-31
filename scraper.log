@@ -1,7 +1,8 @@
---- Début du run : 2026-07-31 16:14:24.164941 ---
-[2026-07-31 16:14:24] Recherche des vols pour la date : 2026-08-07 via Playwright
-[2026-07-31 16:14:25] Ouverture de la page Preload (résolution de reese84)...
-[2026-07-31 16:14:30] Navigation vers la page de résultats de vol...
-[2026-07-31 16:14:35] Aucun vol extrait automatiquement, vérification du fichier availability_debug.html.
-[2026-07-31 16:14:35] Données enregistrées dans le CSV.
-[2026-07-31 16:14:38] Modifications poussées avec succès sur le dépôt Git.
+--- Début du run : 2026-07-31 16:28:44.571777 ---
+[2026-07-31 16:28:44] Recherche des vols pour la date : 2026-08-07 via Playwright
+[2026-07-31 16:28:45] Ouverture de la page Preload (résolution de reese84)...
+[2026-07-31 16:28:50] Navigation vers la page de résultats de vol...
+[2026-07-31 16:29:02] Délai d'attente dépassé pour les éléments dynamiques, on analyse le contenu actuel.
+[2026-07-31 16:29:02] Aucun prix explicite trouvé, utilisation du statut de disponibilité.
+[2026-07-31 16:29:02] Données enregistrées dans le CSV.
+[2026-07-31 16:29:05] Modifications poussées avec succès sur le dépôt Git.
