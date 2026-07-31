@@ -1,16 +1,45 @@
---- Début du run : 2026-07-31 17:20:17.720802 ---
-[2026-07-31 17:20:17] Recherche des vols pour la date : 2026-08-07 via Playwright
-[2026-07-31 17:20:19] Ouverture de la page Preload (résolution de reese84)...
-[2026-07-31 17:20:20] Navigation vers la page de résultats de vol...
-[2026-07-31 17:20:21] Challenge Imperva détecté sur la page de résultats, attente de résolution...
-[2026-07-31 17:20:23] Challenge Imperva détecté sur la page de résultats, attente de résolution...
-[2026-07-31 17:20:25] Challenge Imperva détecté sur la page de résultats, attente de résolution...
-[2026-07-31 17:20:27] Challenge Imperva détecté sur la page de résultats, attente de résolution...
-[2026-07-31 17:20:29] Challenge Imperva détecté sur la page de résultats, attente de résolution...
-[2026-07-31 17:20:31] Challenge Imperva détecté sur la page de résultats, attente de résolution...
-[2026-07-31 17:20:33] Challenge Imperva détecté sur la page de résultats, attente de résolution...
-[2026-07-31 17:20:35] Challenge Imperva détecté sur la page de résultats, attente de résolution...
-[2026-07-31 17:20:37] Challenge Imperva détecté sur la page de résultats, attente de résolution...
-[2026-07-31 17:20:39] Challenge Imperva détecté sur la page de résultats, attente de résolution...
-[2026-07-31 17:20:41] ALERTE : Blocage persistant d'Imperva détecté.
-[2026-07-31 17:20:41] Aucune donnée enregistrée.
+--- Début du run : 2026-07-31 17:53:08.468766 ---
+[2026-07-31 17:53:08] Démarrage du run pour la date cible : 2026-08-07
+[2026-07-31 17:53:09] Navigation vers la page d'accueil d'Air Corsica...
+[2026-07-31 17:53:13] Bandeau de cookies accepté.
+[2026-07-31 17:53:13] Traitement de la liaison : AJA-ORY
+[2026-07-31 17:53:43] Erreur lors du traitement de la liaison AJA-ORY : Page.fill: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("input[name*='departure'], input[placeholder*='Départ']")
+    - locator resolved to 3 elements. Proceeding with the first one: <input value="" type="date" name="booking_flight_v2_departure_date" id="edit-booking-flight-v2-departure-date" data-once="quicksearchFlightDate formInput" data-drupal-selector="edit-booking-flight-v2-departure-date" class="quicksearch-form__date-departure hidden form-date required"/>
+    - fill("Ajaccio")
+  - attempting fill action
+    2 × waiting for element to be visible, enabled and editable
+      - element is not visible
+    - retrying fill action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and editable
+      - element is not visible
+    - retrying fill action
+      - waiting 100ms
+    60 × waiting for element to be visible, enabled and editable
+       - element is not visible
+     - retrying fill action
+       - waiting 500ms
+
+[2026-07-31 17:53:46] Traitement de la liaison : ORY-AJA
+[2026-07-31 17:54:16] Erreur lors du traitement de la liaison ORY-AJA : Page.fill: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("input[name*='departure'], input[placeholder*='Départ']")
+    - locator resolved to 3 elements. Proceeding with the first one: <input value="" type="date" name="booking_flight_v2_departure_date" id="edit-booking-flight-v2-departure-date" data-once="quicksearchFlightDate formInput" data-drupal-selector="edit-booking-flight-v2-departure-date" class="quicksearch-form__date-departure hidden form-date required"/>
+    - fill("Paris - Orly")
+  - attempting fill action
+    2 × waiting for element to be visible, enabled and editable
+      - element is not visible
+    - retrying fill action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and editable
+      - element is not visible
+    - retrying fill action
+      - waiting 100ms
+    60 × waiting for element to be visible, enabled and editable
+       - element is not visible
+     - retrying fill action
+       - waiting 500ms
+
+[2026-07-31 17:54:29] Aucun vol trouvé ou échec général sur l'ensemble des liaisons ce jour.
