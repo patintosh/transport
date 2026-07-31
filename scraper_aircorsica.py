@@ -7,8 +7,35 @@ import csv
 import os
 import smtplib
 from email.message import EmailMessage
+import sqlite3
 
 BASE = "https://book.aircorsica.com/plnext/AirCorsicaDX"
+
+# ============================================================
+# 0. Charger les cookies Imperva depuis chrome_profile
+# ============================================================
+
+def load_chrome_cookies(profile_path):
+    cookies_db = os.path.join(profile_path, "Default", "Cookies")
+
+    if not os.path.exists(cookies_db):
+        raise Exception(f"Cookies DB introuvable : {cookies_db}")
+
+    conn = sqlite3.connect(cookies_db)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT host_key, name, value FROM cookies")
+    cookies = cursor.fetchall()
+
+    conn.close()
+
+    jar = requests.cookies.RequestsCookieJar()
+    for host, name, value in cookies:
+        if "aircorsica" in host.lower() or "incap" in name.lower():
+            jar.set(name, value, domain=host)
+
+    return jar
+
 
 # ============================================================
 # 1. Alerte email (SMTP Apple iCloud)
@@ -18,7 +45,7 @@ def send_email_alert(subject, body):
     smtp_host = "smtp.mail.me.com"
     smtp_port = 587
     smtp_user = "patrice.salini@me.com"
-    smtp_pass = os.getenv("ICLOUD_APP_PASSWORD")  # À mettre dans GitHub Secrets
+    smtp_pass = os.getenv("ICLOUD_APP_PASSWORD")
     to_email = "patrice.salini@me.com"
 
     if smtp_pass is None:
@@ -42,11 +69,15 @@ def send_email_alert(subject, body):
 
 
 # ============================================================
-# 2. Session + récupération cookie Imperva
+# 2. Session + cookies Imperva
 # ============================================================
 
 def create_session():
+    profile_path = os.path.join(os.getcwd(), "chrome_profile")
+    cookies = load_chrome_cookies(profile_path)
+
     s = requests.Session()
+    s.cookies.update(cookies)
 
     headers = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -57,9 +88,8 @@ def create_session():
 
     r = s.get(BASE + "/", headers=headers)
 
-    # Vérification cookie Imperva
     if not any("incap" in c.lower() for c in s.cookies.keys()):
-        raise Exception("Imperva n'a pas délivré de cookie. Impossible de scraper depuis GitHub Actions.")
+        raise Exception("Imperva n'a pas délivré de cookie. Impossible de scraper.")
 
     return s
 
@@ -258,7 +288,6 @@ if __name__ == "__main__":
             global_rows.append(row)
             append_to_route_csv([row], origin, dest)
 
-            # Alerte si prix moyen > 300 €
             if row["mean"] > 300:
                 send_email_alert(
                     subject=f"Alerte prix élevé {origin} → {dest}",
