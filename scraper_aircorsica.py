@@ -5,22 +5,56 @@ from statistics import mean
 import datetime
 import csv
 import os
+import smtplib
+from email.message import EmailMessage
 
 BASE = "https://book.aircorsica.com/plnext/AirCorsicaDX"
 
-# -----------------------------
-# 1. Session + récupération cookie Imperva
-# -----------------------------
+# ============================================================
+# 1. Alerte email (SMTP Apple iCloud)
+# ============================================================
+
+def send_email_alert(subject, body):
+    smtp_host = "smtp.mail.me.com"
+    smtp_port = 587
+    smtp_user = "patrice.salini@me.com"
+    smtp_pass = os.getenv("ICLOUD_APP_PASSWORD")  # À mettre dans GitHub Secrets
+    to_email = "patrice.salini@me.com"
+
+    if smtp_pass is None:
+        print("⚠ Aucun mot de passe SMTP iCloud trouvé (ICLOUD_APP_PASSWORD). Alerte non envoyée.")
+        return
+
+    msg = EmailMessage()
+    msg["Subject"] = subject
+    msg["From"] = smtp_user
+    msg["To"] = to_email
+    msg.set_content(body)
+
+    try:
+        with smtplib.SMTP(smtp_host, smtp_port) as server:
+            server.starttls()
+            server.login(smtp_user, smtp_pass)
+            server.send_message(msg)
+        print("Alerte email envoyée.")
+    except Exception as e:
+        print(f"Erreur envoi email : {e}")
+
+
+# ============================================================
+# 2. Session + récupération cookie Imperva
+# ============================================================
+
 def create_session():
     s = requests.Session()
 
     headers = {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                      "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
         "Accept": "*/*",
         "Referer": BASE + "/"
     }
 
-    # Appel initial pour obtenir les cookies Imperva
     r = s.get(BASE + "/", headers=headers)
 
     # Vérification cookie Imperva
@@ -29,29 +63,33 @@ def create_session():
 
     return s
 
-# -----------------------------
-# 2. Récupération des routes via markets.json
-# -----------------------------
+
+# ============================================================
+# 3. Récupération des routes via markets.json
+# ============================================================
+
 def get_routes(session):
     url = BASE + "/resources/json/markets.json"
 
     headers = {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                      "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
         "Accept": "application/json",
         "Referer": BASE + "/"
     }
 
     r = session.get(url, headers=headers)
 
-    # Imperva renvoie du HTML → blocage
     if "html" in r.text.lower():
         raise Exception("Imperva a bloqué markets.json malgré le cookie.")
 
     return r.json()
 
-# -----------------------------
-# 3. Appel FlexPricer
-# -----------------------------
+
+# ============================================================
+# 4. Appel FlexPricer
+# ============================================================
+
 def flex_pricer(session, origin, dest, date_str):
     jsessionid = session.cookies.get("JSESSIONID")
     url = f"{BASE}/FlexPricerAvailabilityDispatcherPui.action;jsessionid={jsessionid}"
@@ -94,7 +132,8 @@ def flex_pricer(session, origin, dest, date_str):
         "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
         "Accept": "*/*",
         "Referer": BASE + "/",
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15"
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                      "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15"
     }
 
     r = session.post(url, data=payload, headers=headers)
@@ -104,9 +143,11 @@ def flex_pricer(session, origin, dest, date_str):
 
     return r.json()
 
-# -----------------------------
-# 4. Extraction des prix
-# -----------------------------
+
+# ============================================================
+# 5. Extraction des prix
+# ============================================================
+
 def extract_prices(data):
     try:
         price_list = data["priceByBound"][0]["priceList"]
@@ -114,9 +155,11 @@ def extract_prices(data):
     except Exception:
         return []
 
-# -----------------------------
-# 5. Statistiques min / max / moyenne
-# -----------------------------
+
+# ============================================================
+# 6. Statistiques min / max / moyenne
+# ============================================================
+
 def compute_stats(prices):
     if not prices:
         return None
@@ -126,9 +169,11 @@ def compute_stats(prices):
         "mean": mean(prices)
     }
 
-# -----------------------------
-# 6. Append global CSV
-# -----------------------------
+
+# ============================================================
+# 7. Append global CSV
+# ============================================================
+
 def append_to_global_csv(rows, filename="résultats_aircorsica.csv"):
     existing = []
     if os.path.exists(filename):
@@ -150,9 +195,11 @@ def append_to_global_csv(rows, filename="résultats_aircorsica.csv"):
         writer.writeheader()
         writer.writerows(all_rows_sorted)
 
-# -----------------------------
-# 7. Append route CSV
-# -----------------------------
+
+# ============================================================
+# 8. Append route CSV
+# ============================================================
+
 def append_to_route_csv(rows, origin, dest):
     os.makedirs("routes_aircorsica", exist_ok=True)
     filename = f"routes_aircorsica/{origin}_{dest}.csv"
@@ -177,9 +224,11 @@ def append_to_route_csv(rows, origin, dest):
         writer.writeheader()
         writer.writerows(all_rows_sorted)
 
-# -----------------------------
-# 8. Main
-# -----------------------------
+
+# ============================================================
+# 9. Main
+# ============================================================
+
 if __name__ == "__main__":
     session = create_session()
 
@@ -208,6 +257,13 @@ if __name__ == "__main__":
 
             global_rows.append(row)
             append_to_route_csv([row], origin, dest)
+
+            # Alerte si prix moyen > 300 €
+            if row["mean"] > 300:
+                send_email_alert(
+                    subject=f"Alerte prix élevé {origin} → {dest}",
+                    body=f"Prix moyen = {row['mean']} € pour le vol du {row['flight_date']}."
+                )
 
     append_to_global_csv(global_rows)
 
