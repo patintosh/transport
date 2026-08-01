@@ -12,13 +12,16 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Copy Chrome profile
-        run: cp -R ~/scraper_corse/chrome_profile ./chrome_profile
+        run: cp -R ~/scraper_corse/chrome_profile ./chrome_profile || true
 
       - name: Use Miniconda Python
         run: /opt/miniconda3/bin/python --version
 
       - name: Install dependencies (Miniconda pip)
-        run: /opt/miniconda3/bin/pip install requests pandas plotly simplejson
+        run: /opt/miniconda3/bin/pip install requests pandas plotly simplejson playwright
+
+      - name: Install Playwright browsers
+        run: /opt/miniconda3/bin/playwright install chromium
 
       - name: Run scraper
         run: /opt/miniconda3/bin/python scraper_aircorsica.py
