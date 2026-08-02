@@ -1,4 +1,3 @@
-
 name: Aircorsica Scraper & Dashboard
 
 on:
@@ -14,9 +13,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set PATH and Run Scraper
+      - name: Run Scraper Pipeline
         run: |
-          # Ajoute les chemins potentiels de conda/bin au PATH de la session runner
           export PATH="$HOME/miniconda3/bin:$HOME/anaconda3/bin:/opt/miniconda3/bin:$PATH"
           
           echo "--- Vérification Python & Pip ---"
@@ -26,7 +24,7 @@ jobs:
           pip install requests pandas plotly simplejson playwright
           
           echo "--- Installation des navigateurs Playwright ---"
-          playwright install chromium
+          python -m playwright install chromium
           
           echo "--- Exécution du script de scraping ---"
           python scraper.py
