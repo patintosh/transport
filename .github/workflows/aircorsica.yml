@@ -2,6 +2,7 @@ name: Scraper Air Corsica
 
 on:
   workflow_dispatch:
+  # Tu pourras ajouter un schedule ici si besoin (ex: cron: '0 7 * * *')
 
 jobs:
   scrape:
@@ -17,16 +18,16 @@ jobs:
       - name: Use Miniconda Python
         run: /opt/miniconda3/bin/python --version
 
-      - name: Install dependencies (Miniconda pip)
+      - name: Install dependencies
         run: /opt/miniconda3/bin/pip install requests pandas plotly simplejson playwright
 
       - name: Install Playwright browsers
         run: /opt/miniconda3/bin/playwright install chromium
 
-      - name: Run scraper
-        run: /opt/miniconda3/bin/python scraper_aircorsica.py
+      - name: Run scraper (Batch mode)
+        run: /opt/miniconda3/bin/python scraperapi.py --mode batch
 
-      - name: Generate dashboard
+      - name: Generate Dashboard and Charts
         run: /opt/miniconda3/bin/python generate_dashboard.py
 
       - name: Commit and push results
@@ -34,5 +35,5 @@ jobs:
           git config --global user.email "patrice.salini@me.com"
           git config --global user.name "Patrice"
           git add .
-          git commit -m "Update Air Corsica data" || echo "Nothing to commit"
+          git commit -m "Mise automatique des prix et du dashboard" || echo "Nothing to commit"
           git push
