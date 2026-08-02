@@ -1,8 +1,8 @@
 import pandas as pd
 import plotly.graph_objects as go
 
-# 1. Chargement des données (remplace 'series.csv' par le nom exact de ton fichier de données)
-df = pd.read_csv("series.csv")
+# 1. Chargement des données avec le bon nom de fichier
+df = pd.read_csv("series_vols_aircorsica.csv")
 
 # Nettoyage et conversion des dates pour le tri chronologique
 df["Date Vol"] = pd.to_datetime(df["Date Vol"], format="%d/%m/%Y")
