@@ -22,7 +22,7 @@ jobs:
         run: pip install requests pandas plotly simplejson playwright
 
       - name: Install Playwright browsers
-        run: /opt/miniconda3/bin/playwright install chromium
+        run: playwright install chromium
 
       - name: Run scraper (Batch mode)
         run: /opt/miniconda3/bin/python scraperapi.py --mode batch
