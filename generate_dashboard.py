@@ -1,48 +1,105 @@
-import os
 import pandas as pd
-import plotly.express as px
+import plotly.graph_objects as go
 
-# 1. Chargement des données (version standard avec point)
-df_series = pd.read_csv("series_vols_aircorsica.csv")
+# 1. Chargement des données (en ignorant la colonne TIME qui a été supprimée du CSV)
+# Remplace 'data.csv' par le nom exact de ton fichier de données si besoin
+df = pd.read_csv("data.csv")
 
-# Nettoyage / Préparation des liaisons (ex: AJA-ORY, NCE-BIA, etc.)
-# On extrait l'aéroport du continent et l'aéroport corse
-df_series["Continent"] = df_series["Liaison"].apply(
-    lambda x: x.split("-")[0]
-    if x.split("-")[0] in ["ORY", "CDG", "MRS", "NCE", "LYS", "TLS"]
-    else x.split("-")[1]
-)
-df_series["Corse"] = df_series["Liaison"].apply(
-    lambda x: x.split("-")[1]
-    if x.split("-")[0] in ["ORY", "CDG", "MRS", "NCE", "LYS", "TLS"]
-    else x.split("-")[0]
-)
+# Nettoyage et conversion des dates pour le tri chronologique
+df["Date Vol"] = pd.to_datetime(df["Date Vol"], format="%d/%m/%Y")
+df = df.sort_values("Date Vol")
+df["Date Vol Str"] = df["Date Vol"].dt.strftime("%d/%m/%Y")
 
-# 2. Création de la figure interactive groupée par aéroport du continent
-fig = px.line(
-    df_series,
-    x="Date Vol",
-    y="Moyenne Light (€)",
-    color="Liaison",
-    line_dash="Continent",
-    markers=True,
-    title="Suivi des Prix Moyens Air Corsica - Par Liaison et Aéroport",
-    labels={
-        "Moyenne Light (€)": "Prix Moyen Light (€)",
-        "Date Vol": "Date du Vol",
-    },
-)
+# 2. Identification des aéroports (provenance ou destination dans la liaison EX: 'NCE-CLY')
+df["Origine"] = df["Liaison"].str.split("-").str[0]
+df["Destination"] = df["Liaison"].str.split("-").str[1]
 
+# Liste unique de tous les aéroports présents dans les données
+aeroports = sorted(list(set(df["Origine"].unique()).union(set(df["Destination"].unique()))))
+
+# 3. Création de la figure Plotly
+fig = go.Figure()
+
+# Suivi de la visibilité des traces pour le menu déroulant
+visibility_list = []
+trace_counter = 0
+
+for aeroport in aeroports:
+    # Filtrer les liaisons impliquant cet aéroport (soit au départ, soit à l'arrivée)
+    df_ aero = df[(df["Origine"] == aeroport) | (df["Destination"] == aeroport)]
+    
+    # Trouver toutes les liaisons uniques pour cet aéroport
+    liaisons = sorted(df_aeroport["Liaison"].unique())
+    
+    for liaison in liaisons:
+        df_liaison = df_aeroport[df_aeroport["Liaison"] == liaison]
+        
+        # Ajout de la courbe (Moyenne Light) pour cette liaison
+        fig.add_trace(
+            go.Scatter(
+                x=df_liaison["Date Vol Str"],
+                y=df_liaison["Moyenne Light (€)"],
+                mode="lines+markers",
+                name=f"Liaison {liaison}",
+                visible=False  # Masqué par défaut, géré par le menu déroulant
+            )
+        )
+        trace_counter += 1
+
+# Par défaut, rendre visibles les traces du premier aéroport de la liste
+traces_per_airport = []
+current_trace_idx = 0
+dropdown_buttons = []
+
+for idx, aeroport in enumerate(aeroports):
+    df_aeroport = df[(df["Origine"] == aeroport) | (df["Destination"] == aeroport)]
+    liaisons_count = df_aeroport["Liaison"].nunique()
+    
+    # Création du masque de visibilité pour ce bouton du menu
+    visibility = [False] * trace_counter
+    for i in range(current_trace_idx, current_trace_idx + liaisons_count):
+        visibility[i] = True
+        
+    # Si c'est le premier aéroport, on active ses traces à l'affichage initial
+    if idx == 0:
+        for i in range(current_trace_idx, current_trace_idx + liaisons_count):
+            fig.data[i].visible = True
+
+    dropdown_buttons.append(
+        {
+            "args": [{"visible": visibility}],
+            "label": f"Aéroport : {aeroport}",
+            "method": "update"
+        }
+    )
+    current_trace_idx += liaisons_count
+
+# 4. Mise en page du graphique
 fig.update_layout(
+    updatemenus=[
+        {
+            "buttons": dropdown_buttons,
+            "direction": "down",
+            "showactive": True,
+            "x": 0.17,
+            "xanchor": "left",
+            "y": 1.15,
+            "yanchor": "top"
+        }
+    ],
+    title={
+        "text": "Suivi des prix des liaisons par aéroport",
+        "y": 0.95,
+        "x": 0.5,
+        "xanchor": "center",
+        "yanchor": "top"
+    },
+    xaxis_title="Date de Vol",
+    yaxis_title="Prix Moyen Light (€)",
     template="plotly_white",
-    xaxis_tickangle=-45,
-    legend_title="Liaisons",
+    hovermode="x unified"
 )
 
-# 3. Export en page HTML autonome (vers dashboard.html pour préserver l'index)
-dashboard_html = fig.to_html(full_html=True, include_plotlyjs="cdn")
-
-with open("dashboard.html", "w", encoding="utf-8") as f:
-    f.write(dashboard_html)
-
-print("Page HTML générée avec succès : dashboard.html")
+# 5. Exportation en HTML
+fig.write_html("dashboard.html", include_plotlyjs="cdn")
+print("Dashboard généré avec succès !")
