@@ -21,11 +21,8 @@ jobs:
           echo "--- Dossier de travail actuel ---"
           pwd
           
-          echo "--- Installation des navigateurs Playwright ---"
-          python -m playwright install chromium
-          
           echo "--- Exécution du script de scraping ---"
-          python scraper.py
+          python scraperapi.py
           
           echo "--- Génération du dashboard ---"
           python generate_dashboard.py
