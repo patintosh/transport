@@ -1,28 +1,33 @@
-name: Aircorsica Scraper & Dashboard
+name: Pipeline Aircorsica Dashboard
 
 on:
-  workflow_dispatch:
-  # schedule:
-  #   - cron: '0 6 * * *'
+  schedule:
+    - cron: '0 7 * * *'  # Exécution automatique chaque jour à 7h00
+  workflow_dispatch:     # Bouton pour forcer la mise à jour manuellement à la demande
 
 jobs:
-  scrape-and-build:
-  # On force le runner à travailler directement dans ton dossier local existant
-    runs-on: self-hosted
-
+  build-and-deploy:
+    runs-on: ubuntu-latest
     steps:
-      - name: Run Scraper Pipeline directly from local folder
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
         run: |
-          export PATH="$HOME/miniconda3/bin:$HOME/anaconda3/bin:/opt/miniconda3/bin:$PATH"
-          
-          # On se place directement dans ton vrai dossier de travail sur le Mac
-          cd /Users/macbookairsalini/scraper_corse
-          
-          echo "--- Dossier de travail actuel ---"
-          pwd
-          
-          echo "--- Exécution du script de scraping ---"
-          python scraperapi.py
-          
-          echo "--- Génération du dashboard ---"
-          python generate_dashboard.py
+          python -m pip install --upgrade pip
+          pip install pandas plotly
+
+      - name: Run dashboard generator
+        run: python generate_dashboard.py
+
+      - name: Commit and push if HTML changed
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Mise à jour du dashboard [skip ci]" && git push)
