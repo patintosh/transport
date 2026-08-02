@@ -17,11 +17,9 @@ jobs:
         run: |
           export PATH="$HOME/miniconda3/bin:$HOME/anaconda3/bin:/opt/miniconda3/bin:$PATH"
           
-          echo "--- Vérification Python & Pip ---"
-          python --version
-          
-          echo "--- Installation des dépendances ---"
-          pip install requests pandas plotly simplejson playwright
+          echo "--- Dossier de travail actuel ---"
+          pwd
+          ls -la
           
           echo "--- Installation des navigateurs Playwright ---"
           python -m playwright install chromium
