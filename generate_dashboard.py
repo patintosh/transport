@@ -39,10 +39,18 @@ fig.update_layout(
     legend_title="Liaisons",
 )
 
-# 3. Export en page HTML autonome
+# 3. Export en page HTML autonome (SANS écraser l'index de la bibliothèque)
 dashboard_html = fig.to_html(full_html=True, include_plotlyjs="cdn")
 
-with open("index.html", "w", encoding="utf-8") as f:
+with open("dashboard.html", "w", encoding="utf-8") as f:
     f.write(dashboard_html)
+
+print("Page HTML générée avec succès : dashboard.html")# 3. Export en page HTML autonome (SANS écraser l'index de la bibliothèque)
+dashboard_html = fig.to_html(full_html=True, include_plotlyjs="cdn")
+
+with open("dashboard.html", "w", encoding="utf-8") as f:
+    f.write(dashboard_html)
+
+print("Page HTML générée avec succès : dashboard.html")
 
 print("Page HTML générée avec succès : index.html")
