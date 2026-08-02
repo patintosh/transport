@@ -7,19 +7,19 @@ on:
 
 jobs:
   scrape-and-build:
+  # On force le runner à travailler directement dans ton dossier local existant
     runs-on: self-hosted
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Run Scraper Pipeline
+      - name: Run Scraper Pipeline directly from local folder
         run: |
           export PATH="$HOME/miniconda3/bin:$HOME/anaconda3/bin:/opt/miniconda3/bin:$PATH"
           
+          # On se place directement dans ton vrai dossier de travail sur le Mac
+          cd /Users/macbookairsalini/scraper_corse
+          
           echo "--- Dossier de travail actuel ---"
           pwd
-          ls -la
           
           echo "--- Installation des navigateurs Playwright ---"
           python -m playwright install chromium
