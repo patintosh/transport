@@ -1,9 +1,10 @@
+
 name: Aircorsica Scraper & Dashboard
 
 on:
   workflow_dispatch:
   # schedule:
-  #   - cron: '0 6 * * *'  # Activable plus tard pour le cron quotidien
+  #   - cron: '0 6 * * *'
 
 jobs:
   scrape-and-build:
@@ -13,17 +14,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Use Python
-        run: python --version
-
-      - name: Install dependencies
-        run: pip install requests pandas plotly simplejson playwright
-
-      - name: Install Playwright Browsers
-        run: playwright install chromium
-
-      - name: Run Scraper
-        run: python scraper.py
-
-      - name: Generate Dashboard
-        run: python generate_dashboard.py
+      - name: Set PATH and Run Scraper
+        run: |
+          # Ajoute les chemins potentiels de conda/bin au PATH de la session runner
+          export PATH="$HOME/miniconda3/bin:$HOME/anaconda3/bin:/opt/miniconda3/bin:$PATH"
+          
+          echo "--- Vérification Python & Pip ---"
+          python --version
+          
+          echo "--- Installation des dépendances ---"
+          pip install requests pandas plotly simplejson playwright
+          
+          echo "--- Installation des navigateurs Playwright ---"
+          playwright install chromium
+          
+          echo "--- Exécution du script de scraping ---"
+          python scraper.py
+          
+          echo "--- Génération du dashboard ---"
+          python generate_dashboard.py
