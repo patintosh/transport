@@ -1,39 +1,29 @@
-name: Scraper Air Corsica
+name: Aircorsica Scraper & Dashboard
 
 on:
   workflow_dispatch:
-  # Tu pourras ajouter un schedule ici si besoin (ex: cron: '0 7 * * *')
+  # schedule:
+  #   - cron: '0 6 * * *'  # Activable plus tard pour le cron quotidien
 
 jobs:
-  scrape:
+  scrape-and-build:
     runs-on: self-hosted
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Copy Chrome profile
-        run: cp -R ~/scraper_corse/chrome_profile ./chrome_profile || true
-
-      - name: Use Miniconda Python
+      - name: Use Python
         run: python --version
 
       - name: Install dependencies
         run: pip install requests pandas plotly simplejson playwright
 
-      - name: Install Playwright browsers
+      - name: Install Playwright Browsers
         run: playwright install chromium
 
-      - name: Run scraper (Batch mode)
-        run: /opt/miniconda3/bin/python scraperapi.py --mode batch
+      - name: Run Scraper
+        run: python scraper.py
 
-      - name: Generate Dashboard and Charts
-        run: /opt/miniconda3/bin/python generate_dashboard.py
-
-      - name: Commit and push results
-        run: |
-          git config --global user.email "patrice.salini@me.com"
-          git config --global user.name "Patrice"
-          git add .
-          git commit -m "Mise automatique des prix et du dashboard" || echo "Nothing to commit"
-          git push
+      - name: Generate Dashboard
+        run: python generate_dashboard.py
