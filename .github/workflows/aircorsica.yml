@@ -2,12 +2,12 @@ name: Air Corsica UDT Pipeline
 
 on:
   schedule:
-    - cron: '0 7 * * *'  # Tous les jours à 07:00 UTC
-  workflow_dispatch:      # Permet aussi un lancement manuel depuis l'interface GitHub
+    - cron: '0 7 * * *'
+  workflow_dispatch:
 
 jobs:
   run-pipeline:
-    runs-on: self-hosted  # Utilise ton Mac comme runner
+    runs-on: self-hosted
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
