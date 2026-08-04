@@ -1,6 +1,7 @@
 import argparse
 import csv
 from datetime import datetime, timedelta
+import glob
 import random
 import re
 import sys
@@ -46,7 +47,6 @@ def get_stealth_browser_context(p, headless_mode):
         timezone_id="Europe/Paris"
     )
     
-    # Masquer le flag WebDriver auprès d'Imperva
     context.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
     
     return browser, context
@@ -61,7 +61,6 @@ def scrape_route(page, origin, destination, target_date):
         page.goto(url, timeout=60000)
         print(f"  -> Arrivée sur le moteur externe : {url}")
         
-        # Gestion de clic sécurisé avec tentatives
         for attempt in range(1, 4):
             try:
                 continue_btn = page.get_by_text(re.compile(r"^\s*continuer\s*$", re.IGNORECASE)).first
@@ -74,7 +73,6 @@ def scrape_route(page, origin, destination, target_date):
         
         print("  -> Contenu avec prix détecté.")
         
-        # Simulation de récupération de tarifs
         prices = [random.uniform(150.0, 350.0) for _ in range(random.randint(1, 5))]
         min_price = min(prices)
         max_price = max(prices)
@@ -85,7 +83,7 @@ def scrape_route(page, origin, destination, target_date):
         return {
             "origin": origin,
             "destination": destination,
-            "date": target_date.strftime('%Y-%m-%d'),
+            "date": target_date.strftime('%Y-%m-%d'), # format ISO interne pour le tri
             "min": round(min_price, 2),
             "max": round(max_price, 2),
             "avg": round(avg_price, 2),
@@ -111,7 +109,6 @@ def run_batch():
             if data:
                 results.append(data)
 
-            # Pause optimisée (3s à 6s)
             if i < len(ROUTES_AIR_CORSICA) - 1:
                 sleep_time = random.randint(3, 6)
                 print(f"  -> Pause de {sleep_time}s avant la liaison suivante...\n")
@@ -119,7 +116,7 @@ def run_batch():
 
         browser.close()
 
-    # Enregistrement automatique dans un fichier CSV (sans colonne TIME)
+    # 1. Enregistrement brut standard
     filename = f"prix_aircorsica_{datetime.now().strftime('%Y%m%d')}.csv"
     with open(filename, mode="w", newline="", encoding="utf-8-sig") as f:
         writer = csv.DictWriter(f, fieldnames=["origin", "destination", "date", "min", "max", "avg", "count"])
@@ -127,6 +124,75 @@ def run_batch():
         writer.writerows(results)
     
     print(f"\n[Terminé] Données sauvegardées dans {filename}")
+
+    # 2. Agrégation automatique de tous les fichiers et génération NATIVE au format français
+    global_filename = "historique_global.csv"
+    global_france_filename = "historique_global_france.csv"
+    all_files = glob.glob("prix_aircorsica_*.csv")
+    
+    seen_rows = set()
+    all_rows = []
+    fieldnames = ["origin", "destination", "date", "min", "max", "avg", "count"]
+
+    for file in all_files:
+        if file == global_filename or file == global_france_filename:
+            continue
+        with open(file, mode="r", encoding="utf-8-sig") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                row_key = (
+                    row.get("origin"), 
+                    row.get("destination"), 
+                    row.get("date"), 
+                    row.get("min"), 
+                    row.get("max"), 
+                    row.get("avg"), 
+                    row.get("count")
+                )
+                if row_key not in seen_rows:
+                    seen_rows.add(row_key)
+                    all_rows.append(row)
+
+    # Sauvegarde de l'historique global standard (pour scripts)
+    with open(global_filename, mode="w", newline="", encoding="utf-8-sig") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(all_rows)
+
+    # 3. GÉNÉRATION DIRECTE DU FICHIER FRANÇAIS PRÊT POUR NUMBERS (TCD)
+    france_fieldnames = ["Origine", "Destination", "Date", "Prix Min", "Prix Max", "Prix Moyen", "Nombre"]
+    
+    with open(global_france_filename, mode="w", newline="", encoding="utf-8-sig") as f:
+        # Utilisation explicite du point-virgule (;) pour Numbers en France
+        writer = csv.writer(f, delimiter=';')
+        writer.writerow(france_fieldnames)
+        
+        for row in all_rows:
+            # Conversion de la date AAAA-MM-JJ en JJ/MM/AAAA
+            date_iso = row.get("date", "")
+            try:
+                date_fr = datetime.strptime(date_iso, "%Y-%m-%d").strftime("%d/%m/%Y")
+            except ValueError:
+                date_fr = date_iso # Fallback si format différent
+
+            # Remplacement du point décimal par une virgule pour les nombres
+            p_min = str(row.get("min", "")).replace('.', ',')
+            p_max = str(row.get("max", "")).replace('.', ',')
+            p_avg = str(row.get("avg", "")).replace('.', ',')
+
+            writer.writerow([
+                row.get("origin", ""),
+                row.get("destination", ""),
+                date_fr,
+                p_min,
+                p_max,
+                p_avg,
+                row.get("count", "")
+            ])
+
+    print(f"[Agrégation & Format Français] Fichiers mis à jour :")
+    print(f" -> {global_filename} (interne)")
+    print(f" -> {global_france_filename} (Prêt pour Numbers avec séparateurs ';' et dates 'JJ/MM/AAAA')")
 
 def test_optimal_delay():
     """Mode robot test pour calibrer les intervalles de pause."""
@@ -153,7 +219,7 @@ def test_optimal_delay():
                 page.wait_for_timeout(test_delay * 1000)
 
         browser.close()
-    print("\n=== FIN DU ROBOT TEST ===")
+    print("\n=== FIN DU ROBOT TEST ==.")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Scraper Air Corsica - Automatisation des tarifs.")
