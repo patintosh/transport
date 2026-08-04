@@ -7,7 +7,7 @@ on:
 
 jobs:
   run-pipeline:
-    runs-on: self-hosted  # Utilise ton Mac comme runner
+    runs-on: ubuntu-latest  # Utilise un runner cloud GitHub géré automatiquement
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
