@@ -2,7 +2,7 @@ name: Air Corsica UDT Pipeline
 
 on:
   schedule:
-    - cron: '0 7 * * *'  # Tous les jours à 07:00 UTC
+    - cron: '2 7 * * *'  # Déclenché à 07:02 UTC pour fuir l'affluence de 07:00
   workflow_dispatch:      # Permet un lancement manuel depuis l'interface GitHub
 
 jobs:
