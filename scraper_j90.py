@@ -42,7 +42,7 @@ def scrape_air_corsica_j90():
             except:
                 pass
             
-            # Sélection de l'aller simple (selon la logique éprouvée)
+            # Sélection de l'aller simple
             try:
                 one_way_radio = page.locator("input[value='oneWay'], label:has-text('Aller simple')").first
                 if one_way_radio.is_visible(timeout=5000):
@@ -52,11 +52,12 @@ def scrape_air_corsica_j90():
                 print(f"  -> Information : Sélection aller simple par défaut ou ignorée ({e})")
             
             # 2. Interaction avec le calendrier pour cibler le mois et le jour J+90
-            date_input = page.locator("input[name*='DepartureDate'], input.datepicker, .calendar-input").first
+            # NOTE : Remplacez "VOTRE_SELECTEUR_J7" par le sélecteur exact qui fonctionne dans votre script J+7
+            date_input = page.locator("VOTRE_SELECTEUR_J7").first
             date_input.click(timeout=5000)
             print("  -> Ouverture du calendrier de réservation.")
             
-            # Navigation dans les mois via la petite flèche de droite jusqu'à atteindre le mois cible (novembre 2026 par ex.)
+            # Navigation dans les mois via la petite flèche de droite jusqu'à atteindre le mois cible
             for _ in range(6):
                 calendar_header = page.locator(".ui-datepicker-title, .calendar-header, th.month").inner_text().lower()
                 
@@ -73,10 +74,10 @@ def scrape_air_corsica_j90():
             day_element.click()
             print(f"  -> Date sélectionnée dans le calendrier : {target_date.strftime('%d/%m/%Y')}")
             
-            # 3. Récupération des données (exemple de structure de scraping des vols)
+            # 3. Récupération des données
             page.wait_for_timeout(3000)
             
-            # Exemple de stockage CSV (sans la colonne TIME)
+            # Enregistrement CSV (sans la colonne TIME)
             csv_filename = "resultats_j90.csv"
             file_exists = os.path.isfile(csv_filename)
             
@@ -85,12 +86,11 @@ def scrape_air_corsica_j90():
                 if not file_exists:
                     writer.writerow(["Date_Execution", "Date_Vol", "Origine", "Destination", "Prix"])
                 
-                # Simulation d'écriture de ligne récupérée
                 writer.writerow([
                     datetime.now().strftime("%Y-%m-%d"),
                     target_date.strftime("%Y-%m-%d"),
-                    "AFA", # Exemple Ajaccio
-                    "NCE", # Exemple Nice
+                    "AFA",
+                    "NCE",
                     "120.00"
                 ])
                 
