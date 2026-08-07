@@ -66,6 +66,10 @@ DELAY_BETWEEN_CALLS = 2  # secondes, pour rester raisonnable vis-à-vis de l'API
 
 # --- Appel API -----------------------------------------------------------
 
+# Traduction des niveaux de prix renvoyés par l'API (anglais -> français)
+NIVEAUX_PRIX = {"low": "bas", "typical": "normal", "high": "élevé"}
+
+
 def query_price(origin: str, dest: str, target_date: str):
     """Interroge SerpApi pour une liaison et une date données (aller simple)."""
     params = {
@@ -93,10 +97,11 @@ def query_price(origin: str, dest: str, target_date: str):
     cheapest = min(prices) if prices else None
 
     typical_range = insights.get("typical_price_range") or [None, None]
+    niveau_en = insights.get("price_level", "")
 
     return {
         "lowest_price": insights.get("lowest_price", cheapest),
-        "price_level": insights.get("price_level", ""),
+        "price_level": NIVEAUX_PRIX.get(niveau_en, niveau_en),
         "typical_min": typical_range[0],
         "typical_max": typical_range[1],
     }
