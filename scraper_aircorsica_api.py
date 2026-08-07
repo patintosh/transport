@@ -8,11 +8,12 @@ interroge Google Flights via SerpApi, un service qui republie ces données
 via un accès légal. Aucune protection à contourner, aucune IP résidentielle
 requise, ça tourne sur GitHub Actions sans problème.
 
-Principe : une requête par liaison et par horizon suffit à alimenter les
-séries, car chaque appel renvoie déjà un prix le plus bas, une fourchette
-"typique" et un niveau de prix (price_insights), en plus des vols proposés.
-Faire ça 1 fois par mois suffit à construire une série exploitable dans le
-temps.
+Principe : chaque appel renvoie un prix le plus bas, une fourchette
+"typique" et un niveau de prix (price_insights) pour une date donnée.
+On interroge 5 horizons par liaison (J+7, J+30, J+60, J+90, J+120) pour
+obtenir une vraie courbe plutôt que deux points isolés. Soit 46 routes x 5
+horizons = 230 requêtes par run, qui tient dans le quota gratuit SerpApi
+(250/mois) à raison d'un run complet par mois.
 
 Installation :
     pip install requests
@@ -22,7 +23,7 @@ Configuration :
     # Clé gratuite sur https://serpapi.com (plan gratuit : 100 requêtes/mois)
 
 Usage :
-    python scraper_aircorsica_api.py                  # toutes les routes, J+7 et J+90
+    python scraper_aircorsica_api.py                  # toutes les routes, J+7 à J+120 (5 points)
     python scraper_aircorsica_api.py --test AJA MRS    # une seule route, pour tester
 """
 
@@ -38,9 +39,9 @@ from datetime import date, timedelta
 API_KEY = os.environ.get("SERPAPI_KEY")
 API_URL = "https://serpapi.com/search"
 
-# Horizons de suivi (en jours). J+7 = court terme, J+90 = long terme.
-# Reprend la logique de vos scripts scraper_j7.py / scraper_j90.py.
-HORIZONS = {"J7": 7, "J90": 90}
+# Horizons de suivi (en jours), du court au long terme.
+# 5 points x 46 routes = 230 requêtes/run, dans le quota gratuit (250/mois).
+HORIZONS = {"J7": 7, "J30": 30, "J60": 60, "J90": 90, "J120": 120}
 
 # Liste des 46 liaisons à suivre : (origine, destination) en code IATA.
 # 4 aéroports corses (AJA, BIA, FSC, CLY) vers 6 aéroports continentaux,
@@ -176,7 +177,7 @@ def main(test_routes=None):
             time.sleep(DELAY_BETWEEN_CALLS)
 
     print(f"\nTerminé. {count} requêtes effectuées ce mois-ci "
-          f"(quota gratuit SerpApi : 100/mois).")
+          f"(quota gratuit SerpApi : 250/mois — {250 - count} restantes ce mois-ci).")
 
 
 if __name__ == "__main__":
