@@ -1,3 +1,5 @@
 date_maj;origin;dest;horizon;date_cible;lowest_price;price_level;typical_min;typical_max;devise
 2026-08-07;TLS;BIA;J90;2026-11-05;163;;;;EUR
+2026-08-07;TLS;BIA;J7;2026-08-14;142;normal;115;235;EUR
+2026-08-07;TLS;BIA;J90;2026-11-05;163;;;;EUR
 2026-08-07;TLS;BIA;J7;2026-08-14;142;typical;115;235;EUR

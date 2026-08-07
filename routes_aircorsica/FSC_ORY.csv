@@ -1,3 +1,5 @@
 date_maj;origin;dest;horizon;date_cible;lowest_price;price_level;typical_min;typical_max;devise
+2026-08-07;FSC;ORY;J90;2026-11-05;155;normal;120;325;EUR
+2026-08-07;FSC;ORY;J7;2026-08-14;308;normal;175;435;EUR
 2026-08-07;FSC;ORY;J90;2026-11-05;155;typical;120;325;EUR
 2026-08-07;FSC;ORY;J7;2026-08-14;308;typical;175;435;EUR

@@ -1,3 +1,5 @@
 date_maj;origin;dest;horizon;date_cible;lowest_price;price_level;typical_min;typical_max;devise
+2026-08-07;CLY;MRS;J90;2026-11-05;129;normal;80;265;EUR
+2026-08-07;CLY;MRS;J7;2026-08-14;261;élevé;165;250;EUR
 2026-08-07;CLY;MRS;J90;2026-11-05;129;typical;80;265;EUR
 2026-08-07;CLY;MRS;J7;2026-08-14;261;high;165;250;EUR

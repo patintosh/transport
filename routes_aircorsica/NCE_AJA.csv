@@ -1,3 +1,5 @@
 date_maj;origin;dest;horizon;date_cible;lowest_price;price_level;typical_min;typical_max;devise
+2026-08-07;NCE;AJA;J90;2026-11-05;119;normal;75;240;EUR
+2026-08-07;NCE;AJA;J7;2026-08-14;266;élevé;140;250;EUR
 2026-08-07;NCE;AJA;J90;2026-11-05;119;typical;75;240;EUR
 2026-08-07;NCE;AJA;J7;2026-08-14;266;high;140;250;EUR
