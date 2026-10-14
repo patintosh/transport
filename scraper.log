@@ -1,0 +1,15 @@
+--- Début du run : 2026-07-31 18:16:33.431869 ---
+[2026-07-31 18:16:33] Démarrage du run pour la date cible : 2026-08-07
+[2026-07-31 18:16:34] Navigation vers la page d'accueil d'Air Corsica...
+[2026-07-31 18:16:36] Bandeau de cookies accepté.
+[2026-07-31 18:16:36] Traitement de la liaison : AJA-ORY
+[2026-07-31 18:17:06] Erreur lors du traitement de la liaison AJA-ORY : Page.fill: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("input[name*='origin'], input[id*='origin'], input[placeholder*='Départ']:not([type='date'])")
+
+[2026-07-31 18:17:09] Traitement de la liaison : ORY-AJA
+[2026-07-31 18:17:39] Erreur lors du traitement de la liaison ORY-AJA : Page.fill: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("input[name*='origin'], input[id*='origin'], input[placeholder*='Départ']:not([type='date'])")
+
+[2026-07-31 18:17:40] Aucun vol trouvé ou échec général sur l'ensemble des liaisons ce jour.
